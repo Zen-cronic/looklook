@@ -41,7 +41,18 @@ export interface CheckRecord {
   decision: Decision;
   reason: { text: string; source: "model" | "template" };
   watchId?: string;
+  /** "Remind me" on a wait: when the budget restarts, or when the one you own is nearly used up. */
+  reminder?: { kind: "budget" | "run-out"; on: string; setAt: string; doneAt?: string };
   purchasedReceiptId?: string;
+  /** Offers for the same product at other stores, from the catalogue (derived fields only). */
+  offers?: StoreOffer[];
+}
+
+/** One store's offer for a product, as the verdict shows it. */
+export interface StoreOffer {
+  domain: string;
+  price: number;
+  url?: string;
 }
 
 export type MethodType = "card" | "paypal";
@@ -131,14 +142,18 @@ export interface Receipt {
   captureId?: string;
   captureStatus: string;
   requestId: string;
-  /** How many times this request reached PayPal, and whether every answer named the same order. */
+  /** How many yeses (or retries) arrived for this request, and whether every answer named the same order. */
   attempts: number;
   sameOrderEveryTime: boolean;
+  /** Repeats that arrived while the first was still running: merged in the app, never sent to PayPal. */
+  mergedInApp?: number;
+  /** Later repeats sent to PayPal again with the same PayPal-Request-Id. */
+  resentToPayPal?: number;
   shelfNote: string;
   budgetNote?: string;
   savedMethodId?: string;
   webhook?: { eventId: string; type: string; at: string };
-  refund?: { id: string; status: string; amountCents?: number };
+  refund?: { id: string; status: string; amountCents?: number; at?: string };
   status: ReceiptStatus;
 }
 
@@ -162,6 +177,8 @@ export interface Notice {
   at: string;
   text: string;
   receiptId?: string;
+  /** PayPal ids behind the notice, shown under Details. */
+  ids?: Array<{ label: string; value: string }>;
 }
 
 export interface Budgets {

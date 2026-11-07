@@ -4,7 +4,9 @@ import { priceBand, type PriceBand } from "../channel3/band";
 import { Channel3Client } from "../channel3/client";
 import type { CheckServices } from "./checks";
 import { realToday } from "./dates";
+import { storeOffers } from "./offers";
 import { cacheGet, cacheSet } from "./store";
+import type { StoreOffer } from "./types";
 
 let anthropic: Anthropic | undefined;
 let channel3: Channel3Client | undefined;
@@ -49,4 +51,19 @@ export function liveCheckServices(): CheckServices {
 
 export async function fetchProduct(productId: string) {
   return getProduct(channel3Client(), productId);
+}
+
+/** Store offers for a product (derived fields only), refreshed once a day; empty when the catalogue can't be reached. */
+export async function cachedOffers(productId: string): Promise<StoreOffer[]> {
+  const key = `${productId}-${realToday()}`;
+  const hit = cacheGet<{ offers: StoreOffer[] }>("offers", key);
+  if (hit) return hit.offers;
+  if (!process.env.CHANNEL3_API_KEY) return [];
+  try {
+    const offers = storeOffers(await getProduct(channel3Client(), productId));
+    cacheSet("offers", key, { offers });
+    return offers;
+  } catch {
+    return [];
+  }
 }

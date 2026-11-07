@@ -2,9 +2,10 @@ import { appToday } from "@/lib/app/dates";
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
 import { activeMethod, intentSku, PaymentFlowError, recordDecline, recordPaid, savedMethodRequestId, sourceDetails } from "@/lib/app/payments";
 import { parseSource } from "@/lib/app/sources";
-import { singleFlight } from "@/lib/app/single-flight";
+import { isInflight, singleFlight } from "@/lib/app/single-flight";
 import { indexAdd, loadSession, updateSession } from "@/lib/app/store";
 import { formatCents } from "@/lib/app/money";
+import { budgetHoldFor } from "@/lib/app/reminders";
 import { CaptureDeclinedError, getPayPalClient, InstrumentDeclinedError, negativeTestingEnabled, rebuy, RebuyCapExceededError } from "@/lib/paypal";
 
 /**
@@ -27,6 +28,8 @@ export async function POST(request: Request) {
       if (e instanceof PaymentFlowError) throw new HttpError(400, e.message);
       throw e;
     }
+    const hold = budgetHoldFor(state, source);
+    if (hold) throw new HttpError(409, hold, { overBudget: true });
     const simulated = state.demo.declineNextRebuy && negativeTestingEnabled();
     if (state.demo.declineNextRebuy) {
       await updateSession(sid, (s) => {
@@ -34,6 +37,7 @@ export async function POST(request: Request) {
       });
     }
     const requestId = savedMethodRequestId(sid, details.key, method.vaultId, simulated);
+    const merged = isInflight(requestId);
     let outcome;
     try {
       outcome = await singleFlight(requestId, () => rebuy(getPayPalClient(), {
@@ -59,7 +63,7 @@ export async function POST(request: Request) {
       throw e;
     }
     const result = await updateSession(sid, (s) =>
-      recordPaid(s, source, details, { outcome, requestId, kind: "saved-method", methodLabel: method.label, methodId: method.id }, appToday(s.dayOffset)),
+      recordPaid(s, source, details, { outcome, merged, requestId, kind: "saved-method", methodLabel: method.label, methodId: method.id }, appToday(s.dayOffset)),
     );
     await indexAdd("order", outcome.orderId, sid);
     if (outcome.captureId) await indexAdd("capture", outcome.captureId, sid);

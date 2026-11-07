@@ -3,6 +3,12 @@ import type { Decision, ProductFacts } from "./types";
 
 const money = (n: number) => `$${n.toFixed(2)}`;
 
+/** "Dec 20" for a YYYY-MM-DD date. */
+const day = (date: string | null | undefined) =>
+  date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", timeZone: "UTC" }).format(new Date(`${date}T00:00:00Z`)) : "";
+
+const inDays = (n: number) => (n <= 0 ? "runs out today" : `runs out in ${n} ${n === 1 ? "day" : "days"}`);
+
 function returnPhrase(d: Decision): string {
   const p = d.evidence.policy;
   if (!p) return "";
@@ -30,7 +36,7 @@ export function templateReason(d: Decision, product: ProductFacts): string {
     case "run-out-unknown":
       return `You already have ${owned} open. Tell us roughly when it runs out and we'll time the rebuy.`;
     case "not-needed-yet":
-      return `You have ${owned} until about ${e.shelf?.runOutDate}. We'll look again on ${e.waitUntil}.`;
+      return `You have ${owned} until about ${day(e.shelf?.runOutDate)}. We'll look again on ${day(e.waitUntil)}.`;
     case "owns-similar":
       return `You already own ${owned}, which does the same job${d.flags.includes("non-returnable-opened") ? `, and ${returnPhrase(d)}` : ""}.`;
     case "overlap-non-returnable":
@@ -38,13 +44,13 @@ export function templateReason(d: Decision, product: ProductFacts): string {
     case "price-unknown":
       return "No price was shown. Add the price and we'll check it.";
     case "over-budget":
-      return `${money(e.budget!.price)} is more than the ${money(e.budget!.remaining)} left in your ${e.budget!.group} budget.`;
+      return `${money(e.budget!.price)} is more than the ${money(e.budget!.remaining)} left in your ${e.budget!.group} budget this month.`;
     case "no-price-history":
-      return `There's no reliable price history for ${product.brand} ${product.name} yet; we'll watch the price${e.buyBy ? ` until ${e.buyBy}` : ""}.`;
+      return `There isn't enough price history for ${product.brand} ${product.name} to judge this price; we'll watch it${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
     case "above-usual-price":
-      return `${money(e.price!.shown)} is above its usual low of ${money(e.price!.low!)}; we'll wait for ${money(e.price!.target!)} or less${e.buyBy ? ` until ${e.buyBy}` : ""}.`;
+      return `${money(e.price!.shown)} is above its usual low of ${money(e.price!.low!)}; we'll wait for ${money(e.price!.target!)} or less${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
     case "replacing-run-out":
-      return `Your ${e.replaces!.brand} ${e.replaces!.name} runs out in ${e.replaces!.daysLeft} days, and this is a fair price.`;
+      return `Your ${e.replaces!.brand} ${e.replaces!.name} ${inDays(e.replaces!.daysLeft)}, and this is a fair price.`;
     case "clear-to-buy":
       return "Nothing like it on your shelf, it fits your budget, and the price is fair.";
   }

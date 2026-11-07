@@ -1,4 +1,5 @@
-import { mkdtempSync } from "node:fs";
+import { execSync } from "node:child_process";
+import { mkdtempSync, readFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { afterAll, beforeAll, describe, expect, it, vi } from "vitest";
@@ -12,17 +13,24 @@ import { addDays, appToday, daysBetween } from "./dates";
 import { runSkipEval } from "./eval";
 import { returnsLine } from "./explain";
 import {
+  chargeKind,
   checkoutOrderBody,
   consentLines,
+  consentText,
   dueStaples,
   recordDecline,
   recordPaid,
+  repeatsLine,
   REBUY_LEAD_DAYS,
   savedMethodRequestId,
   sourceDetails,
   type PaidResult,
 } from "./payments";
+import { APP_NAME } from "../brand";
+import { offerLines, storeOffers } from "./offers";
 import { applyPayPalEvent, eventRefs } from "./paypal-events";
+import { refreshChecks } from "./refresh";
+import { budgetHoldFor, nextMonthStart, waitAction, watchBudgetHold } from "./reminders";
 import { customerIdFor, SEED_BASE_DATE, seedState } from "./seed";
 import { singleFlight } from "./single-flight";
 import type { CheckRecord, PurchaseIntent, SavedMethod, SessionState } from "./types";
@@ -60,6 +68,17 @@ describe("seed and dates", () => {
     expect(ha.runOutDate).toBe(addDays("2026-11-14", shift));
     expect(ha.price).toBe(9.9);
     expect(s.budgets.limits.skincare).toBe(75);
+  });
+
+  it("starts a new shopper with the sample checks, a skip first", () => {
+    const s = fresh();
+    const recent = [...s.checks].reverse();
+    expect(recent.map((c) => [c.input.kind === "screenshot" ? c.input.sample : "", c.decision.verdict])).toEqual([
+      ["spf-cvs", "skip"],
+      ["vitc-ulta", "skip"],
+      ["retinol-brand", "wait"],
+    ]);
+    expect(recent[0].decision.evidence.policy?.retailerId).toBe("cvs");
   });
 
   it("keeps the PayPal customer id short", () => {
@@ -115,7 +134,8 @@ describe("rebuys", () => {
     expect(s.shelf.find((i) => i.id === "sh-cleanser")!.runOutDate).toBe(runOut);
     expect(remainingBudgets(s.budgets, TODAY).skincare).toBe(spent);
     expect(runOut! > TODAY).toBe(true);
-    expect(s.notices.at(-1)!.text).toContain("O1");
+    expect(s.notices.at(-1)!.ids).toContainEqual({ label: "PayPal order", value: "O1" });
+    expect(s.notices.at(-1)!.text).not.toContain("O1");
     const different = recordPaid(s, source, details, paid("O2"), TODAY);
     expect(different.receipt.sameOrderEveryTime).toBe(false);
   });
@@ -375,5 +395,111 @@ describe("store on disk", () => {
     expect([a.duplicate, b.duplicate].sort()).toEqual([false, true]);
     await store.indexAdd("order", "O1", "sessiontest01");
     expect(store.indexLookup("order", "O1")).toEqual(["sessiontest01"]);
+  });
+});
+
+describe("one budget and one clock across screens", () => {
+  it("decides open checks again when the budget or the date changes", () => {
+    const s = fresh();
+    const retinol = s.checks.find((c) => c.id === "sample-retinol-brand")!;
+    expect(retinol.decision.rule).toBe("above-usual-price");
+    // Spend most of the skincare budget: the same check now waits for the budget, with the live figure.
+    recordSpend(s.budgets, TODAY, "skincare", 60);
+    expect(refreshChecks(s, TODAY)).toBeGreaterThan(0);
+    expect(retinol.decision.rule).toBe("over-budget");
+    expect(retinol.decision.evidence.budget?.remaining).toBe(remainingBudgets(s.budgets, TODAY).skincare);
+    expect(retinol.reason.text).toContain("$15.00 left");
+    // Unchanged state: nothing to redo.
+    expect(refreshChecks(s, TODAY)).toBe(0);
+  });
+
+  it("keeps a bought check's verdict", () => {
+    const s = fresh();
+    const c = s.checks[0];
+    c.purchasedReceiptId = "rc_x";
+    const before = JSON.stringify(c.decision);
+    recordSpend(s.budgets, TODAY, "skincare", 75);
+    refreshChecks(s, TODAY);
+    expect(JSON.stringify(c.decision)).toBe(before);
+  });
+});
+
+describe("what a wait offers", () => {
+  it("follows the rule that fired", () => {
+    const s = fresh();
+    const retinol = s.checks.find((c) => c.id === "sample-retinol-brand")!;
+    expect(waitAction(retinol, TODAY)).toEqual({ kind: "price" });
+    recordSpend(s.budgets, TODAY, "skincare", 60);
+    refreshChecks(s, TODAY);
+    expect(waitAction(retinol, TODAY)).toEqual({ kind: "budget", on: nextMonthStart(TODAY) });
+    expect(nextMonthStart("2026-12-14")).toBe("2027-01-01");
+    expect(nextMonthStart("2026-11-30")).toBe("2026-12-01");
+  });
+
+  it("holds a price drop that is still over budget, and says why", () => {
+    const s = fresh();
+    const retinol = s.checks.find((c) => c.id === "sample-retinol-brand")!;
+    const w = newWatch(retinol, { status: "unavailable", reason: "test" });
+    w.currentPrice = 50;
+    w.droppedAt = new Date().toISOString();
+    s.watch.push(w);
+    expect(watchBudgetHold(s, w, TODAY)).toBeUndefined();
+    recordSpend(s.budgets, TODAY, "skincare", 60);
+    expect(watchBudgetHold(s, w, TODAY)).toMatchObject({ group: "skincare", remaining: 15, price: 50 });
+    expect(budgetHoldFor(s, { kind: "watch", watchId: w.id })).toContain("$15.00 left");
+  });
+});
+
+describe("receipt wording", () => {
+  const base = { requestId: "r", sameOrderEveryTime: true };
+  it("says what happened to repeats, in the app and at PayPal", () => {
+    expect(repeatsLine({ ...base, attempts: 1 })).toBe("Sent to PayPal once.");
+    const merged = repeatsLine({ ...base, attempts: 3, mergedInApp: 1, resentToPayPal: 1 });
+    expect(merged).toContain("merged here and never reached PayPal");
+    expect(merged).toContain("same PayPal-Request-Id, and PayPal returned this same order");
+    expect(merged).not.toMatch(/every time/);
+    expect(repeatsLine({ ...base, attempts: 2, sameOrderEveryTime: false })).toContain("different PayPal order");
+  });
+
+  it("never calls a first purchase a rebuy", () => {
+    expect(chargeKind({ kind: "first-purchase", source: { kind: "check", checkId: "c" }, savedMethodId: "pm" })).toBe("First purchase, method saved for rebuys");
+    expect(chargeKind({ kind: "saved-method", source: { kind: "staple", shelfItemId: "s", cycle: "x" } })).toBe("Rebuy");
+  });
+});
+
+describe("offers at other stores", () => {
+  it("keeps the cheapest USD offer per store and joins each with its opened-return policy", () => {
+    const offers = storeOffers({
+      offers: [
+        { domain: "ulta.com", url: "https://u", price: { price: 28.8, currency: "USD" } },
+        { domain: "www.sephora.com", url: "https://s", price: { price: 32, currency: "USD" } },
+        { domain: "cvs.com", url: "https://c", price: { price: 27, currency: "USD" } },
+        { domain: "cvs.com", url: "https://c2", price: { price: 29, currency: "USD" } },
+        { domain: "boots.com", url: "https://b", price: { price: 20, currency: "GBP" } },
+      ],
+    });
+    expect(offers.map((o) => [o.domain, o.price])).toEqual([
+      ["cvs.com", 27],
+      ["ulta.com", 28.8],
+      ["sephora.com", 32],
+    ]);
+    const lines = offerLines(offers, "serum");
+    expect(lines.map((l) => [l.store, l.returns])).toEqual([
+      ["CVS Pharmacy", "no"],
+      ["Ulta Beauty", "yes"],
+      ["Sephora", "yes"],
+    ]);
+    expect(lines[0].returnsText).toBe("may refuse opened");
+    expect(lines[2].returnsText).toMatch(/^takes opened back within \d+ days$/);
+  });
+});
+
+describe("product name", () => {
+  it("names the product in the saved-method agreement, and nowhere uses an earlier name", () => {
+    expect(consentText(2500)).toContain(`so ${APP_NAME} can rebuy`);
+    const earlier = new RegExp(["sec", "ond"].join("") + "[\\s_-]?look", "i");
+    const files = execSync("git ls-files", { cwd: process.cwd() }).toString().trim().split("\n").filter((f) => /\.(ts|tsx|md|json|css|yaml)$/.test(f) && !f.endsWith("package-lock.json"));
+    const hits = files.filter((f) => earlier.test(readFileSync(f, "utf8")));
+    expect(hits).toEqual([]);
   });
 });

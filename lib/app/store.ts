@@ -1,6 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
-import { realToday } from "./dates";
+import { appToday, realToday } from "./dates";
+import { reasonKey, refreshChecks } from "./refresh";
 import { seedState } from "./seed";
 import type { EventLogEntry, SessionState } from "./types";
 
@@ -53,10 +54,20 @@ async function withLock<T>(key: string, fn: () => Promise<T> | T): Promise<T> {
   }
 }
 
+/** Model-written reasons already cached for a decision, so a refreshed verdict keeps its wording. */
+function cachedReason(check: { facts: { brand: string; name: string } }, decision: Parameters<typeof reasonKey>[0]) {
+  return cacheGet<{ text: string; source: "model" | "template" }>("reason", reasonKey(decision, check.facts));
+}
+
+/**
+ * One shopper's state, with every open verdict decided again against the
+ * current shelf, budgets and date (in memory; writes persist it).
+ */
 export function loadSession(id: string): SessionState {
   const existing = readJson<SessionState>(sessionFile(id));
-  if (existing && existing.version === 1) return existing;
-  return seedState(id, realToday());
+  const state = existing && existing.version === 1 ? existing : seedState(id, realToday());
+  refreshChecks(state, appToday(state.dayOffset), cachedReason);
+  return state;
 }
 
 /** Read-modify-write one session. The updater may be async (PayPal calls happen outside it). */
@@ -64,6 +75,7 @@ export async function updateSession<T>(id: string, fn: (s: SessionState) => T | 
   return withLock(`session:${id}`, async () => {
     const state = loadSession(id);
     const result = await fn(state);
+    refreshChecks(state, appToday(state.dayOffset), cachedReason);
     writeJson(sessionFile(id), state);
     return result;
   });

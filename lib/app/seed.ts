@@ -1,8 +1,18 @@
+import cases from "@/eval/skip-set/cases.json";
+import bandsFile from "@/eval/skip-set/price-bands.json";
 import shelfFile from "@/eval/skip-set/shelf.json";
+import type { PriceBand } from "../channel3/band";
+import type { SkipCase } from "../eval/skip-set";
+import type { Attributes } from "../shelf/categories";
 import { validateShelfItem } from "../shelf/store";
 import type { ShelfItemInput } from "../shelf/types";
+import { decide } from "../verdict/engine";
+import { templateReason } from "../verdict/reason";
+import type { ReaderAttributes, ScreenshotFields } from "../vision/schema";
+import { remainingBudgets } from "./budgets";
 import { addDays, daysBetween } from "./dates";
-import type { SessionState } from "./types";
+import { SAMPLES } from "./samples";
+import type { CheckRecord, SessionState } from "./types";
 
 /** The date the sample shelf's run-out dates were written for. */
 export const SEED_BASE_DATE = "2026-11-07";
@@ -39,7 +49,7 @@ export function seedState(sessionId: string, today: string, now = new Date()): S
       ...(STAPLES[raw.id as string] ?? {}),
     }),
   );
-  return {
+  const state: SessionState = {
     version: 1,
     id: sessionId,
     createdAt: now.toISOString(),
@@ -55,5 +65,84 @@ export function seedState(sessionId: string, today: string, now = new Date()): S
     declines: [],
     notices: [],
     demo: { declineNextRebuy: false },
+  };
+  state.checks = SEEDED_CHECKS.map((s, i) => seededCheck(s, state, today, new Date(now.getTime() - (SEEDED_CHECKS.length - i) * 60_000)));
+  return state;
+}
+
+/**
+ * Sample posts already checked for a new shopper, oldest first, so the most
+ * recent (shown first) is a skip: the CVS sunscreen. Each comes from the skip
+ * test set's case for the same product and is decided by the same engine.
+ */
+const SEEDED_CHECKS: Array<{ caseId: string; sample: string; price: number; storeLabel: string }> = [
+  { caseId: "c13", sample: "retinol-brand", price: 72, storeLabel: "olehenriksen.com" },
+  { caseId: "c03", sample: "vitc-ulta", price: 28.99, storeLabel: "Ulta" },
+  { caseId: "c24", sample: "spf-cvs", price: 29.99, storeLabel: "CVS" },
+];
+
+const EMPTY_READER_ATTRIBUTES: ReaderAttributes = {
+  primaryActive: "",
+  actives: [],
+  texture: "",
+  filter: "",
+  area: "",
+  spfBand: "",
+  finish: "",
+  form: "",
+  coverage: "",
+  shadeFamily: "",
+  tint: "",
+  effect: "",
+  formula: "",
+  purpose: "",
+  style: "",
+  noiseCancelling: "",
+  type: "",
+};
+
+function readerAttributes(a: Attributes): ReaderAttributes {
+  const out: ReaderAttributes = { ...EMPTY_READER_ATTRIBUTES };
+  for (const [k, v] of Object.entries(a)) {
+    if (!(k in out) || v === undefined) continue;
+    (out as unknown as Record<string, unknown>)[k] = k === "actives" ? (Array.isArray(v) ? v : [v]) : Array.isArray(v) ? v[0] : v;
+  }
+  return out;
+}
+
+function seededCheck(seed: (typeof SEEDED_CHECKS)[number], state: SessionState, today: string, at: Date): CheckRecord {
+  const c = (cases.cases as unknown as SkipCase[]).find((x) => x.id === seed.caseId)!;
+  const sample = SAMPLES.find((s) => s.id === seed.sample)!;
+  const band = c.catalogId ? (((bandsFile.bands as Record<string, PriceBand | null>)[c.catalogId] ?? null) as PriceBand | null) : null;
+  const facts = { brand: c.brand, name: c.name, category: c.category, attributes: c.attributes, priceShown: seed.price, identityConfidence: 0.95 };
+  const fields: ScreenshotFields = {
+    isProduct: true,
+    brand: c.brand,
+    productName: c.name,
+    variant: null,
+    size: null,
+    price: { amount: seed.price, currency: "USD" },
+    source: "creator-post",
+    store: seed.storeLabel,
+    category: c.category,
+    attributes: readerAttributes(c.attributes),
+    legibility: 0.95,
+  };
+  const decision = decide({ product: facts, store: c.store, shelf: state.shelf, budgets: remainingBudgets(state.budgets, today), priceBand: band, today });
+  return {
+    id: `sample-${seed.sample}`,
+    createdAt: at.toISOString(),
+    decidedOn: today,
+    input: { kind: "screenshot", imageHash: "", sample: seed.sample },
+    fields,
+    candidates: [],
+    product: { id: c.catalogId ?? seed.sample, title: c.name, brand: c.brand, imageUrl: `/samples/${sample.file}`, category: c.category },
+    needsConfirmation: false,
+    confirmWhy: [],
+    facts,
+    store: c.store,
+    band,
+    decision,
+    reason: { text: templateReason(decision, facts), source: "template" },
   };
 }

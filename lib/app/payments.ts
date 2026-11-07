@@ -189,6 +189,8 @@ export function dueStaples(state: SessionState, today: string): DueStaple[] {
 
 export interface PaidResult {
   outcome: CaptureOutcome;
+  /** This call joined one already in flight for the same request (merged in the app). */
+  merged?: boolean;
   requestId: string;
   kind: Receipt["kind"];
   methodLabel: string;
@@ -217,6 +219,8 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
   const existing = state.receipts.find((r) => r.requestId === paid.requestId);
   if (existing) {
     existing.attempts += 1;
+    if (paid.merged) existing.mergedInApp = (existing.mergedInApp ?? 0) + 1;
+    else existing.resentToPayPal = (existing.resentToPayPal ?? 0) + 1;
     existing.sameOrderEveryTime = existing.sameOrderEveryTime && existing.orderId === paid.outcome.orderId;
     return { receipt: existing, repeat: true };
   }
@@ -292,8 +296,12 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
   state.notices.push({
     id: newId("nt"),
     at: now.toISOString(),
-    text: `Charged ${formatCents(receipt.amountCents, receipt.currency)} to ${receipt.methodLabel} for ${receipt.title}. PayPal order ${receipt.orderId}, capture ${receipt.captureId ?? "pending"}.`,
+    text: `Charged ${formatCents(receipt.amountCents, receipt.currency)} to ${receipt.methodLabel} for ${receipt.title}.`,
     receiptId: receipt.id,
+    ids: [
+      { label: "PayPal order", value: receipt.orderId },
+      { label: "Capture", value: receipt.captureId ?? "pending" },
+    ],
   });
   return { receipt, repeat: false };
 }
@@ -366,10 +374,31 @@ export function openDecline(state: SessionState, source: PurchaseSource): Declin
   return [...state.declines].reverse().find((d) => !d.resolvedByReceiptId && sameSource(d.source, source));
 }
 
-export function recordRefund(state: SessionState, receipt: Receipt, refund: { refundId: string; status: string; amountCents?: number }, category: Category | undefined, today: string): void {
-  receipt.refund = { id: refund.refundId, status: refund.status, amountCents: refund.amountCents };
+export function recordRefund(state: SessionState, receipt: Receipt, refund: { refundId: string; status: string; amountCents?: number }, category: Category | undefined, today: string, now = new Date()): void {
+  receipt.refund = { id: refund.refundId, status: refund.status, amountCents: refund.amountCents, at: now.toISOString() };
   if (refund.status === "COMPLETED") {
     receipt.status = "refunded";
     if (category) refundSpend(state.budgets, receipt.on.slice(0, 7) === today.slice(0, 7) ? today : receipt.on, budgetGroupOf(category), (refund.amountCents ?? receipt.amountCents) / 100);
   }
+}
+
+/** What a charge was, in the shopper's words: a first purchase is never called a rebuy. */
+export function chargeKind(r: Pick<Receipt, "kind" | "source" | "savedMethodId">): string {
+  if (r.kind === "first-purchase") return r.savedMethodId ? "First purchase, method saved for rebuys" : "One-time purchase";
+  if (r.source.kind === "staple") return "Rebuy";
+  if (r.source.kind === "watch") return "Bought after a price drop";
+  return "Paid with a saved method";
+}
+
+/** The receipt's line about repeats: what happened in the app and at PayPal. */
+export function repeatsLine(r: Pick<Receipt, "attempts" | "sameOrderEveryTime" | "mergedInApp" | "resentToPayPal" | "requestId">): string {
+  if (r.attempts <= 1) return "Sent to PayPal once.";
+  if (!r.sameOrderEveryTime) return `You said yes ${r.attempts} times and a repeat came back with a different PayPal order. Check your PayPal activity.`;
+  const merged = r.mergedInApp ?? 0;
+  const resent = r.resentToPayPal ?? 0;
+  const parts: string[] = [];
+  if (merged) parts.push(`${merged} that arrived while the first was still running ${merged === 1 ? "was" : "were"} merged here and never reached PayPal`);
+  if (resent) parts.push(`${resent} later ${resent === 1 ? "repeat was" : "repeats were"} sent with the same PayPal-Request-Id, and PayPal returned this same order`);
+  if (!parts.length) parts.push("every repeat used the same PayPal-Request-Id and named this same order");
+  return `You said yes ${r.attempts} times: ${parts.join("; ")}. One charge.`;
 }

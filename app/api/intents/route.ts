@@ -2,6 +2,7 @@ import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/htt
 import { openDecline, PaymentFlowError, sameSource, sourceDetails } from "@/lib/app/payments";
 import { updateSession } from "@/lib/app/store";
 import { parseSource } from "@/lib/app/sources";
+import { budgetHoldFor } from "@/lib/app/reminders";
 import type { PurchaseIntent } from "@/lib/app/types";
 
 
@@ -12,6 +13,8 @@ export async function POST(request: Request) {
     const body = await readJsonBody<{ source?: unknown }>(request);
     const source = parseSource(body.source);
     const intent = await updateSession(sid, (s) => {
+      const hold = budgetHoldFor(s, source);
+      if (hold) throw new HttpError(409, hold, { overBudget: true });
       let details;
       try {
         details = sourceDetails(s, source);

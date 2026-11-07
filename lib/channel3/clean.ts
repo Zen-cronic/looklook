@@ -92,7 +92,7 @@ export function changeStats(series: number[], levelOf: (p: number) => number): {
 /**
  * Clean a daily price series for timing decisions:
  * 1. drop invalid points and keep one point per day;
- * 2. drop junk points far from the median (accessories, wrong variants, parse errors);
+ * 2. set aside points far from the median (another size, a bundle or an accessory under the same listing);
  * 3. drop one-day blips where the days either side agree with each other;
  * 4. detect sizes or sellers mixed into one series (frequent back-and-forth between
  *    price levels) and keep the dominant level when it holds most days, else mark unusable.

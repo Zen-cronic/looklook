@@ -14,6 +14,7 @@ export async function POST(_request: Request, ctx: RouteContext<"/api/check/[id]
     const check = state.checks.find((c) => c.id === id);
     if (!check) throw new HttpError(404, "No such check.");
     if (!check.product) throw new HttpError(400, "Confirm the product first.");
+    if (check.decision.rule === "over-budget") throw new HttpError(409, "This one waits for your budget, not the price. Ask for a reminder when next month's budget starts.");
     const already = state.watch.find((w) => w.checkId === id && !w.closedAt);
     if (already) return Response.json({ watchId: already.id, subscription: already.subscription });
     let subscription: WatchItem["subscription"];

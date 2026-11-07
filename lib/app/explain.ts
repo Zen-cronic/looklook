@@ -10,9 +10,9 @@ export const RULE_TEXT: Record<RuleId, string> = {
   "overlap-non-returnable": "It overlaps with something you own, and the store may not take it back opened",
   "price-unknown": "No price was shown",
   "over-budget": "It's more than what's left in this month's budget",
-  "no-price-history": "No reliable price history yet",
+  "no-price-history": "Not enough price history to judge the price",
   "above-usual-price": "The price is above its usual low",
-  "replacing-run-out": "It replaces something that runs out soon, at a fair price",
+  "replacing-run-out": "It replaces something of the same type that runs out soon, at a fair price",
   "clear-to-buy": "Nothing similar on your shelf, within budget, fair price",
 };
 

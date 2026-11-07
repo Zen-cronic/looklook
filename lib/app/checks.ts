@@ -12,6 +12,7 @@ import { pickMatch, searchQuery, toProductFacts, type MatchResult } from "../vis
 import { readListing, readScreenshot, type ScreenshotImage } from "../vision/read";
 import type { ScreenshotFields } from "../vision/schema";
 import { remainingBudgets } from "./budgets";
+import { reasonKey } from "./refresh";
 import type { Budgets, CheckCandidate, CheckRecord, ProductCard } from "./types";
 
 /** Everything the check pipeline talks to, so tests can stand in for the model and the catalogue. */
@@ -31,8 +32,6 @@ export interface Reading {
   products: Product[];
 }
 
-/** Bump when the reason prompt changes, so cached wording is not reused. */
-const REASON_VERSION = 2;
 
 export const sha256 = (data: string | Uint8Array) => createHash("sha256").update(data).digest("hex");
 
@@ -157,11 +156,11 @@ export async function verdictFor(
   services: Pick<CheckServices, "anthropic" | "modelReason" | "cache">,
 ) {
   const decision = decide({ product: facts, store, shelf: ctx.shelf, budgets: remainingBudgets(ctx.budgets, ctx.today), priceBand: band, today: ctx.today });
-  const reasonKey = sha256(JSON.stringify({ v: REASON_VERSION, decision, facts: { brand: facts.brand, name: facts.name } }));
-  const cached = services.cache?.get<{ text: string; source: "model" | "template" }>("reason", reasonKey);
+  const key = reasonKey(decision, facts);
+  const cached = services.cache?.get<{ text: string; source: "model" | "template" }>("reason", key);
   if (cached) return { decision, reason: cached };
   const reason = await writeReason(decision, facts, services.modelReason ? { client: services.anthropic } : {});
-  if (reason.source === "model") services.cache?.set("reason", reasonKey, reason);
+  if (reason.source === "model") services.cache?.set("reason", key, reason);
   return { decision, reason };
 }
 

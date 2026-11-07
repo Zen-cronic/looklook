@@ -20,6 +20,11 @@ export function singleFlight<T>(key: string, fn: () => Promise<T>): Promise<T> {
   return p;
 }
 
+/** True when a call with this key is running now (a new call would join it). */
+export function isInflight(key: string): boolean {
+  return inflight.has(key);
+}
+
 export function inflightCount(): number {
   return inflight.size;
 }

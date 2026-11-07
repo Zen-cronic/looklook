@@ -16,6 +16,8 @@ export interface PriceBand {
   usable: boolean;
   /** Last day covered (YYYY-MM-DD). */
   asOf: string;
+  /** Median price of each 7-day stretch, oldest first: enough to draw the trend, not the raw series. */
+  weekly?: number[];
 }
 
 const round2 = (n: number) => Math.round(n * 100) / 100;
@@ -33,5 +35,13 @@ export function priceBand(raw: RawPricePoint[], minDays = 30): PriceBand | undef
     days: c.daily.length,
     usable: c.usable && c.daily.length >= minDays,
     asOf,
+    weekly: weeklyMedians(c.daily),
   };
+}
+
+/** Medians of consecutive 7-day stretches, counted back from the latest day. */
+export function weeklyMedians(daily: number[]): number[] {
+  const out: number[] = [];
+  for (let end = daily.length; end > 0; end -= 7) out.unshift(round2(median(daily.slice(Math.max(0, end - 7), end))));
+  return out;
 }
