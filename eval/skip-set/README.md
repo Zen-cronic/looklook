@@ -23,6 +23,16 @@ The engine reads only the structured fields in these files. No model or network 
 
 ## Changes since the first run
 
-The expectations, the shelf and the price bands are unchanged since they were committed. Engine changes are recorded in `provenance.json` with the score they produced.
+The shelf and the price bands are unchanged since they were committed. The expectations were corrected once, for a store policy we had read from the wrong document (see Corrections). Engine changes are recorded in `provenance.json` with the score they produced.
 
 - Similarity now compares product type (the main active for serums, the shade family for lipstick and blush, the style for headphones, the kind of appliance for kitchen tools, the category itself for products used one at a time), then actives, finish, form and coverage. Neighbouring values (matte and natural, gel and cream cleanser, on-ear and over-ear) get half credit; a detail unknown on either side gets half credit, so knowing only the type can't make a near-duplicate. The flat 0.40 for sharing a category is gone. A purchase now counts as replacing something that runs out only when it is the same product type. Actives are scored as the share of the new item's actives the owned item already has. A first version scored actives by the overlap of the two lists in either direction; it ran once on this set (58 of 65: a cream against an owned gel cream with fewer actives became a near-duplicate) before the one-direction share replaced it. Result: 60 of 65.
+
+## Corrections
+
+**2026-11-07, store return policies.** The policy table said CVS may refuse opened beauty, citing CVS's general returns PDF. CVS's return policy page has a section for beauty ("100% satisfaction guarantee on beauty purchases") that takes beauty back opened or unopened with a receipt or invoice, subject to a third-party return authorization. The table also said Target takes opened electronics back for exchange only; Target's exceptions list puts only music, movies, games, software and airbeds in that group, so opened electronics fall under its general rule (opened items may be denied). The table was fixed first, in its own commit, then the expectations were corrected by the same plain rule they were written with, before any re-run:
+
+- c02, c06, c24, c26 (CVS): still skip, because the shopper owns something that does the same job; `overlap-non-returnable` is dropped and the why no longer says CVS may refuse it.
+- c61 (Target headphones): still skip with the same reasons; the why no longer says exchange only.
+- c08, c44, c52 (CVS buys): the policy played no part, so they are unchanged.
+
+Each corrected case carries `correctedOn`, `correctionNote` (with the policy page) and `expectedBefore`.

@@ -51,3 +51,9 @@ After the commit, a runner reusing the existing scorer runs once. Its output is 
 ## After later changes
 
 The scored run in `results.json` and the top of `RESULTS.md` is the held-out result and is never rewritten. The runner refuses to overwrite it: once `history.json` records the scored run, `npm run eval:holdout -- --what "..."` runs the committed engine on the same cases and expectations, checks that `RESULTS.md` still starts with the scored run's text, rewrites only its "After later changes" section and adds the run to `history.json`. Those runs are on code that these products helped shape, so they are reported as after-change numbers, not held-out ones.
+
+## Corrections
+
+**2026-11-07, CVS beauty returns.** The policy table said CVS may refuse opened beauty, citing CVS's general returns PDF; CVS's return policy page has a beauty section that takes beauty back opened or unopened with a receipt or invoice. The table was fixed first, then one expectation was corrected before any re-run: h09 (NYX lipstick at CVS) stays skip, because Priya owns a red matte lipstick, but `overlap-non-returnable` is dropped from its reasons and its why no longer says CVS may refuse it. The case carries `correctedOn`, `correctionNote` and `expectedBefore`. No other held-out case is at a store whose policy changed.
+
+The scored run is not re-scored: its headline stays as committed in `results.json`. h09 was a near-duplicate skip, which the engine decided on the shelf (rule `owns-similar`), so its verdict and the 28 of 30 are unaffected; only its reason text changed.

@@ -216,6 +216,14 @@
    "expected": {
     "verdict": "skip",
     "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns a red matte lipstick."
+   },
+   "correctedOn": "2026-11-07",
+   "correctionNote": "CVS's return policy page (\"100% satisfaction guarantee on beauty purchases\") takes beauty back opened or unopened with a receipt or invoice; the earlier expectation relied on the general returns PDF. The shopper still owns something that does the same job, so the verdict stays skip; overlap-non-returnable no longer applies and the why no longer says CVS may refuse it. Source: https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases",
+   "expectedBefore": {
+    "reasons": [
      "owns-similar",
      "overlap-non-returnable"
     ],

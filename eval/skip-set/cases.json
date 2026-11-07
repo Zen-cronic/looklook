@@ -44,6 +44,14 @@
    "expected": {
     "verdict": "skip",
     "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an opened vitamin C serum."
+   },
+   "correctedOn": "2026-11-07",
+   "correctionNote": "CVS's return policy page (\"100% satisfaction guarantee on beauty purchases\") takes beauty back opened or unopened with a receipt or invoice; the earlier expectation relied on the general returns PDF. The shopper still owns something that does the same job, so the verdict stays skip; overlap-non-returnable no longer applies and the why no longer says CVS may refuse it. Source: https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases",
+   "expectedBefore": {
+    "reasons": [
      "owns-similar",
      "overlap-non-returnable"
     ],
@@ -147,6 +155,14 @@
    "priceShown": 23.99,
    "expected": {
     "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "In this scenario the hyaluronic acid serum lasts until February."
+   },
+   "correctedOn": "2026-11-07",
+   "correctionNote": "CVS's return policy page (\"100% satisfaction guarantee on beauty purchases\") takes beauty back opened or unopened with a receipt or invoice; the earlier expectation relied on the general returns PDF. The shopper still owns something that does the same job, so the verdict stays skip; overlap-non-returnable no longer applies and the why no longer says CVS may refuse it. Source: https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases",
+   "expectedBefore": {
     "reasons": [
      "owns-similar",
      "overlap-non-returnable"
@@ -582,6 +598,14 @@
    "expected": {
     "verdict": "skip",
     "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns a chemical face sunscreen."
+   },
+   "correctedOn": "2026-11-07",
+   "correctionNote": "CVS's return policy page (\"100% satisfaction guarantee on beauty purchases\") takes beauty back opened or unopened with a receipt or invoice; the earlier expectation relied on the general returns PDF. The shopper still owns something that does the same job, so the verdict stays skip; overlap-non-returnable no longer applies and the why no longer says CVS may refuse it. Source: https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases",
+   "expectedBefore": {
+    "reasons": [
      "owns-similar",
      "overlap-non-returnable"
     ],
@@ -628,6 +652,14 @@
    "priceShown": 39.99,
    "expected": {
     "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns a face sunscreen with a month left."
+   },
+   "correctedOn": "2026-11-07",
+   "correctionNote": "CVS's return policy page (\"100% satisfaction guarantee on beauty purchases\") takes beauty back opened or unopened with a receipt or invoice; the earlier expectation relied on the general returns PDF. The shopper still owns something that does the same job, so the verdict stays skip; overlap-non-returnable no longer applies and the why no longer says CVS may refuse it. Source: https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases",
+   "expectedBefore": {
     "reasons": [
      "owns-similar",
      "overlap-non-returnable"
@@ -1400,6 +1432,15 @@
    "priceShown": 94.95,
    "expected": {
     "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns noise-cancelling headphones; Target may refuse opened electronics."
+   },
+   "correctedOn": "2026-11-07",
+   "correctionNote": "Target's return exceptions list music, movies, games, software and airbeds as exchange-only once opened, not electronics; opened electronics fall under the general rule that opened items may be denied a refund or exchange. Verdict and reasons unchanged; the why no longer says exchange only. Source: https://www.target.com/help/articles/returns-exchanges/returns#Are%20there%20any%20return%20exceptions?",
+   "expectedBefore": {
     "reasons": [
      "owns-similar",
      "overlap-non-returnable"
