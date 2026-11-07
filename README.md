@@ -25,7 +25,7 @@ Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login
 5. **Wait for a lower price.** A wait verdict can start a real Channel3 price alert; a labelled test drop runs a price event through the same handler.
 6. **See the events and the number.** `/events` lists every webhook and whether it verified; `/proof` re-runs the 65-case test.
 
-## Sponsor technology
+## Built with
 
 | Service | What it does here |
 |---|---|
