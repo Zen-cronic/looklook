@@ -16,7 +16,8 @@
     "test:watch": "vitest",
     "replay": "tsx scripts/replay/index.ts",
     "smoke:paypal": "tsx scripts/smoke-paypal.ts",
-    "spike:transaction-search": "tsx scripts/spike-transaction-search.ts"
+    "spike:transaction-search": "tsx scripts/spike-transaction-search.ts",
+    "smoke:channel3": "tsx scripts/smoke-channel3.ts"
   },
   "dependencies": {
     "next": "16.4.5",
