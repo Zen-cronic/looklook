@@ -1,0 +1,227 @@
+{
+ "shopper": "Priya (fictional)",
+ "note": "A second fictional shopper's shelf and monthly budgets, made up for the held-out set. Nothing in it is anyone's real shelf. The products on it are real; whether she owns them, when she opened them and when they run out are invented. Run-out dates are her own estimates as of 2026-11-07.",
+ "budgets": {
+  "currency": "USD",
+  "period": "2026-11",
+  "remaining": {
+   "skincare": 55,
+   "makeup": 50,
+   "haircare": 35,
+   "kitchen": 120,
+   "electronics": 150
+  }
+ },
+ "items": [
+  {
+   "id": "sh-retinol",
+   "brand": "The Ordinary",
+   "name": "Retinol 0.5% in Squalane",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "retinol",
+    "actives": [
+     "retinol",
+     "squalane"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2027-02-15",
+   "size": "30ml"
+  },
+  {
+   "id": "sh-azelaic",
+   "brand": "The Ordinary",
+   "name": "Azelaic Acid Suspension 10%",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "azelaic-acid",
+    "actives": [
+     "azelaic-acid"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2026-11-12",
+   "size": "30ml"
+  },
+  {
+   "id": "sh-lotion",
+   "brand": "Vanicream",
+   "name": "Daily Facial Moisturizer",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "lotion",
+    "actives": [
+     "ceramides",
+     "hyaluronic-acid",
+     "squalane"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2027-01-20",
+   "size": "3 fl oz"
+  },
+  {
+   "id": "sh-richcream",
+   "brand": "First Aid Beauty",
+   "name": "Ultra Repair Cream",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "cream",
+    "actives": [
+     "colloidal-oatmeal",
+     "shea-butter"
+    ]
+   },
+   "opened": false,
+   "runOutDate": null,
+   "size": "2 oz"
+  },
+  {
+   "id": "sh-sunscreen",
+   "brand": "Beauty of Joseon",
+   "name": "Relief Sun: Rice + Probiotics SPF50+",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "dewy"
+   },
+   "opened": true,
+   "runOutDate": "2027-01-05",
+   "size": "50ml"
+  },
+  {
+   "id": "sh-cleanser",
+   "brand": "La Roche-Posay",
+   "name": "Toleriane Hydrating Gentle Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "cream",
+    "actives": [
+     "ceramides",
+     "niacinamide"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2026-11-13",
+   "size": "13.52 fl oz"
+  },
+  {
+   "id": "sh-foundation",
+   "brand": "Estée Lauder",
+   "name": "Double Wear Stay-in-Place Foundation",
+   "category": "foundation",
+   "attributes": {
+    "finish": "matte",
+    "coverage": "medium",
+    "form": "liquid"
+   },
+   "opened": true,
+   "runOutDate": "2027-04-01"
+  },
+  {
+   "id": "sh-concealer",
+   "brand": "Tarte",
+   "name": "Shape Tape Full Coverage Concealer",
+   "category": "concealer",
+   "attributes": {
+    "finish": "matte",
+    "coverage": "full"
+   },
+   "opened": true,
+   "runOutDate": "2027-03-01"
+  },
+  {
+   "id": "sh-lipstick",
+   "brand": "Charlotte Tilbury",
+   "name": "Matte Revolution Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "red",
+    "finish": "matte"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-lipbalm",
+   "brand": "Summer Fridays",
+   "name": "Lip Butter Balm",
+   "category": "lip-balm",
+   "attributes": {
+    "tint": "tinted"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-setting",
+   "brand": "Milani",
+   "name": "Make It Dewy Setting Spray",
+   "category": "setting-spray",
+   "attributes": {
+    "finish": "dewy"
+   },
+   "opened": true,
+   "runOutDate": "2027-02-10"
+  },
+  {
+   "id": "sh-shampoo",
+   "brand": "Moroccanoil",
+   "name": "Hydrating Shampoo",
+   "category": "shampoo",
+   "attributes": {
+    "purpose": "hydrating"
+   },
+   "opened": true,
+   "runOutDate": "2026-11-14"
+  },
+  {
+   "id": "sh-hairoil",
+   "brand": "OUAI",
+   "name": "Hair Oil",
+   "category": "hair-oil",
+   "attributes": {
+    "purpose": "smoothing"
+   },
+   "opened": true,
+   "runOutDate": "2027-03-01"
+  },
+  {
+   "id": "sh-earbuds",
+   "brand": "Apple",
+   "name": "AirPods Pro 2",
+   "category": "headphones",
+   "attributes": {
+    "style": "earbuds",
+    "noiseCancelling": "yes"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-airfryer",
+   "brand": "Instant Pot",
+   "name": "Vortex Plus 6-Quart Air Fryer",
+   "category": "air-fryer",
+   "attributes": {
+    "type": "basket"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-coffee",
+   "brand": "OXO",
+   "name": "Brew 8-Cup Coffee Maker",
+   "category": "coffee-maker",
+   "attributes": {
+    "type": "drip"
+   },
+   "opened": true,
+   "runOutDate": null
+  }
+ ]
+}

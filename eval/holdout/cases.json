@@ -1,0 +1,686 @@
+{
+ "asOf": "2026-11-07",
+ "shopper": "Priya (fictional)",
+ "note": "Held-out set. Real products from the catalogue, none of them in eval/skip-set. The shelf, budgets, stores and expected verdicts are fictional and were written by hand and committed before the verdict engine was run on them. priceShown is the latest catalogue price unless the case says otherwise.",
+ "cases": [
+  {
+   "id": "h01",
+   "catalogId": "rBErrT8",
+   "brand": "MD Solar Sciences",
+   "name": "Evening Retinol Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "retinol",
+    "actives": [
+     "retinol",
+     "niacinamide",
+     "vitamin-c",
+     "peptides"
+    ]
+   },
+   "store": "dermstore.com",
+   "source": "creator-post",
+   "priceShown": 58,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an opened retinol serum that lasts until February; Dermstore's opened-return policy isn't on file."
+   }
+  },
+  {
+   "id": "h02",
+   "catalogId": "U1pIbeR",
+   "brand": "Pacifica",
+   "name": "Vegan Ceramide Barrier Face Lotion",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "lotion",
+    "actives": [
+     "ceramides"
+    ]
+   },
+   "store": "pacificabeauty.com",
+   "source": "creator-post",
+   "priceShown": 18,
+   "size": "1.7 fl oz",
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an opened ceramide face lotion that lasts until January."
+   }
+  },
+  {
+   "id": "h03",
+   "catalogId": "9Jak2bc",
+   "brand": "L'Occitane",
+   "name": "Shea Ultra Rich Comforting Face Cream",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "cream",
+    "actives": [
+     "shea-butter"
+    ]
+   },
+   "store": "skincareessentials.com",
+   "source": "creator-post",
+   "priceShown": 44,
+   "size": "50ml",
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-unopened",
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "An unopened rich cream is already waiting on the shelf."
+   }
+  },
+  {
+   "id": "h04",
+   "catalogId": "iCFJ6NM",
+   "brand": "TIRTIR",
+   "name": "Hydro UV Shield Sunscreen SPF 50+",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "spfBand": "50+"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 18,
+   "size": "1.69 fl oz",
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an opened SPF 50+ chemical face sunscreen with two months left; Ulta taking it back doesn't make it needed."
+   }
+  },
+  {
+   "id": "h05",
+   "catalogId": "Ny0yLld",
+   "brand": "Innisfree",
+   "name": "Daily UV Defense Sunscreen",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "sephora",
+   "source": "creator-post",
+   "priceShown": 10,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "A sheer finish instead of dewy, but the same job: owns an opened SPF 50+ face sunscreen until January."
+   }
+  },
+  {
+   "id": "h06",
+   "catalogId": "4y6HZVv",
+   "brand": "Cetaphil",
+   "name": "Hydrating Gentle Skin Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "cream"
+   },
+   "store": "target",
+   "source": "creator-post",
+   "priceShown": 16.29,
+   "size": "16 fl oz",
+   "shelfPatch": [
+    {
+     "id": "sh-cleanser",
+     "runOutDate": "2027-03-01"
+    }
+   ],
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "In this scenario the creamy cleanser on the shelf lasts until March."
+   }
+  },
+  {
+   "id": "h07",
+   "catalogId": "uQF75xi",
+   "brand": "Fenty Beauty",
+   "name": "Soft'Lit Naturally Luminous Longwear Foundation",
+   "category": "foundation",
+   "attributes": {
+    "finish": "radiant",
+    "coverage": "medium",
+    "form": "liquid"
+   },
+   "store": "spacenk.com",
+   "source": "creator-post",
+   "priceShown": 44,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Luminous instead of matte, but the same job: owns an opened liquid foundation until April; Space NK's opened-return policy isn't on file."
+   }
+  },
+  {
+   "id": "h08",
+   "catalogId": "613cZTF",
+   "brand": "NARS",
+   "name": "Soft Matte Complete Concealer",
+   "category": "concealer",
+   "attributes": {
+    "finish": "matte",
+    "coverage": "full"
+   },
+   "store": "kohls",
+   "source": "creator-post",
+   "priceShown": 36,
+   "size": "6.2g",
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an opened full-coverage matte concealer until March."
+   }
+  },
+  {
+   "id": "h09",
+   "catalogId": "0nN6BUy",
+   "brand": "NYX Professional Makeup",
+   "name": "Fat Matte Smooth Color Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "red",
+    "finish": "matte"
+   },
+   "store": "cvs",
+   "source": "creator-post",
+   "priceShown": 11.99,
+   "variant": "a red shade",
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a red matte lipstick; CVS may refuse opened beauty."
+   }
+  },
+  {
+   "id": "h10",
+   "catalogId": "bAHecmr",
+   "brand": "Anastasia Beverly Hills",
+   "name": "Impeccable 24hr Blurring Matte Setting Spray",
+   "category": "setting-spray",
+   "attributes": {
+    "finish": "matte"
+   },
+   "store": "kohls",
+   "source": "creator-post",
+   "priceShown": 18,
+   "size": "100ml",
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Matte instead of dewy, but the same job: owns an opened setting spray until February."
+   }
+  },
+  {
+   "id": "h11",
+   "catalogId": "jDsy4ho",
+   "brand": "JBL",
+   "name": "Tune Flex 2 True Wireless Noise Cancelling Earbuds",
+   "category": "headphones",
+   "attributes": {
+    "style": "earbuds",
+    "noiseCancelling": "yes"
+   },
+   "store": "nordstrom.com",
+   "source": "creator-post",
+   "priceShown": 59.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns noise-cancelling earbuds."
+   }
+  },
+  {
+   "id": "h12",
+   "catalogId": "4Hy4CyF",
+   "brand": "GE",
+   "name": "12 Cup Drip Coffee Maker with Adjustable Keep Warm Plate",
+   "category": "coffee-maker",
+   "attributes": {
+    "type": "drip"
+   },
+   "store": "target",
+   "source": "store-page",
+   "priceShown": 53.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a drip coffee maker; Target doesn't take opened general items back."
+   }
+  },
+  {
+   "id": "h13",
+   "catalogId": "PZgD6AP",
+   "brand": "Chefman",
+   "name": "TurboFry Touch 6-Quart Air Fryer",
+   "category": "air-fryer",
+   "attributes": {
+    "type": "basket"
+   },
+   "store": "samsclub.com",
+   "source": "store-page",
+   "priceShown": 99.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a 6-quart basket air fryer."
+   }
+  },
+  {
+   "id": "h14",
+   "catalogId": "L3ZStdC",
+   "brand": "The INKEY List",
+   "name": "SuperSolutions 10% Azelaic Acid Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "azelaic-acid",
+    "actives": [
+     "azelaic-acid",
+     "allantoin"
+    ]
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 19.5,
+   "size": "30ml",
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The azelaic acid treatment runs out in five days; $19.50 is its usual price and fits the skincare budget."
+   }
+  },
+  {
+   "id": "h15",
+   "catalogId": "u9l1ctW",
+   "brand": "La Roche-Posay",
+   "name": "Toleriane Hydrating Gentle Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "cream",
+    "actives": [
+     "ceramides",
+     "niacinamide"
+    ]
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 8.49,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The same cleanser runs out in six days; $8.49 is its usual price."
+   }
+  },
+  {
+   "id": "h16",
+   "catalogId": "JjSOnqD",
+   "brand": "Divi",
+   "name": "Hydrating Shampoo",
+   "category": "shampoo",
+   "attributes": {
+    "purpose": "hydrating"
+   },
+   "store": "diviofficial.com",
+   "source": "creator-post",
+   "priceShown": 28.8,
+   "size": "12 fl oz",
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The hydrating shampoo runs out in a week; $28.80 is its 90-day low and fits the haircare budget."
+   }
+  },
+  {
+   "id": "h17",
+   "catalogId": "k0P0t4e",
+   "brand": "Timeless Skin Care",
+   "name": "10% Vitamin C + E Ferulic Acid Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c",
+     "vitamin-e",
+     "ferulic-acid"
+    ]
+   },
+   "store": "macys.com",
+   "source": "creator-post",
+   "priceShown": 23.95,
+   "size": "1 fl oz",
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "Owns retinol and azelaic acid serums but no vitamin C; $23.95 is its usual price and fits the budget."
+   }
+  },
+  {
+   "id": "h18",
+   "catalogId": "cG7CI8j",
+   "brand": "Lather",
+   "name": "Daily Defense Mineral SPF 50 Body Sunscreen",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "mineral",
+    "area": "body",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "lather.com",
+   "source": "creator-post",
+   "priceShown": 26,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "Owns only a face sunscreen; a body sunscreen does a different job, at its usual price."
+   }
+  },
+  {
+   "id": "h19",
+   "catalogId": "dBBAHKz",
+   "brand": "M·A·C",
+   "name": "Lustreglass Sheer-Shine Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "berry",
+    "finish": "sheer"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 25,
+   "variant": "a berry shade",
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "Owns only a red matte lipstick; a sheer berry is a different shade, at its usual price."
+   }
+  },
+  {
+   "id": "h20",
+   "catalogId": "Jp7zrDR",
+   "brand": "Lush",
+   "name": "Glory Conditioner",
+   "category": "conditioner",
+   "attributes": {
+    "purpose": "hydrating"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 14,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "Owns no conditioner; $14 is its usual price and fits the haircare budget."
+   }
+  },
+  {
+   "id": "h21",
+   "catalogId": "2bBSI3U",
+   "brand": "Edifier",
+   "name": "W820NB Plus Gen 2 Wireless Over-ear Noise Cancelling Headphones",
+   "category": "headphones",
+   "attributes": {
+    "style": "over-ear",
+    "noiseCancelling": "yes"
+   },
+   "store": "edifier-online.com",
+   "source": "store-page",
+   "priceShown": 59.99,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "Owns earbuds, not over-ear headphones; $59.99 is its 90-day low and fits the electronics budget."
+   }
+  },
+  {
+   "id": "h22",
+   "catalogId": "nQpEG4q",
+   "brand": "SkinCeuticals",
+   "name": "C E Ferulic",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c",
+     "vitamin-e",
+     "ferulic-acid"
+    ]
+   },
+   "store": "stylevana.com",
+   "source": "store-page",
+   "priceShown": 147.96,
+   "size": "30ml",
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "over-budget"
+    ],
+    "why": "No vitamin C serum on the shelf, but $147.96 is far over the $55 left for skincare this month."
+   }
+  },
+  {
+   "id": "h23",
+   "catalogId": "NgxbsYr",
+   "brand": "Oribe",
+   "name": "Supershine Hydrating Shampoo",
+   "category": "shampoo",
+   "attributes": {
+    "purpose": "hydrating"
+   },
+   "store": "modaoperandi.com",
+   "source": "creator-post",
+   "priceShown": 49,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "over-budget"
+    ],
+    "why": "The shampoo does run out in a week, but $49 is over the $35 left for haircare."
+   }
+  },
+  {
+   "id": "h24",
+   "catalogId": "0qzzlEm",
+   "brand": "OUAI",
+   "name": "Hair Oil",
+   "category": "hair-oil",
+   "attributes": {
+    "purpose": "smoothing"
+   },
+   "store": "kohls",
+   "source": "creator-post",
+   "priceShown": 18,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "not-needed-yet"
+    ],
+    "why": "The same hair oil is open on the shelf and lasts until March."
+   }
+  },
+  {
+   "id": "h25",
+   "catalogId": "hsubN9o",
+   "brand": "Bose",
+   "name": "QuietComfort 45 SE Wireless Over-Ear Noise Cancelling Headphones",
+   "category": "headphones",
+   "attributes": {
+    "style": "over-ear",
+    "noiseCancelling": "yes"
+   },
+   "store": "adorama.com",
+   "source": "store-page",
+   "priceShown": 169.97,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "over-budget"
+    ],
+    "why": "Over-ear headphones would be new, but $169.97 is over the $150 left for electronics."
+   }
+  },
+  {
+   "id": "h26",
+   "catalogId": "fDvN4sA",
+   "brand": "Nutribullet",
+   "name": "nutribullet Personal Blender",
+   "category": "blender",
+   "attributes": {
+    "type": "personal"
+   },
+   "store": "williams-sonoma.com",
+   "source": "store-page",
+   "priceShown": 69.95,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "above-usual-price"
+    ],
+    "why": "No blender on the shelf, but $69.95 is well above its usual $55.49."
+   }
+  },
+  {
+   "id": "h27",
+   "catalogId": "J1qeALo",
+   "brand": "Fellow",
+   "name": "Corvo EKG Pro Electric Kettle",
+   "category": "kettle",
+   "attributes": {
+    "type": "electric"
+   },
+   "store": "bestbuy.com",
+   "source": "store-page",
+   "priceShown": 136.99,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "over-budget"
+    ],
+    "why": "No kettle on the shelf, but $136.99 is over the $120 left for kitchen."
+   }
+  },
+  {
+   "id": "h28",
+   "catalogId": "5rlELpC",
+   "brand": "Rare Beauty",
+   "name": "Soft Pinch Tinted Lip Oil",
+   "category": "lip-oil",
+   "attributes": {
+    "tint": "tinted"
+   },
+   "store": "ecosmetics.com",
+   "source": "creator-post",
+   "priceShown": 24,
+   "identityConfidence": 0.4,
+   "readerNote": "The post shows a tinted lip oil wand with no brand or name visible.",
+   "expected": {
+    "verdict": "ask",
+    "reasons": [
+     "identity-unconfirmed"
+    ],
+    "why": "The post doesn't show which lip oil this is."
+   }
+  },
+  {
+   "id": "h29",
+   "catalogId": "PWckQwt",
+   "brand": "OUAI",
+   "name": "Thick Hair Conditioner",
+   "category": "conditioner",
+   "attributes": {
+    "purpose": "hydrating"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": null,
+   "readerNote": "The post names the product but shows no price.",
+   "expected": {
+    "verdict": "ask",
+    "reasons": [
+     "price-unknown"
+    ],
+    "why": "The post shows no price."
+   }
+  },
+  {
+   "id": "h30",
+   "catalogId": "xz2biZs",
+   "brand": "Edifier",
+   "name": "ES850NB Wireless Noise-Canceling Over-Ear Headphones",
+   "category": "headphones",
+   "attributes": {
+    "style": "over-ear",
+    "noiseCancelling": "yes"
+   },
+   "store": "bestbuy.com",
+   "source": "creator-post",
+   "priceShown": 119.99,
+   "identityConfidence": 0.45,
+   "readerNote": "The post shows over-ear headphones with no legible logo or model.",
+   "expected": {
+    "verdict": "ask",
+    "reasons": [
+     "identity-unconfirmed"
+    ],
+    "why": "The post doesn't show which headphones these are."
+   }
+  }
+ ]
+}
