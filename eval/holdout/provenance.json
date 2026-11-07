@@ -1,0 +1,7 @@
+{
+  "note": "The commit that fixed the expectations before the engine saw this set. The scored run and its commit come after it.",
+  "expectations": {
+    "commit": "effe79b2b93f7296e9e3f758decd09c58a1ba81a",
+    "what": "30 cases, the second shopper's shelf and budgets, derived price bands and expected verdicts"
+  }
+}

@@ -1,0 +1,390 @@
+{
+  "asOf": "2026-11-07",
+  "ranAt": "2026-11-07T05:19:52.655Z",
+  "commits": {
+    "engine": "4fbf4208732ffc08f4f6351ec8a1b1763b9e06e7",
+    "expectations": "effe79b2b93f7296e9e3f758decd09c58a1ba81a",
+    "runOn": "effe79b2b93f7296e9e3f758decd09c58a1ba81a",
+    "engineChangedSinceExpectations": [],
+    "engineDirty": false
+  },
+  "runnerFixes": [
+    "The first attempt stopped before deciding any case: the shelf check rejected the category `lip-balm`, because the app knows 16 categories.",
+    "The runner now leaves out shelf items in categories the app can't hold (sh-lipbalm, lip-balm; sh-hairoil, hair-oil) and passes cases in such categories with no category, as the app does for a catalogue category it doesn't map (h20, conditioner; h24, hair-oil; h27, kettle; h29, conditioner); the engine's first rule then asks.",
+    "Expectations and engine are unchanged. Both baselines use the same inputs as the engine; on the shelf and categories as written, the same-category baseline would score 18 of 30."
+  ],
+  "headline": {
+    "skipCorrect": 28,
+    "n": 30,
+    "precision": 0.9230769230769231,
+    "recall": 0.9230769230769231
+  },
+  "counts": {
+    "tp": 12,
+    "fp": 1,
+    "fn": 1,
+    "tn": 16,
+    "nearDuplicatesCaught": 9,
+    "nonReturnableCaught": 2,
+    "unknownPolicyCaught": 6
+  },
+  "split": {
+    "onEvidence": 10,
+    "onDefault": 2,
+    "dollarsAvoided": 470.25,
+    "dollarsOnEvidence": 312.26,
+    "dollarsOnDefault": 157.99
+  },
+  "baselines": [
+    {
+      "id": "always-skip",
+      "label": "Always say skip",
+      "skipCorrect": 13,
+      "skipsMade": 30,
+      "skipsRight": 13
+    },
+    {
+      "id": "same-category",
+      "label": "Skip whenever you own anything in the same category",
+      "skipCorrect": 19,
+      "skipsMade": 24,
+      "skipsRight": 13
+    }
+  ],
+  "verdictAgreement": 0.7666666666666667,
+  "reasonAgreement": 0.9565217391304348,
+  "cases": [
+    {
+      "id": "h01",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-retinol",
+      "score": 0.625,
+      "policyUrl": null
+    },
+    {
+      "id": "h02",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-lotion",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "h03",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-richcream",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "h04",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-sunscreen",
+      "score": 0.96,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "h05",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-sunscreen",
+      "score": 0.96,
+      "policyUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq"
+    },
+    {
+      "id": "h06",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-cleanser",
+      "score": 0.9,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "h07",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-foundation",
+      "score": 0.8,
+      "policyUrl": null
+    },
+    {
+      "id": "h08",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-concealer",
+      "score": 0.95,
+      "policyUrl": "https://www.sephora.com/beauty/sephora-at-kohls-faq"
+    },
+    {
+      "id": "h09",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-lipstick",
+      "score": 0.9,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "h10",
+      "expected": "skip",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [],
+      "shelfItem": "sh-setting",
+      "score": 0.6,
+      "policyUrl": "https://www.sephora.com/beauty/sephora-at-kohls-faq"
+    },
+    {
+      "id": "h11",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-earbuds",
+      "score": 0.9,
+      "policyUrl": null
+    },
+    {
+      "id": "h12",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-coffee",
+      "score": 0.75,
+      "policyUrl": "https://www.target.com/help/article/000061980"
+    },
+    {
+      "id": "h13",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-airfryer",
+      "score": 0.75,
+      "policyUrl": null
+    },
+    {
+      "id": "h14",
+      "expected": "buy",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "h15",
+      "expected": "buy",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "h16",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h17",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h18",
+      "expected": "buy",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-sunscreen",
+      "score": 0.64,
+      "policyUrl": null
+    },
+    {
+      "id": "h19",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [],
+      "shelfItem": "sh-lipstick",
+      "score": 0.5,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "h20",
+      "expected": "buy",
+      "verdict": "ask",
+      "rule": "identity-unconfirmed",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h21",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-earbuds",
+      "score": 0.4,
+      "policyUrl": null
+    },
+    {
+      "id": "h22",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "over-budget",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h23",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "over-budget",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h24",
+      "expected": "wait",
+      "verdict": "ask",
+      "rule": "identity-unconfirmed",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h25",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "over-budget",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-earbuds",
+      "score": 0.4,
+      "policyUrl": null
+    },
+    {
+      "id": "h26",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h27",
+      "expected": "wait",
+      "verdict": "ask",
+      "rule": "identity-unconfirmed",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h28",
+      "expected": "ask",
+      "verdict": "ask",
+      "rule": "identity-unconfirmed",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h29",
+      "expected": "ask",
+      "verdict": "ask",
+      "rule": "identity-unconfirmed",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "h30",
+      "expected": "ask",
+      "verdict": "ask",
+      "rule": "identity-unconfirmed",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    }
+  ]
+}

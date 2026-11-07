@@ -20,6 +20,7 @@
     "smoke:channel3": "tsx scripts/smoke-channel3.ts",
     "eval:skip": "tsx scripts/skip-set/run.ts",
     "eval:skip:bands": "tsx scripts/skip-set/price-bands.ts",
+    "eval:holdout": "tsx eval/holdout/run.ts",
     "smoke:vision": "tsx scripts/smoke-vision.ts"
   },
   "dependencies": {
