@@ -43,7 +43,8 @@ Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login
 | Channel3 price history | 90-day history, filtered to one size and steady points, gives the usual price, the low, the price to wait for and the weekly trend line. |
 | Channel3 product subscriptions + webhooks | A wait verdict starts a price-drop subscription; `/api/webhooks/channel3` checks the signature, handles a repeated event once, and turns a drop to the target into an approval card. |
 | Channel3 buy links | The product link on a verdict, with the commission notice next to it. |
-| Claude (`claude-sonnet-5-5`) | Reads a screenshot or a listing into structured fields (strict JSON schema), and words the one-line reason after the verdict is decided. |
+| AG Studio (custom widgets, theme, agent framework) | Hosts `/studio`, the Decisions workspace: our verdict widget pays a due rebuy on the saved method from inside it and updates the shelf grid in place, and our agent asks Studio's lead agent to build the table of what each wait is waiting for. |
+| Claude (`claude-sonnet-5-5`) | Reads a screenshot or a listing into structured fields (strict JSON schema), words the one-line reason after the verdict is decided, and runs the Decisions workspace's agents through our `/api/llm`. |
 | Render | One web service runs the app, the API and both webhook endpoints (`render.yaml`). |
 
 ## How a verdict is decided

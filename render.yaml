@@ -25,8 +25,11 @@ services:
       # Signing secret (whsec_...) of https://<service>.onrender.com/api/webhooks/channel3 in Channel3
       - key: CHANNEL3_WEBHOOK_SECRET
         sync: false
-      # Screenshot reading and reason wording
+      # Screenshot reading, reason wording and the Decisions workspace's agents
       - key: ANTHROPIC_API_KEY
+        sync: false
+      # AG Studio licence for /studio (needed at build time)
+      - key: NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY
         sync: false
       # Allows the labelled "make the next rebuy decline" sandbox test
       - key: DEMO_NEGATIVE_TESTING
