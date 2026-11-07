@@ -1,0 +1,267 @@
+{
+ "shopper": "Sam (fictional)",
+ "note": "A fictional shopper's shelf and monthly budgets, made up for this test set. Run-out dates are the shopper's own estimates as of 2026-11-07.",
+ "budgets": {
+  "currency": "USD",
+  "period": "2026-11",
+  "remaining": {
+   "skincare": 75,
+   "makeup": 45,
+   "haircare": 40,
+   "kitchen": 150,
+   "electronics": 200
+  }
+ },
+ "items": [
+  {
+   "id": "sh-niacinamide",
+   "brand": "The Ordinary",
+   "name": "Niacinamide 10% + Zinc 1%",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "niacinamide",
+    "actives": [
+     "niacinamide",
+     "zinc"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2026-12-20",
+   "size": "30ml"
+  },
+  {
+   "id": "sh-vitc",
+   "brand": "TruSkin",
+   "name": "Vitamin C Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c",
+     "hyaluronic-acid",
+     "vitamin-e"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2027-01-15"
+  },
+  {
+   "id": "sh-ha",
+   "brand": "The Ordinary",
+   "name": "Hyaluronic Acid 2% + B5",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "hyaluronic-acid",
+    "actives": [
+     "hyaluronic-acid",
+     "panthenol"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2026-11-14"
+  },
+  {
+   "id": "sh-cream",
+   "brand": "CeraVe",
+   "name": "Moisturizing Cream",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "cream",
+    "actives": [
+     "ceramides",
+     "hyaluronic-acid"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2026-11-15",
+   "size": "16 oz"
+  },
+  {
+   "id": "sh-gel",
+   "brand": "Neutrogena",
+   "name": "Hydro Boost Gel Cream",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "gel-cream",
+    "actives": [
+     "hyaluronic-acid"
+    ]
+   },
+   "opened": false,
+   "runOutDate": null,
+   "size": "1.7 fl oz"
+  },
+  {
+   "id": "sh-lrp-milk",
+   "brand": "La Roche-Posay",
+   "name": "Anthelios Melt-in Milk Sunscreen SPF 60",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face-body",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "opened": true,
+   "runOutDate": "2027-01-10"
+  },
+  {
+   "id": "sh-unseen",
+   "brand": "Supergoop!",
+   "name": "Unseen Sunscreen SPF 40",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "spfBand": "30-49",
+    "finish": "sheer"
+   },
+   "opened": true,
+   "runOutDate": "2026-12-05"
+  },
+  {
+   "id": "sh-cleanser",
+   "brand": "CeraVe",
+   "name": "Hydrating Facial Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "cream",
+    "actives": [
+     "ceramides",
+     "hyaluronic-acid"
+    ]
+   },
+   "opened": true,
+   "runOutDate": "2026-11-09"
+  },
+  {
+   "id": "sh-foundation",
+   "brand": "Maybelline",
+   "name": "Fit Me Matte + Poreless Foundation",
+   "category": "foundation",
+   "attributes": {
+    "finish": "matte",
+    "coverage": "medium",
+    "form": "liquid"
+   },
+   "opened": true,
+   "runOutDate": "2027-02-01"
+  },
+  {
+   "id": "sh-concealer",
+   "brand": "NARS",
+   "name": "Radiant Creamy Concealer",
+   "category": "concealer",
+   "attributes": {
+    "finish": "radiant",
+    "coverage": "medium"
+   },
+   "opened": true,
+   "runOutDate": "2027-03-01"
+  },
+  {
+   "id": "sh-lipstick",
+   "brand": "M·A·C",
+   "name": "Matte Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "nude",
+    "finish": "matte"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-lipoil",
+   "brand": "Dior",
+   "name": "Addict Lip Glow Oil",
+   "category": "lip-oil",
+   "attributes": {
+    "tint": "tinted",
+    "shadeFamily": "pink"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-blush",
+   "brand": "Rare Beauty",
+   "name": "Soft Pinch Liquid Blush",
+   "category": "blush",
+   "attributes": {
+    "shadeFamily": "pink",
+    "form": "cream"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-setting",
+   "brand": "Urban Decay",
+   "name": "All Nighter Setting Spray",
+   "category": "setting-spray",
+   "attributes": {
+    "finish": "natural"
+   },
+   "opened": true,
+   "runOutDate": "2027-01-20"
+  },
+  {
+   "id": "sh-mascara",
+   "brand": "Maybelline",
+   "name": "Lash Sensational Washable Mascara",
+   "category": "mascara",
+   "attributes": {
+    "effect": "volumizing",
+    "formula": "washable"
+   },
+   "opened": true,
+   "runOutDate": "2026-11-20"
+  },
+  {
+   "id": "sh-shampoo",
+   "brand": "Olaplex",
+   "name": "No.4 Bond Maintenance Shampoo",
+   "category": "shampoo",
+   "attributes": {
+    "purpose": "bond-repair"
+   },
+   "opened": true,
+   "runOutDate": "2026-12-15"
+  },
+  {
+   "id": "sh-headphones",
+   "brand": "Sony",
+   "name": "WH-1000XM5",
+   "category": "headphones",
+   "attributes": {
+    "style": "over-ear",
+    "noiseCancelling": "yes"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-blender",
+   "brand": "Ninja",
+   "name": "Professional Blender 1000",
+   "category": "blender",
+   "attributes": {
+    "type": "full-size"
+   },
+   "opened": true,
+   "runOutDate": null
+  },
+  {
+   "id": "sh-coffee",
+   "brand": "Keurig",
+   "name": "K-Mini",
+   "category": "coffee-maker",
+   "attributes": {
+    "type": "pod"
+   },
+   "opened": true,
+   "runOutDate": null
+  }
+ ]
+}

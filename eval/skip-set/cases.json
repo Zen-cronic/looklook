@@ -1,0 +1,1501 @@
+{
+ "asOf": "2026-11-07",
+ "shopper": "Sam (fictional)",
+ "note": "Real products from the catalogue. The shelf, budgets, stores and expected verdicts are fictional and were written by hand before the verdict engine was run on them. priceShown is the latest catalogue price unless the case says otherwise.",
+ "cases": [
+  {
+   "id": "c01",
+   "catalogId": "djI4DxL",
+   "brand": "FRÉ Skincare",
+   "name": "Vitamin C Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c"
+    ]
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 51.2,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an opened vitamin C serum with two months left."
+   }
+  },
+  {
+   "id": "c02",
+   "catalogId": "k3EphtE",
+   "brand": "Cetaphil",
+   "name": "Vitamin C Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c"
+    ]
+   },
+   "store": "cvs",
+   "source": "creator-post",
+   "priceShown": 25.49,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an opened vitamin C serum; CVS may refuse opened returns."
+   }
+  },
+  {
+   "id": "c03",
+   "catalogId": "YjIg3Ci",
+   "brand": "CeraVe",
+   "name": "Skin Renewing Vitamin C Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c",
+     "hyaluronic-acid",
+     "ceramides"
+    ]
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 28.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an opened vitamin C serum."
+   }
+  },
+  {
+   "id": "c04",
+   "catalogId": "q1vExGc",
+   "brand": "Vichy",
+   "name": "LiftActiv 16% Pure Vitamin C Brightening Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c",
+     "vitamin-e"
+    ]
+   },
+   "store": "walgreens",
+   "source": "creator-post",
+   "priceShown": 99.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an opened vitamin C serum; Walgreens takes opened cosmetics only at the manager's discretion."
+   }
+  },
+  {
+   "id": "c05",
+   "catalogId": "nwpulPu",
+   "brand": "The INKEY List",
+   "name": "Hyaluronic Acid Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "hyaluronic-acid",
+    "actives": [
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "kohls",
+   "source": "creator-post",
+   "priceShown": 10,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The hyaluronic acid serum runs out in a week; $10 is within a dollar of its low."
+   }
+  },
+  {
+   "id": "c06",
+   "catalogId": "BzQAfep",
+   "brand": "CeraVe",
+   "name": "Hydrating Hyaluronic Acid Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "hyaluronic-acid",
+    "actives": [
+     "hyaluronic-acid",
+     "ceramides"
+    ]
+   },
+   "store": "cvs",
+   "source": "creator-post",
+   "shelfPatch": [
+    {
+     "id": "sh-ha",
+     "runOutDate": "2027-02-01"
+    }
+   ],
+   "priceShown": 23.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "In this scenario the hyaluronic acid serum lasts until February; CVS may refuse opened returns."
+   }
+  },
+  {
+   "id": "c07",
+   "catalogId": "eOvY3Zx",
+   "brand": "The INKEY List",
+   "name": "Starter Retinol Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "retinol",
+    "actives": [
+     "retinol",
+     "squalane"
+    ]
+   },
+   "store": "sephora",
+   "source": "creator-post",
+   "priceShown": 13,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "New active for this shelf, $13, within budget."
+   }
+  },
+  {
+   "id": "c08",
+   "catalogId": "odLEuQy",
+   "brand": "CeraVe",
+   "name": "Skin Renewing Retinol Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "retinol",
+    "actives": [
+     "retinol",
+     "ceramides",
+     "niacinamide"
+    ]
+   },
+   "store": "cvs",
+   "source": "creator-post",
+   "priceShown": 12.99,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "New active for this shelf, $12.99, flat price, within budget."
+   }
+  },
+  {
+   "id": "c09",
+   "catalogId": "TG0hNoU",
+   "brand": "Dermalogica",
+   "name": "Dynamic Skin Retinol Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "retinol",
+    "actives": [
+     "retinol"
+    ]
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 99,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "over-budget"
+    ],
+    "why": "$99 is over the $75 left for skincare."
+   }
+  },
+  {
+   "id": "c10",
+   "catalogId": "dIilnfU",
+   "brand": "The Ordinary",
+   "name": "Niacinamide Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "niacinamide",
+    "actives": [
+     "niacinamide",
+     "zinc"
+    ]
+   },
+   "store": "kohls",
+   "source": "creator-post",
+   "size": "60ml",
+   "priceShown": 6,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "not-needed-yet"
+    ],
+    "why": "Same niacinamide serum as the opened one, which lasts until 20 December."
+   }
+  },
+  {
+   "id": "c11",
+   "catalogId": "Av3BX6v",
+   "brand": "The Ordinary",
+   "name": "Multi-Peptide + Copper Peptides 1% Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "peptides",
+    "actives": [
+     "peptides",
+     "copper-peptides"
+    ]
+   },
+   "store": "sephora",
+   "source": "creator-post",
+   "priceShown": 32,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "Peptide serum is new to this shelf; flat price; within budget."
+   }
+  },
+  {
+   "id": "c12",
+   "catalogId": "FKFxH8z",
+   "brand": "Indie Lee",
+   "name": "Vitamin C Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "vitamin-c",
+    "actives": [
+     "vitamin-c"
+    ]
+   },
+   "store": "bluemercury.com",
+   "source": "creator-post",
+   "priceShown": 48,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an opened vitamin C serum."
+   }
+  },
+  {
+   "id": "c13",
+   "catalogId": "TNq1quB",
+   "brand": "Ole Henriksen",
+   "name": "Double Rewind Pro-grade 0.3% Retinol Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "retinol",
+    "actives": [
+     "retinol"
+    ]
+   },
+   "store": "olehenriksen.com",
+   "source": "creator-post",
+   "priceShown": 72,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "above-usual-price"
+    ],
+    "why": "$72 now; it sold for $43.20 in the last 90 days."
+   }
+  },
+  {
+   "id": "c14",
+   "catalogId": "MqaYV6V",
+   "brand": "CeraVe",
+   "name": "Moisturizing Cream",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "cream",
+    "actives": [
+     "ceramides",
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "target",
+   "source": "store-page",
+   "priceShown": 14.99,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The same cream runs out on 15 November and is at its 90-day low."
+   }
+  },
+  {
+   "id": "c15",
+   "catalogId": "8QQllRT",
+   "brand": "CeraVe",
+   "name": "Moisturising Cream with Pump",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "cream",
+    "actives": [
+     "ceramides",
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "walgreens",
+   "source": "store-page",
+   "size": "454g",
+   "shelfPatch": [
+    {
+     "id": "sh-cream",
+     "runOutDate": "2027-01-31"
+    }
+   ],
+   "priceShown": 19.99,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "not-needed-yet"
+    ],
+    "why": "In this scenario the same cream lasts until 31 January."
+   }
+  },
+  {
+   "id": "c16",
+   "catalogId": "R1H6iNX",
+   "brand": "CeraVe",
+   "name": "Intensive Moisturizing Cream",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "cream",
+    "actives": [
+     "ceramides",
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "target",
+   "source": "creator-post",
+   "priceShown": 17.99,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The CeraVe cream runs out on 15 November; this is a like-for-like replacement at a flat price."
+   }
+  },
+  {
+   "id": "c17",
+   "catalogId": "rIQjAPg",
+   "brand": "First Aid Beauty",
+   "name": "Hydrating Dewy Gel Cream Moisturizer",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "gel-cream",
+    "actives": [
+     "hyaluronic-acid",
+     "ceramides"
+    ]
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 38,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an unopened gel-cream moisturizer."
+   }
+  },
+  {
+   "id": "c18",
+   "catalogId": "borglbs",
+   "brand": "Summer Fridays",
+   "name": "Cloud Dew Gel Cream Moisturizer",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "gel-cream",
+    "actives": [
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "sephora",
+   "source": "creator-post",
+   "priceShown": 45,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an unopened gel-cream moisturizer."
+   }
+  },
+  {
+   "id": "c19",
+   "catalogId": "k6XBoBb",
+   "brand": "Byoma",
+   "name": "Gel Cream Moisturizer",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "gel-cream",
+    "actives": [
+     "ceramides"
+    ]
+   },
+   "store": "target",
+   "source": "creator-post",
+   "priceShown": 15.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an unopened gel-cream moisturizer."
+   }
+  },
+  {
+   "id": "c20",
+   "catalogId": "iDurHQR",
+   "brand": "Versed",
+   "name": "Dew Point Gel-Cream Moisturizer",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "gel-cream",
+    "actives": [
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "target",
+   "source": "creator-post",
+   "priceShown": 14.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an unopened gel-cream moisturizer."
+   }
+  },
+  {
+   "id": "c21",
+   "catalogId": "8EbnALu",
+   "brand": "Lancôme",
+   "name": "Hydra Zen Gel Cream",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "gel-cream"
+   },
+   "store": "lancome-usa.com",
+   "source": "creator-post",
+   "priceShown": 35,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an unopened gel-cream moisturizer."
+   }
+  },
+  {
+   "id": "c22",
+   "catalogId": "N6uPcCs",
+   "brand": "Neutrogena",
+   "name": "Hydro Boost 48-Hour Gel Cream Face Moisturizer",
+   "category": "moisturizer",
+   "attributes": {
+    "texture": "gel-cream",
+    "actives": [
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "samsclub.com",
+   "source": "creator-post",
+   "size": "1.7 fl oz",
+   "priceShown": 44.48,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-unopened",
+     "owns-similar"
+    ],
+    "why": "Owns this exact moisturizer, unopened."
+   }
+  },
+  {
+   "id": "c23",
+   "catalogId": "4w2dW9A",
+   "brand": "La Roche-Posay",
+   "name": "Anthelios UV Control Sunscreen",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "laroche-posay.us",
+   "source": "creator-post",
+   "priceShown": 39.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns two chemical sunscreens for the face, one with a month left."
+   }
+  },
+  {
+   "id": "c24",
+   "catalogId": "8Z6ZLY7",
+   "brand": "La Roche-Posay",
+   "name": "Anthelios Clear Skin Sunscreen SPF 60",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "matte"
+   },
+   "store": "cvs",
+   "source": "creator-post",
+   "priceShown": 30,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a chemical face sunscreen; CVS may refuse opened returns."
+   }
+  },
+  {
+   "id": "c25",
+   "catalogId": "xx4q7M7",
+   "brand": "La Roche-Posay",
+   "name": "Anthelios Glow Face Sunscreen",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "finish": "dewy"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 39.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a chemical face sunscreen with a month left."
+   }
+  },
+  {
+   "id": "c26",
+   "catalogId": "e64tV2u",
+   "brand": "La Roche-Posay",
+   "name": "Anthelios Mineral Light Fluid Sunscreen",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "mineral",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "cvs",
+   "source": "creator-post",
+   "priceShown": 39.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a face sunscreen with a month left; CVS may refuse opened returns."
+   }
+  },
+  {
+   "id": "c27",
+   "catalogId": "28YhPsc",
+   "brand": "La Roche-Posay",
+   "name": "Anthelios Melt-In Milk Sunscreen SPF 60",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face-body",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "ulta",
+   "source": "store-page",
+   "priceShown": 25.99,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "not-needed-yet"
+    ],
+    "why": "Same sunscreen as the opened one, which lasts until 10 January."
+   }
+  },
+  {
+   "id": "c28",
+   "catalogId": "URzHoQb",
+   "brand": "La Roche-Posay",
+   "name": "Anthelios UV Clear Daily Invisible Sunscreen",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "chemical",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "walgreens",
+   "source": "creator-post",
+   "priceShown": 39.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a chemical face sunscreen."
+   }
+  },
+  {
+   "id": "c29",
+   "catalogId": "VirUUmE",
+   "brand": "Augustinus Bader",
+   "name": "The Mineral Sunscreen SPF 50",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "mineral",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "bluemercury.com",
+   "source": "creator-post",
+   "priceShown": 145,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a face sunscreen; $145 is also over budget."
+   }
+  },
+  {
+   "id": "c30",
+   "catalogId": "Nc3yrZP",
+   "brand": "Colorescience",
+   "name": "Total Protection No-Show Mineral Sunscreen",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "mineral",
+    "area": "face",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "dermstore.com",
+   "source": "creator-post",
+   "priceShown": 48,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a face sunscreen; store policy unknown."
+   }
+  },
+  {
+   "id": "c31",
+   "catalogId": "q9MlEaf",
+   "brand": "Colorescience",
+   "name": "Total Protection Body Shield SPF 50",
+   "category": "sunscreen",
+   "attributes": {
+    "filter": "mineral",
+    "area": "body",
+    "spfBand": "50+",
+    "finish": "sheer"
+   },
+   "store": "colorescience.com",
+   "source": "creator-post",
+   "priceShown": 45,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a face-and-body sunscreen with two months left."
+   }
+  },
+  {
+   "id": "c32",
+   "catalogId": "yV3l3nw",
+   "brand": "Cetaphil",
+   "name": "Gentle Foaming Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "foam"
+   },
+   "store": "sasa.com",
+   "source": "creator-post",
+   "priceShown": 27.7,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The cleanser runs out in two days; this one is at its 90-day low."
+   }
+  },
+  {
+   "id": "c33",
+   "catalogId": "m29GwjG",
+   "brand": "CeraVe",
+   "name": "Hydrating Facial Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "cream",
+    "actives": [
+     "ceramides",
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "walmart.com",
+   "source": "store-page",
+   "priceShown": 16.97,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "Same cleanser, which runs out in two days."
+   }
+  },
+  {
+   "id": "c34",
+   "catalogId": "EuxenU3",
+   "brand": "Harry's",
+   "name": "Hydrating Facial Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "gel"
+   },
+   "store": "target",
+   "source": "creator-post",
+   "shelfPatch": [
+    {
+     "id": "sh-cleanser",
+     "runOutDate": "2027-01-30"
+    }
+   ],
+   "priceShown": 11.29,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "In this scenario the cleanser lasts until 30 January."
+   }
+  },
+  {
+   "id": "c35",
+   "catalogId": "4kt3ZtM",
+   "brand": "Image Skincare",
+   "name": "Vital C Hydrating Facial Cleanser",
+   "category": "cleanser",
+   "attributes": {
+    "form": "gel",
+    "actives": [
+     "vitamin-c"
+    ]
+   },
+   "store": "skincareessentials.com",
+   "source": "creator-post",
+   "priceShown": 62,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "The cleanser runs out in two days; $62 fits the skincare budget."
+   }
+  },
+  {
+   "id": "c36",
+   "catalogId": "KMpFF2Y",
+   "brand": "Wet n Wild",
+   "name": "PhotoFocus Liquid Foundation",
+   "category": "foundation",
+   "attributes": {
+    "finish": "matte",
+    "coverage": "medium",
+    "form": "liquid"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 7.49,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an opened matte liquid foundation."
+   }
+  },
+  {
+   "id": "c37",
+   "catalogId": "Qtlkjq3",
+   "brand": "Charlotte Tilbury",
+   "name": "Beautiful Skin Medium Coverage Liquid Foundation",
+   "category": "foundation",
+   "attributes": {
+    "finish": "radiant",
+    "coverage": "medium",
+    "form": "liquid"
+   },
+   "store": "fwrd.com",
+   "source": "creator-post",
+   "priceShown": 52,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a liquid foundation with three months left; a shade bought here may not be returnable."
+   }
+  },
+  {
+   "id": "c38",
+   "catalogId": "Z8cgVAE",
+   "brand": "CoverGirl",
+   "name": "Clean Matte Liquid Foundation",
+   "category": "foundation",
+   "attributes": {
+    "finish": "matte",
+    "coverage": "medium",
+    "form": "liquid"
+   },
+   "store": "dollargeneral.com",
+   "source": "creator-post",
+   "priceShown": 6,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an opened matte liquid foundation."
+   }
+  },
+  {
+   "id": "c39",
+   "catalogId": "xW0WNbr",
+   "brand": "Pat McGrath Labs",
+   "name": "Sublime Perfection Concealer",
+   "category": "concealer",
+   "attributes": {
+    "finish": "natural",
+    "coverage": "full"
+   },
+   "store": "sephora",
+   "source": "creator-post",
+   "priceShown": 34,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns an opened concealer."
+   }
+  },
+  {
+   "id": "c40",
+   "catalogId": "a3Zbza3",
+   "brand": "M·A·C",
+   "name": "Pro Longwear Concealer",
+   "category": "concealer",
+   "attributes": {
+    "finish": "matte",
+    "coverage": "full"
+   },
+   "store": "maccosmetics.com",
+   "source": "creator-post",
+   "priceShown": 32,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns an opened concealer."
+   }
+  },
+  {
+   "id": "c41",
+   "catalogId": "mZ0wQSj",
+   "brand": "NYX Professional Makeup",
+   "name": "Suede Matte Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "nude",
+    "finish": "matte"
+   },
+   "store": "nyxcosmetics.com",
+   "source": "creator-post",
+   "variant": "a nude shade",
+   "priceShown": 9,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a nude matte lipstick."
+   }
+  },
+  {
+   "id": "c42",
+   "catalogId": "zUZEZAK",
+   "brand": "Rare Beauty",
+   "name": "Kind Words Matte Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "red",
+    "finish": "matte"
+   },
+   "store": "rarebeauty.com",
+   "source": "creator-post",
+   "variant": "a red shade",
+   "priceShown": 20,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "A red; the shelf has only a nude. Flat price, within budget."
+   }
+  },
+  {
+   "id": "c43",
+   "catalogId": "ohjU9GH",
+   "brand": "Kylie Cosmetics",
+   "name": "Matte Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "nude",
+    "finish": "matte"
+   },
+   "store": "ecosmetics.com",
+   "source": "creator-post",
+   "variant": "a nude shade",
+   "priceShown": 22.91,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a nude matte lipstick."
+   }
+  },
+  {
+   "id": "c44",
+   "catalogId": "k3qSSOj",
+   "brand": "Revlon",
+   "name": "ColorStay Limitless Matte Lipstick",
+   "category": "lipstick",
+   "attributes": {
+    "shadeFamily": "berry",
+    "finish": "matte"
+   },
+   "store": "cvs",
+   "source": "creator-post",
+   "variant": "a berry shade",
+   "priceShown": 14.59,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "A berry; the shelf has only a nude. Within budget."
+   }
+  },
+  {
+   "id": "c45",
+   "catalogId": "h1YqqWx",
+   "brand": "Fenty Beauty",
+   "name": "Hydrating + Strengthening Lip Oil",
+   "category": "lip-oil",
+   "attributes": {
+    "tint": "tinted",
+    "shadeFamily": "pink"
+   },
+   "store": "sephora",
+   "source": "creator-post",
+   "variant": "a pink tint",
+   "priceShown": 25,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns a pink tinted lip oil."
+   }
+  },
+  {
+   "id": "c46",
+   "catalogId": "rmdnlgs",
+   "brand": "Byoma",
+   "name": "Liptide pH Lip Oil",
+   "category": "lip-oil",
+   "attributes": {
+    "tint": "tinted",
+    "shadeFamily": "pink"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 11.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns a pink tinted lip oil."
+   }
+  },
+  {
+   "id": "c47",
+   "catalogId": "ReoYgLm",
+   "brand": "Ogee",
+   "name": "Sculpted Lip Oil",
+   "category": "lip-oil",
+   "attributes": {
+    "tint": "clear",
+    "shadeFamily": "clear"
+   },
+   "store": "ulta",
+   "source": "creator-post",
+   "priceShown": 28,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns a lip oil."
+   }
+  },
+  {
+   "id": "c48",
+   "catalogId": "FzckhUB",
+   "brand": "REFY",
+   "name": "Cream Blush",
+   "category": "blush",
+   "attributes": {
+    "shadeFamily": "peach",
+    "form": "cream"
+   },
+   "store": "kohls",
+   "source": "creator-post",
+   "variant": "a peach shade",
+   "priceShown": 22,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "A peach cream blush; the shelf has a pink one. Flat price, within budget."
+   }
+  },
+  {
+   "id": "c49",
+   "catalogId": "PNS9YMW",
+   "brand": "Milani",
+   "name": "Cheek Kiss Cream Blush",
+   "category": "blush",
+   "attributes": {
+    "shadeFamily": "pink",
+    "form": "cream"
+   },
+   "store": "milanicosmetics.com",
+   "source": "creator-post",
+   "variant": "a pink shade",
+   "priceShown": 11.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a pink cream blush."
+   }
+  },
+  {
+   "id": "c50",
+   "catalogId": "Mk21pVh",
+   "brand": "NYX Professional Makeup",
+   "name": "Long Lasting Makeup Setting Spray - Matte Finish",
+   "category": "setting-spray",
+   "attributes": {
+    "finish": "matte"
+   },
+   "store": "target",
+   "source": "creator-post",
+   "priceShown": 9.99,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar"
+    ],
+    "why": "Owns a setting spray with two months left."
+   }
+  },
+  {
+   "id": "c51",
+   "catalogId": "5hCqB5W",
+   "brand": "Clinique",
+   "name": "Set The Day Makeup Setting Spray",
+   "category": "setting-spray",
+   "attributes": {
+    "finish": "natural"
+   },
+   "store": "macys.com",
+   "source": "creator-post",
+   "priceShown": 39,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a natural-finish setting spray."
+   }
+  },
+  {
+   "id": "c52",
+   "catalogId": "82LYfKS",
+   "brand": "Maybelline",
+   "name": "Lash Sensational Washable Mascara",
+   "category": "mascara",
+   "attributes": {
+    "effect": "volumizing",
+    "formula": "washable"
+   },
+   "store": "cvs",
+   "source": "store-page",
+   "priceShown": 15,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "replacing-run-out"
+    ],
+    "why": "Same mascara, which runs out on 20 November; price is near its low."
+   }
+  },
+  {
+   "id": "c53",
+   "catalogId": "UyKpygl",
+   "brand": "Olaplex",
+   "name": "No.4C Bond Maintenance Clarifying Shampoo",
+   "category": "shampoo",
+   "attributes": {
+    "purpose": "clarifying"
+   },
+   "store": "sephora",
+   "source": "creator-post",
+   "priceShown": 42,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "over-budget",
+     "above-usual-price"
+    ],
+    "why": "$42 is over the $40 left for hair care and above its $33.60 low."
+   }
+  },
+  {
+   "id": "c54",
+   "catalogId": "2d4Pi0L",
+   "brand": "MOVA",
+   "name": "AeroChef FD10 Pro Air Fryer",
+   "category": "air-fryer",
+   "attributes": {
+    "type": "basket"
+   },
+   "store": "bestbuy.com",
+   "source": "creator-post",
+   "priceShown": 75,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "No air fryer on the shelf; $75 is its 90-day low."
+   }
+  },
+  {
+   "id": "c55",
+   "catalogId": "TTMVwMs",
+   "brand": "KitchenAid",
+   "name": "K400 Blender",
+   "category": "blender",
+   "attributes": {
+    "type": "full-size"
+   },
+   "store": "williams-sonoma.com",
+   "source": "creator-post",
+   "priceShown": 299.95,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a full-size blender."
+   }
+  },
+  {
+   "id": "c56",
+   "catalogId": "OfGtQbH",
+   "brand": "Vitamix",
+   "name": "Blender",
+   "category": "blender",
+   "attributes": {
+    "type": "full-size"
+   },
+   "store": "williams-sonoma.com",
+   "source": "creator-post",
+   "priceShown": 629.95,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a full-size blender."
+   }
+  },
+  {
+   "id": "c57",
+   "catalogId": "bG2FT6k",
+   "brand": "Breville",
+   "name": "Blender",
+   "category": "blender",
+   "attributes": {
+    "type": "full-size"
+   },
+   "store": "surlatable.com",
+   "source": "creator-post",
+   "priceShown": 199.95,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns a full-size blender."
+   }
+  },
+  {
+   "id": "c58",
+   "catalogId": "LxnNLye",
+   "brand": "Braun",
+   "name": "PureFlavor Drip Coffee Maker",
+   "category": "coffee-maker",
+   "attributes": {
+    "type": "drip"
+   },
+   "store": "dillards.com",
+   "source": "creator-post",
+   "priceShown": 129.95,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "above-usual-price"
+    ],
+    "why": "A drip machine is new (the shelf has a pod machine); $129.95 now, $99.99 low."
+   }
+  },
+  {
+   "id": "c59",
+   "catalogId": "a4ASajG",
+   "brand": "KitchenAid",
+   "name": "12-Cup Drip Coffee Maker",
+   "category": "coffee-maker",
+   "attributes": {
+    "type": "drip"
+   },
+   "store": "qvc.com",
+   "source": "creator-post",
+   "priceShown": 119.98,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "above-usual-price"
+    ],
+    "why": "A drip machine is new; $119.98 now, $89.99 low."
+   }
+  },
+  {
+   "id": "c60",
+   "catalogId": "4RyHr6R",
+   "brand": "Sony",
+   "name": "Noise Cancelling Earbuds",
+   "category": "headphones",
+   "attributes": {
+    "style": "earbuds",
+    "noiseCancelling": "yes"
+   },
+   "store": "bestbuy.com",
+   "source": "creator-post",
+   "priceShown": 79.99,
+   "expected": {
+    "verdict": "buy",
+    "reasons": [
+     "clear-to-buy"
+    ],
+    "why": "Earbuds do a different job from over-ear headphones; flat price, within budget."
+   }
+  },
+  {
+   "id": "c61",
+   "catalogId": "ph6lmav",
+   "brand": "JBL",
+   "name": "Live 680NC On-Ear Noise Cancelling Headphones",
+   "category": "headphones",
+   "attributes": {
+    "style": "on-ear",
+    "noiseCancelling": "yes"
+   },
+   "store": "target",
+   "source": "creator-post",
+   "priceShown": 94.95,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns noise-cancelling headphones; Target takes opened electronics back for exchange only."
+   }
+  },
+  {
+   "id": "c62",
+   "catalogId": "ago7JIz",
+   "brand": "JBL",
+   "name": "Live 780NC Wireless Noise Cancelling Headphones",
+   "category": "headphones",
+   "attributes": {
+    "style": "over-ear",
+    "noiseCancelling": "yes"
+   },
+   "store": "bestbuy.com",
+   "source": "creator-post",
+   "priceShown": 139.95,
+   "expected": {
+    "verdict": "skip",
+    "reasons": [
+     "owns-similar",
+     "overlap-non-returnable"
+    ],
+    "why": "Owns noise-cancelling over-ear headphones."
+   }
+  },
+  {
+   "id": "c63",
+   "catalogId": "O9hxhlx",
+   "brand": "Bang & Olufsen",
+   "name": "Beoplay Eleven Wireless Earbuds",
+   "category": "headphones",
+   "attributes": {
+    "style": "earbuds",
+    "noiseCancelling": "yes"
+   },
+   "store": "bang-olufsen.com",
+   "source": "creator-post",
+   "priceShown": 599,
+   "expected": {
+    "verdict": "wait",
+    "reasons": [
+     "over-budget"
+    ],
+    "why": "Earbuds are a different job, but $599 is over the $200 left for electronics."
+   }
+  },
+  {
+   "id": "c64",
+   "catalogId": "Fn4uWrP",
+   "brand": "Audio-Technica",
+   "name": "Wireless Earbuds",
+   "category": "headphones",
+   "attributes": {
+    "style": "earbuds",
+    "noiseCancelling": "yes"
+   },
+   "store": "adorama.com",
+   "source": "creator-post",
+   "identityConfidence": 0.45,
+   "readerNote": "The post shows earbuds in a case with no brand or model visible.",
+   "priceShown": 269,
+   "expected": {
+    "verdict": "ask",
+    "reasons": [
+     "identity-unconfirmed"
+    ],
+    "why": "No brand or model is visible; ask which earbuds these are."
+   }
+  },
+  {
+   "id": "c65",
+   "catalogId": "2XxV7A1",
+   "brand": "No7",
+   "name": "HydraLuminous+ 2% Hyaluronic Acid Serum",
+   "category": "serum",
+   "attributes": {
+    "primaryActive": "hyaluronic-acid",
+    "actives": [
+     "hyaluronic-acid"
+    ]
+   },
+   "store": "target",
+   "source": "creator-post",
+   "priceShown": null,
+   "readerNote": "The post names the product but shows no price.",
+   "expected": {
+    "verdict": "ask",
+    "reasons": [
+     "price-unknown"
+    ],
+    "why": "The hyaluronic acid serum runs out in a week, but the post shows no price."
+   }
+  }
+ ]
+}

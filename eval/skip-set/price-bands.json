@@ -1,0 +1,550 @@
+{
+  "source": "90-day catalogue price history, cleaned; derived statistics only",
+  "bands": {
+    "djI4DxL": {
+      "typical": 64,
+      "low": 51.2,
+      "high": 85,
+      "latest": 51.2,
+      "days": 86,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "k3EphtE": {
+      "typical": 25.49,
+      "low": 18.19,
+      "high": 25.99,
+      "latest": 25.49,
+      "days": 90,
+      "usable": false,
+      "asOf": "2026-11-07"
+    },
+    "YjIg3Ci": {
+      "typical": 28.99,
+      "low": 21.74,
+      "high": 28.99,
+      "latest": 28.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "q1vExGc": {
+      "typical": 99.99,
+      "low": 99.99,
+      "high": 99.99,
+      "latest": 99.99,
+      "days": 55,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "nwpulPu": {
+      "typical": 13,
+      "low": 9.1,
+      "high": 13,
+      "latest": 10,
+      "days": 81,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "BzQAfep": {
+      "typical": 39,
+      "low": 23.99,
+      "high": 39,
+      "latest": 23.99,
+      "days": 27,
+      "usable": false,
+      "asOf": "2026-11-07"
+    },
+    "eOvY3Zx": {
+      "typical": 15,
+      "low": 13,
+      "high": 15,
+      "latest": 13,
+      "days": 85,
+      "usable": false,
+      "asOf": "2026-11-07"
+    },
+    "odLEuQy": {
+      "typical": 12.99,
+      "low": 12.99,
+      "high": 12.99,
+      "latest": 12.99,
+      "days": 88,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "TG0hNoU": {
+      "typical": 99,
+      "low": 99,
+      "high": 99,
+      "latest": 99,
+      "days": 88,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "dIilnfU": {
+      "typical": 6,
+      "low": 5.4,
+      "high": 8,
+      "latest": 6,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "Av3BX6v": {
+      "typical": 32,
+      "low": 32,
+      "high": 32,
+      "latest": 32,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "FKFxH8z": {
+      "typical": 48,
+      "low": 48,
+      "high": 48,
+      "latest": 48,
+      "days": 86,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "TNq1quB": {
+      "typical": 72,
+      "low": 43.2,
+      "high": 72,
+      "latest": 72,
+      "days": 77,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "MqaYV6V": {
+      "typical": 14.99,
+      "low": 14.99,
+      "high": 21.79,
+      "latest": 14.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "8QQllRT": {
+      "typical": 18.99,
+      "low": 16.99,
+      "high": 25,
+      "latest": 19.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "R1H6iNX": {
+      "typical": 17.99,
+      "low": 17.99,
+      "high": 17.99,
+      "latest": 17.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "rIQjAPg": null,
+    "borglbs": {
+      "typical": 45,
+      "low": 38,
+      "high": 45,
+      "latest": 45,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "k6XBoBb": {
+      "typical": 15.99,
+      "low": 11.99,
+      "high": 15.99,
+      "latest": 15.99,
+      "days": 87,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "iDurHQR": {
+      "typical": 14.99,
+      "low": 14.99,
+      "high": 14.99,
+      "latest": 14.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "8EbnALu": {
+      "typical": 35,
+      "low": 35,
+      "high": 35,
+      "latest": 35,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "N6uPcCs": {
+      "typical": 44.48,
+      "low": 44.48,
+      "high": 44.48,
+      "latest": 44.48,
+      "days": 22,
+      "usable": false,
+      "asOf": "2026-11-07"
+    },
+    "4w2dW9A": {
+      "typical": 39.99,
+      "low": 35.99,
+      "high": 39.99,
+      "latest": 39.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "8Z6ZLY7": {
+      "typical": 27.99,
+      "low": 27.99,
+      "high": 30,
+      "latest": 30,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "xx4q7M7": {
+      "typical": 39.99,
+      "low": 29.99,
+      "high": 39.99,
+      "latest": 39.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "e64tV2u": {
+      "typical": 39.99,
+      "low": 37.5,
+      "high": 39.99,
+      "latest": 39.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "28YhPsc": {
+      "typical": 25.99,
+      "low": 25.99,
+      "high": 37.43,
+      "latest": 25.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "URzHoQb": {
+      "typical": 39.99,
+      "low": 29.9,
+      "high": 39.99,
+      "latest": 39.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "VirUUmE": {
+      "typical": 145,
+      "low": 145,
+      "high": 145,
+      "latest": 145,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "Nc3yrZP": {
+      "typical": 48,
+      "low": 46.9,
+      "high": 48,
+      "latest": 48,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "q9MlEaf": {
+      "typical": 45,
+      "low": 45,
+      "high": 48,
+      "latest": 45,
+      "days": 79,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "yV3l3nw": {
+      "typical": 30.45,
+      "low": 27.68,
+      "high": 33.2,
+      "latest": 27.7,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "m29GwjG": null,
+    "EuxenU3": {
+      "typical": 11.29,
+      "low": 11.29,
+      "high": 11.29,
+      "latest": 11.29,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "4kt3ZtM": {
+      "typical": 62,
+      "low": 62,
+      "high": 62,
+      "latest": 62,
+      "days": 81,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "KMpFF2Y": {
+      "typical": 7.49,
+      "low": 5.24,
+      "high": 7.49,
+      "latest": 7.49,
+      "days": 87,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "Qtlkjq3": {
+      "typical": 52,
+      "low": 52,
+      "high": 52,
+      "latest": 52,
+      "days": 15,
+      "usable": false,
+      "asOf": "2026-11-07"
+    },
+    "Z8cgVAE": null,
+    "xW0WNbr": {
+      "typical": 34,
+      "low": 34,
+      "high": 34,
+      "latest": 34,
+      "days": 86,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "a3Zbza3": {
+      "typical": 29.99,
+      "low": 29.9,
+      "high": 32,
+      "latest": 32,
+      "days": 59,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "mZ0wQSj": {
+      "typical": 9,
+      "low": 9,
+      "high": 9,
+      "latest": 9,
+      "days": 38,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "zUZEZAK": {
+      "typical": 20,
+      "low": 20,
+      "high": 20,
+      "latest": 20,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "ohjU9GH": {
+      "typical": 22.91,
+      "low": 21.89,
+      "high": 23,
+      "latest": 22.91,
+      "days": 87,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "k3qSSOj": null,
+    "h1YqqWx": {
+      "typical": 25,
+      "low": 23.75,
+      "high": 25,
+      "latest": 25,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "rmdnlgs": {
+      "typical": 11.99,
+      "low": 11.99,
+      "high": 11.99,
+      "latest": 11.99,
+      "days": 80,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "ReoYgLm": {
+      "typical": 28,
+      "low": 28,
+      "high": 28,
+      "latest": 28,
+      "days": 87,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "FzckhUB": {
+      "typical": 22,
+      "low": 22,
+      "high": 22,
+      "latest": 22,
+      "days": 66,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "PNS9YMW": {
+      "typical": 11.99,
+      "low": 11.99,
+      "high": 11.99,
+      "latest": 11.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "Mk21pVh": null,
+    "5hCqB5W": {
+      "typical": 39,
+      "low": 26,
+      "high": 39,
+      "latest": 39,
+      "days": 57,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "82LYfKS": {
+      "typical": 14.19,
+      "low": 13.99,
+      "high": 15,
+      "latest": 15,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "UyKpygl": {
+      "typical": 40,
+      "low": 33.6,
+      "high": 42,
+      "latest": 42,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "2d4Pi0L": {
+      "typical": 129,
+      "low": 75,
+      "high": 129,
+      "latest": 75,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "TTMVwMs": {
+      "typical": 299.95,
+      "low": 299.95,
+      "high": 299.95,
+      "latest": 299.95,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "OfGtQbH": {
+      "typical": 629.95,
+      "low": 369.95,
+      "high": 629.95,
+      "latest": 629.95,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "bG2FT6k": {
+      "typical": 199.95,
+      "low": 149.96,
+      "high": 199.95,
+      "latest": 199.95,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "LxnNLye": {
+      "typical": 129.95,
+      "low": 99.99,
+      "high": 129.95,
+      "latest": 129.95,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "a4ASajG": {
+      "typical": 119.98,
+      "low": 89.99,
+      "high": 119.99,
+      "latest": 119.98,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "4RyHr6R": {
+      "typical": 79.99,
+      "low": 79.99,
+      "high": 89.99,
+      "latest": 79.99,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "ph6lmav": {
+      "typical": 159.95,
+      "low": 94.95,
+      "high": 159.95,
+      "latest": 94.95,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "ago7JIz": {
+      "typical": 199.95,
+      "low": 139.95,
+      "high": 249.95,
+      "latest": 139.95,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "O9hxhlx": {
+      "typical": 599,
+      "low": 599,
+      "high": 599,
+      "latest": 599,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "Fn4uWrP": {
+      "typical": 269,
+      "low": 269,
+      "high": 269,
+      "latest": 269,
+      "days": 90,
+      "usable": true,
+      "asOf": "2026-11-07"
+    },
+    "2XxV7A1": {
+      "typical": 24.99,
+      "low": 14.25,
+      "high": 24.99,
+      "latest": 14.25,
+      "days": 32,
+      "usable": true,
+      "asOf": "2026-11-07"
+    }
+  }
+}

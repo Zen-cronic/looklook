@@ -17,7 +17,9 @@
     "replay": "tsx scripts/replay/index.ts",
     "smoke:paypal": "tsx scripts/smoke-paypal.ts",
     "spike:transaction-search": "tsx scripts/spike-transaction-search.ts",
-    "smoke:channel3": "tsx scripts/smoke-channel3.ts"
+    "smoke:channel3": "tsx scripts/smoke-channel3.ts",
+    "eval:skip": "tsx scripts/skip-set/run.ts",
+    "eval:skip:bands": "tsx scripts/skip-set/price-bands.ts"
   },
   "dependencies": {
     "next": "16.4.5",
