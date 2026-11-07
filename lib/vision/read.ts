@@ -79,3 +79,52 @@ export async function readScreenshot(image: ScreenshotImage, options: ReadOption
     usage: { inputTokens: msg.usage.input_tokens, outputTokens: msg.usage.output_tokens },
   };
 }
+
+/** The catalogue listing behind a pasted link, as text for the reader. */
+export interface ListingText {
+  title: string;
+  brand?: string;
+  description?: string;
+  category?: string;
+  price?: { amount: number; currency: string };
+  store?: string;
+  features?: string[];
+}
+
+/**
+ * Read a store listing (from a pasted link) into the same structured fields
+ * as a screenshot, so both paths feed the same matcher and verdict engine.
+ */
+export async function readListing(listing: ListingText, options: ReadOptions): Promise<ReadResult> {
+  const model = options.model ?? process.env.ANTHROPIC_MODEL ?? READER_MODEL;
+  const text = [
+    `Title: ${listing.title}`,
+    listing.brand ? `Brand: ${listing.brand}` : "",
+    listing.category ? `Category: ${listing.category}` : "",
+    listing.price ? `Price: ${listing.price.amount} ${listing.price.currency}` : "",
+    listing.store ? `Store: ${listing.store}` : "",
+    listing.features?.length ? `Features: ${listing.features.slice(0, 8).join("; ")}` : "",
+    listing.description ? `Description: ${listing.description.slice(0, 1500)}` : "",
+  ]
+    .filter(Boolean)
+    .join("\n");
+  const msg = await options.client.messages.create({
+    model,
+    max_tokens: 1500,
+    system: `${READER_SYSTEM} The input is a store listing as text instead of an image; set source to store-page and legibility to 1 when brand and name are given.`,
+    output_config: { effort: options.effort ?? "low", format: { type: "json_schema", schema: SCREENSHOT_SCHEMA as unknown as Record<string, unknown> } },
+    messages: [{ role: "user", content: `Read this listing.\n\n${text}` }],
+  });
+  if (msg.stop_reason !== "end_turn") throw new ReaderOutputError(`stopped: ${msg.stop_reason}`);
+  const out = msg.content
+    .filter((b) => b.type === "text")
+    .map((b) => b.text)
+    .join("");
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(out);
+  } catch {
+    throw new ReaderOutputError("answer was not JSON");
+  }
+  return { fields: parseScreenshotFields(parsed), model: msg.model, usage: { inputTokens: msg.usage.input_tokens, outputTokens: msg.usage.output_tokens } };
+}

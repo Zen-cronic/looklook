@@ -55,6 +55,8 @@ const REASON_SYSTEM = [
   "The verdict is already decided. Never change it, argue with it, or add advice.",
   "Use only the facts in the JSON. No numbers, dates or stores that are not in it.",
   "One sentence, at most 28 words, plain words, no emoji, addressed to the shopper as you.",
+  "Return policies: returnableOpened yes means the store takes it back opened within windowDays; no means the store may refuse it once opened; conditional means only on conditions; unknown means we couldn't find the policy. Never state a policy more firmly than that.",
+  "No middle dots, no ids, no rule names.",
 ].join(" ");
 
 export interface ReasonOptions {
