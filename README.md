@@ -70,7 +70,8 @@ Each browser gets its own session (a cookie) with the sample shelf. Sessions, th
 ## Checks
 
 ```bash
-npm run eval:skip        # skip correctness on the fixed test set (no network)
+npm run eval:skip        # skip correctness on the development set (no network)
+npm run eval:holdout -- --what "what changed"   # re-run the held-out set after an engine change; its scored run is never overwritten
 npm test                 # unit tests
 npm run lint
 npm run typecheck
@@ -94,6 +95,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 - **PayPal activity import is off.** Filling the shelf from PayPal activity needs the Transaction Search permission on the PayPal app, which this sandbox app doesn't have yet (403). The shelf comes from manual adds and purchases made in the app.
 - **Waiting saves little on beauty.** In the wait-timing replay (28 purchases, real price histories), waiting by our rule paid $58.56 (1.7%) less than buying on the first price alert, and only $1.07 of that was beauty. For beauty the value is in the skip, not the wait.
 - Both skip sets' shoppers, shelves, budgets and expected answers are made up by one person. On the held-out set the wrong skip is a body sunscreen read as overlapping a face sunscreen, the missed skip a matte setting spray when a dewy one is owned, and three products (a conditioner, a hair oil, a kettle) got "ask" because the app had no such category at the time. On the development set five of 65 skip decisions disagree; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable; 7 of the 35 right skips depend on that default.
+- **After the held-out run, the matching changed once.** The held-out misses showed real gaps, so the app gained conditioner, hair oil or serum, lip balm, kettle and toaster categories, and a sunscreen's area (face, body, or both) became its product type, so a body sunscreen no longer counts as a second face sunscreen (commit `c0d3b0d`, 2026-11-07 00:34 EST). Re-run on that code, the held-out set scores 29 of 30 (saying skip to everything 13; same category 18, now that the shopper's lip balm and hair oil stay on her shelf), but those products shaped the change, so it is no longer a held-out number and the headline stays 28 of 30. The development set stayed at 60 of 65. Both re-runs are in the "After later changes" sections of the two RESULTS.md files and on `/proof`.
 - The first scored run was 55 of 65. Since then the similarity rule changed once (product type, actives, finish and form compared with half credit for neighbouring values; see `eval/skip-set/provenance.json`); the expected answers were not touched. A first version of that change scored 58 of 65 before its actives rule was replaced; both runs are recorded in `eval/skip-set/README.md`.
 - Dates: receipts, notices, refunds, restocks and event times are real, in US Eastern time. The Rebuys date control moves only run-out dates, look-again dates and this month's budgets; while it is ahead, every page that uses it says "Simulated date" and dates counted from it carry "(simulated date)". A bought verdict keeps the reason it had when it was decided, shown as "At the time: …" under a Bought state.
 - The four sample posts are mock creator posts we drew; the products and prices in them are real.

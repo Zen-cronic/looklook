@@ -47,3 +47,7 @@ Before the expectations were committed:
 - Read: `eval/skip-set/cases.json` and `shelf.json` (for the file format and to avoid reusing products), `eval/skip-set/README.md` (which includes a plain description of the similarity change made after the first run), the "How a verdict is decided" section of the top-level README, `data/return-policies.json`, and the catalogue client and price band code in `lib/channel3/`.
 
 After the commit, a runner reusing the existing scorer runs once. Its output is committed as generated, and neither the expectations nor the engine are changed after seeing it.
+
+## After later changes
+
+The scored run in `results.json` and the top of `RESULTS.md` is the held-out result and is never rewritten. The runner refuses to overwrite it: once `history.json` records the scored run, `npm run eval:holdout -- --what "..."` runs the committed engine on the same cases and expectations, checks that `RESULTS.md` still starts with the scored run's text, rewrites only its "After later changes" section and adds the run to `history.json`. Those runs are on code that these products helped shape, so they are reported as after-change numbers, not held-out ones.

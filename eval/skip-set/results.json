@@ -287,8 +287,8 @@
       "flags": [
         "non-returnable-opened"
       ],
-      "shelfItem": "sh-unseen",
-      "score": 0.95,
+      "shelfItem": "sh-lrp-milk",
+      "score": 1,
       "policyUrl": null
     },
     {
@@ -299,8 +299,8 @@
       "flags": [
         "non-returnable-opened"
       ],
-      "shelfItem": "sh-unseen",
-      "score": 0.91,
+      "shelfItem": "sh-lrp-milk",
+      "score": 0.95,
       "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
     },
     {
@@ -309,8 +309,8 @@
       "verdict": "skip",
       "rule": "owns-similar",
       "flags": [],
-      "shelfItem": "sh-unseen",
-      "score": 0.91,
+      "shelfItem": "sh-lrp-milk",
+      "score": 0.875,
       "policyUrl": "https://www.ulta.com/guestservices/all"
     },
     {
@@ -321,7 +321,7 @@
       "flags": [
         "non-returnable-opened"
       ],
-      "shelfItem": "sh-unseen",
+      "shelfItem": "sh-lrp-milk",
       "score": 0.75,
       "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
     },
@@ -343,8 +343,8 @@
       "flags": [
         "non-returnable-opened"
       ],
-      "shelfItem": "sh-unseen",
-      "score": 0.95,
+      "shelfItem": "sh-lrp-milk",
+      "score": 1,
       "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp"
     },
     {
@@ -355,7 +355,7 @@
       "flags": [
         "non-returnable-opened"
       ],
-      "shelfItem": "sh-unseen",
+      "shelfItem": "sh-lrp-milk",
       "score": 0.75,
       "policyUrl": null
     },
@@ -367,7 +367,7 @@
       "flags": [
         "non-returnable-opened"
       ],
-      "shelfItem": "sh-unseen",
+      "shelfItem": "sh-lrp-milk",
       "score": 0.75,
       "policyUrl": null
     },
@@ -380,7 +380,7 @@
         "non-returnable-opened"
       ],
       "shelfItem": "sh-lrp-milk",
-      "score": 0.74,
+      "score": 0.75,
       "policyUrl": null
     },
     {

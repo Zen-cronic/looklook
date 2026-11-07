@@ -16,6 +16,38 @@
     "at": "2026-11-07T00:20:06-05:00",
     "what": "the single scored run on the code at the expectations commit, committed as generated: 28 of 30"
   },
-  "unsupportedCategoriesAtRun": ["conditioner", "hair-oil", "kettle", "lip-balm"],
-  "afterChanges": []
+  "unsupportedCategoriesAtRun": [
+    "conditioner",
+    "hair-oil",
+    "kettle",
+    "lip-balm"
+  ],
+  "afterChanges": [
+    {
+      "commit": "c0d3b0d1a0b318ff696db9bb732e8c4c15865181",
+      "at": "2026-11-07T00:34:21-05:00",
+      "what": "Added conditioner, hair oil or serum, lip balm, kettle and toaster categories; where a sunscreen goes (face, body or both) became its product type, and a replacement must do the whole job of the item it replaces.",
+      "skipCorrect": 29,
+      "n": 30,
+      "precision": 1,
+      "recall": 0.9230769230769231,
+      "baselines": [
+        {
+          "id": "always-skip",
+          "label": "Always say skip",
+          "skipCorrect": 13
+        },
+        {
+          "id": "same-category",
+          "label": "Skip whenever you own anything in the same category",
+          "skipCorrect": 18
+        }
+      ],
+      "wrongSkips": [],
+      "missedSkips": [
+        "h10"
+      ],
+      "verdictAgreement": 0.9
+    }
+  ]
 }

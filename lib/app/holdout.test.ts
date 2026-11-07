@@ -59,6 +59,26 @@ describe("held-out result (read from the single scored run)", () => {
   });
 });
 
+describe("held-out re-runs after later changes", () => {
+  it("are recorded beside the scored run without changing it", () => {
+    const r = heldOutResult();
+    expect(r.skipCorrect).toBe(28);
+    expect(r.afterChanges.length).toBeGreaterThan(0);
+    for (const a of r.afterChanges) {
+      expect(a.n).toBe(30);
+      expect(Date.parse(a.at)).toBeGreaterThan(Date.parse(history.scoredRun.at));
+      expect(a.commit).not.toBe(history.scoredRun.commit);
+    }
+  });
+
+  it("keep the scored run's text at the top of RESULTS.md", () => {
+    const md = readFileSync("eval/holdout/RESULTS.md", "utf8");
+    expect(md.startsWith("# Held-out skip correctness")).toBe(true);
+    expect(md).toContain("**28 of 30 skip decisions correct.**");
+    expect(md.indexOf("## After later changes")).toBeGreaterThan(md.indexOf("## Every case"));
+  });
+});
+
 describe("eval routes", () => {
   let skipGET: () => Promise<Response>;
   let holdoutGET: () => Promise<Response>;
@@ -84,6 +104,7 @@ describe("eval routes", () => {
     expect(j.heldOut.cases).toHaveLength(30);
     expect(j.heldOut.otherMisses.filter((c: { categoryNotSupportedAtRun?: string }) => c.categoryNotSupportedAtRun)).toHaveLength(3);
     expect(Array.isArray(j.heldOut.afterLaterChanges)).toBe(true);
+    expect(j.heldOut.skipCorrect).toBe(28);
     expect(j.developmentSet.n).toBe(65);
   });
 });
