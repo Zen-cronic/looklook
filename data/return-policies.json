@@ -14,10 +14,10 @@
           "windowDays": 30,
           "conditions": "Refund for items in \"new or gently used\" condition within 30 days of purchase.",
           "sourceUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq",
-          "checkedOn": "2026-11-06"
+          "checkedOn": "2026-11-07"
         }
       ],
-      "notes": "The main returns page blocked automated reading on 2026-11-06 and again on 2026-11-07, so the rule is as checked on 2026-11-06; the window and condition come from Sephora's own payment FAQ."
+      "notes": "The main returns page blocked automated reading on 2026-11-06 and again on 2026-11-07, so the window and condition come from Sephora's own FAQ pages (payment and delivery FAQs both state 30 days for new or gently used items), re-read on 2026-11-07."
     },
     {
       "id": "ulta",
@@ -134,10 +134,10 @@
         {
           "group": "beauty",
           "returnableOpened": "yes",
-          "windowDays": 30,
-          "conditions": "Sephora at Kohl's items come back in \"new or gently used\" condition within 30 days. A Kohl's holiday post cites 60 days for the same items; the shorter window is used.",
-          "sourceUrl": "https://www.sephora.com/beauty/sephora-at-kohls-faq",
-          "checkedOn": "2026-11-06"
+          "windowDays": 60,
+          "conditions": "Sephora at Kohl's items in \"new or gently used\" condition within 60 days, with a receipt.",
+          "sourceUrl": "https://www.kohls.com/stores/wi/oakcreek/109",
+          "checkedOn": "2026-11-07"
         },
         {
           "group": "electronics",
