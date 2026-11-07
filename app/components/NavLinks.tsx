@@ -8,6 +8,7 @@ const LINKS = [
   { href: "/shelf", label: "Shelf" },
   { href: "/rebuys", label: "Rebuys" },
   { href: "/payments", label: "Saved methods" },
+  { href: "/studio", label: "Decisions", wide: true },
 ];
 
 export function NavLinks(props: { static?: boolean }) {
@@ -24,7 +25,7 @@ function Links({ path }: { path: string | null }) {
       {LINKS.map((l) => {
         const active = path !== null && (l.href === "/" ? path === "/" || path.startsWith("/check/") : path.startsWith(l.href));
         return (
-          <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined}>
+          <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined} className={"wide" in l ? "wide-only" : undefined}>
             {l.label}
           </Link>
         );

@@ -178,6 +178,10 @@ img {
     justify-content: space-around;
   }
 
+  .mainnav a.wide-only {
+    display: none;
+  }
+
   .mainnav a {
     flex: 1;
     text-align: center;

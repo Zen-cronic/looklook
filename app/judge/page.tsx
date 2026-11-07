@@ -9,7 +9,7 @@ export default function JudgePage() {
     <main className="page stack-lg">
       <div>
         <h1>Start here</h1>
-        <p className="lede">{APP_NAME}, {APP_TAGLINE}. Six short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
+        <p className="lede">{APP_NAME}, {APP_TAGLINE}. Seven short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
         <p style={{ marginTop: "0.75rem" }}>PayPal&apos;s shopping tools help you buy what you saw. {APP_NAME} asks whether you should, and when it&apos;s a staple, PayPal Vault makes buying it again one yes.</p>
       </div>
 
@@ -48,6 +48,15 @@ export default function JudgePage() {
           <div className="stack-sm">
             <h2>Wait for a lower price</h2>
             <p>Check the retinol post (wait) and tap Watch for a drop: Channel3 sets a real price alert. On Rebuys, Send a test price drop runs a price event through the same handler, and the item asks for your yes.</p>
+          </div>
+        </li>
+        <li>
+          <div className="stack-sm">
+            <h2>See your decisions in AG Studio</h2>
+            <p>On a laptop, open Decisions: your verdicts (skips first), rebuys, shelf and budgets in one AG Studio workspace. Tap Yes on a rebuy to pay with the saved method; the shelf row updates in place. Tap Group my waits: our agent asks Studio&apos;s agents to build a table of what each wait is waiting for, about 30 seconds. Customize opens the Studio editor.</p>
+            <Link className="btn small" href="/studio">
+              Open Decisions
+            </Link>
           </div>
         </li>
         <li>
