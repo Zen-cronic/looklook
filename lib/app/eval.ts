@@ -25,6 +25,25 @@ export interface CaseRow {
   policyUrl?: string | null;
 }
 
+/** An input found wrong after the first run (a store policy read from the wrong document), fixed before re-running, with the expectations it changed. */
+export interface DevCorrection {
+  on: string;
+  what: string;
+  policy: { commit: string; at: string };
+  expectations: { commit: string; at: string; cases: string[] };
+  before: string;
+  after: string;
+  afterNote?: string;
+}
+
+export interface DevProvenance {
+  expectations: { commit: string; at: string };
+  engine: { commit: string; at: string };
+  firstRun: { commit: string; at: string };
+  changes: Array<{ what: string; result: string; commit?: string; at?: string }>;
+  corrections?: DevCorrection[];
+}
+
 export interface SkipEvalResult {
   ranAt: string;
   ms: number;
@@ -42,7 +61,7 @@ export interface SkipEvalResult {
   verdictAgreement: number;
   baselines: Baseline[];
   split: SkipSplit;
-  provenance: { expectations: { commit: string; at: string }; engine: { commit: string; at: string }; firstRun: { commit: string; at: string }; changes: Array<{ what: string; result: string; commit?: string; at?: string }> };
+  provenance: DevProvenance;
   catches: CaseRow[];
   wrongSkips: CaseRow[];
   missedSkips: CaseRow[];
@@ -76,7 +95,7 @@ export function runSkipEval(): SkipEvalResult {
   return {
     baselines: baselines(set, shelf as unknown as ShelfFile),
     split: splitCorrectSkips(outcomes),
-    provenance,
+    provenance: provenance as DevProvenance,
     ranAt: new Date().toISOString(),
     ms: Math.round((performance.now() - start) * 10) / 10,
     asOf: set.asOf,
@@ -104,12 +123,23 @@ export interface DevRun {
   result: string;
 }
 
-/** The recorded runs on the development set: the first scored run, then each later engine change. */
-export function devSetRuns(p: SkipEvalResult["provenance"] = provenance): DevRun[] {
+/** The recorded runs on the development set: the first scored run, then each later engine change or correction. */
+export function devSetRuns(p: DevProvenance = provenance as DevProvenance): DevRun[] {
+  const correctedAt = new Set((p.corrections ?? []).map((c) => c.expectations.commit));
   return [
     { label: "First scored run", commit: p.firstRun.commit, at: p.firstRun.at, result: "55 of 65" },
-    ...p.changes.map((c) => ({ label: `After a matching change: ${c.what}`, commit: c.commit ?? "", at: c.at ?? "", result: c.result })),
+    ...p.changes.map((c) => ({
+      label: c.commit && correctedAt.has(c.commit) ? "After the store-policy correction (see Corrections)" : `After a matching change: ${c.what}`,
+      commit: c.commit ?? "",
+      at: c.at ?? "",
+      result: c.result,
+    })),
   ];
+}
+
+/** The development set's corrections. */
+export function devCorrections(p: DevProvenance = provenance as DevProvenance): DevCorrection[] {
+  return p.corrections ?? [];
 }
 
 const round3 = (x: number) => Math.round(x * 1000) / 1000;
@@ -132,6 +162,7 @@ export function devSetJson(r: SkipEvalResult) {
     dollarsAvoided: { total: r.split.dollarsAvoided, onEvidence: r.split.dollarsOnEvidence, onUnknownPolicyDefault: r.split.dollarsOnDefault },
     provenance: { expectations: r.provenance.expectations, engine: r.provenance.engine, firstRun: r.provenance.firstRun },
     runs: devSetRuns(r.provenance).map((x) => ({ commit: x.commit.slice(0, 7), at: x.at, result: x.result, what: x.label })),
+    corrections: devCorrections(r.provenance).map((c) => ({ on: c.on, what: c.what, policyFix: { commit: c.policy.commit.slice(0, 7), at: c.policy.at }, expectationsFix: { commit: c.expectations.commit.slice(0, 7), at: c.expectations.at, cases: c.expectations.cases }, before: c.before, after: c.after })),
     wrongSkips: r.wrongSkips.map((c) => ({ id: c.id, product: c.product, store: c.store, rule: c.rule })),
     missedSkips: r.missedSkips.map((c) => ({ id: c.id, product: c.product, store: c.store, got: c.got, rule: c.rule })),
     scenarioDate: r.asOf,

@@ -27,6 +27,36 @@
       "at": "2026-11-07T00:34:21-05:00",
       "what": "Added conditioner, hair oil or serum, lip balm, kettle and toaster categories; where a sunscreen goes (face, body or both) became its product type, and a replacement must do the whole job of the item it replaces.",
       "result": "60 of 65"
+    },
+    {
+      "commit": "e2c06ee60e7cb6d062188f59224e4a745c0b2e11",
+      "at": "2026-11-07T00:42:40-05:00",
+      "what": "Store return policies corrected (CVS beauty takes opened items back; Target's opened-electronics rule) and the expectations they affected; engine unchanged.",
+      "result": "58 of 65"
+    }
+  ],
+  "corrections": [
+    {
+      "on": "2026-11-07",
+      "what": "The policy table said CVS may refuse opened beauty (it cited CVS's general returns PDF; the beauty section of CVS's return policy page takes it back with a receipt) and that Target takes opened electronics back for exchange only (Target's exchange-only list doesn't include electronics).",
+      "policy": {
+        "commit": "a37226a51fde1044551e7f850c471cd9e165fc98",
+        "at": "2026-11-07T00:41:35-05:00"
+      },
+      "expectations": {
+        "commit": "e2c06ee60e7cb6d062188f59224e4a745c0b2e11",
+        "at": "2026-11-07T00:42:40-05:00",
+        "cases": [
+          "c02",
+          "c06",
+          "c24",
+          "c26",
+          "c61"
+        ]
+      },
+      "before": "60 of 65",
+      "after": "58 of 65",
+      "afterNote": "c06 and c26 became missed skips: each overlaps only partly with something the shopper owns, and at a store that takes opened beauty back the engine leaves a partial overlap to the price rules. The engine was not changed to win them back."
     }
   ]
 }

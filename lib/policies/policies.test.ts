@@ -24,6 +24,19 @@ describe("return-policy table", () => {
     }
   });
 
+  it("takes opened beauty back at CVS, citing the beauty section of its policy page", () => {
+    for (const category of ["sunscreen", "serum", "lipstick", "mascara"] as const) {
+      const p = openedReturnPolicy("cvs", category);
+      expect(p).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: 60, fallback: false });
+      expect(p.sourceUrl).toMatch(/^https:\/\/www\.cvs\.com\/retail\/help\/return_policy#/);
+      expect(p.conditions).toMatch(/third-party return authorization/);
+    }
+    // Everything else at CVS still follows the general returns PDF.
+    const kettle = openedReturnPolicy("cvs.com", "blender");
+    expect(kettle).toMatchObject({ group: "general", returnableOpened: "no", windowDays: 60 });
+    expect(kettle.sourceUrl).toMatch(/returns\.pdf$/);
+  });
+
   it("finds stores by id, name, domain and URL", () => {
     expect(findRetailer("cvs").id).toBe("cvs");
     expect(findRetailer("Ulta Beauty").id).toBe("ulta");
@@ -35,7 +48,8 @@ describe("return-policy table", () => {
 
   it("picks the rule for the item's group and falls back to general", () => {
     expect(openedReturnPolicy("target", "serum").returnableOpened).toBe("yes");
-    expect(openedReturnPolicy("target", "headphones").returnableOpened).toBe("conditional");
+    // Opened electronics aren't on Target's exchange-only list, so its general rule applies.
+    expect(openedReturnPolicy("target", "headphones").returnableOpened).toBe("no");
     const blender = openedReturnPolicy("target", "blender");
     expect(blender.group).toBe("general");
     expect(blender.returnableOpened).toBe("no");

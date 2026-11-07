@@ -1,25 +1,25 @@
 {
   "asOf": "2026-11-07",
   "headline": {
-    "skipCorrect": 60,
+    "skipCorrect": 58,
     "n": 65,
-    "precision": 0.9722222222222222,
-    "recall": 0.8974358974358975
+    "precision": 0.9705882352941176,
+    "recall": 0.8461538461538461
   },
   "counts": {
-    "tp": 35,
+    "tp": 33,
     "fp": 1,
-    "fn": 4,
+    "fn": 6,
     "tn": 25,
     "nearDuplicatesCaught": 25,
-    "nonReturnableCaught": 7,
+    "nonReturnableCaught": 3,
     "unknownPolicyCaught": 18
   },
   "split": {
-    "onEvidence": 28,
+    "onEvidence": 26,
     "onDefault": 7,
-    "dollarsAvoided": 2481.21,
-    "dollarsOnEvidence": 1081.36,
+    "dollarsAvoided": 2417.23,
+    "dollarsOnEvidence": 1017.38,
     "dollarsOnDefault": 1399.85
   },
   "baselines": [
@@ -38,7 +38,7 @@
       "skipsRight": 39
     }
   ],
-  "verdictAgreement": 0.8769230769230769,
+  "verdictAgreement": 0.8461538461538461,
   "reasonAgreement": 1,
   "cases": [
     {
@@ -49,19 +49,17 @@
       "flags": [],
       "shelfItem": "sh-vitc",
       "score": 1,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c02",
       "expected": "skip",
       "verdict": "skip",
       "rule": "owns-similar",
-      "flags": [
-        "non-returnable-opened"
-      ],
+      "flags": [],
       "shelfItem": "sh-vitc",
       "score": 1,
-      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+      "policyUrl": "https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases"
     },
     {
       "id": "c03",
@@ -71,7 +69,7 @@
       "flags": [],
       "shelfItem": "sh-vitc",
       "score": 0.833,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c04",
@@ -83,7 +81,7 @@
       ],
       "shelfItem": "sh-vitc",
       "score": 1,
-      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp"
+      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp#A0467"
     },
     {
       "id": "c05",
@@ -98,14 +96,12 @@
     {
       "id": "c06",
       "expected": "skip",
-      "verdict": "skip",
-      "rule": "overlap-non-returnable",
-      "flags": [
-        "non-returnable-opened"
-      ],
+      "verdict": "wait",
+      "rule": "no-price-history",
+      "flags": [],
       "shelfItem": "sh-ha",
       "score": 0.75,
-      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+      "policyUrl": "https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases"
     },
     {
       "id": "c07",
@@ -122,12 +118,10 @@
       "expected": "buy",
       "verdict": "buy",
       "rule": "clear-to-buy",
-      "flags": [
-        "non-returnable-opened"
-      ],
+      "flags": [],
       "shelfItem": "sh-niacinamide",
       "score": 0.167,
-      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+      "policyUrl": "https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases"
     },
     {
       "id": "c09",
@@ -137,7 +131,7 @@
       "flags": [],
       "shelfItem": null,
       "score": null,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c10",
@@ -191,7 +185,7 @@
       "flags": [],
       "shelfItem": "sh-gel",
       "score": 0.75,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened?"
     },
     {
       "id": "c15",
@@ -203,7 +197,7 @@
       ],
       "shelfItem": "sh-cream",
       "score": 1,
-      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp"
+      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp#A0467"
     },
     {
       "id": "c16",
@@ -213,7 +207,7 @@
       "flags": [],
       "shelfItem": "sh-gel",
       "score": 0.75,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened?"
     },
     {
       "id": "c17",
@@ -223,7 +217,7 @@
       "flags": [],
       "shelfItem": "sh-gel",
       "score": 0.9,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c18",
@@ -243,7 +237,7 @@
       "flags": [],
       "shelfItem": "sh-gel",
       "score": 0.8,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened?"
     },
     {
       "id": "c20",
@@ -253,7 +247,7 @@
       "flags": [],
       "shelfItem": "sh-gel",
       "score": 1,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened?"
     },
     {
       "id": "c21",
@@ -296,12 +290,10 @@
       "expected": "skip",
       "verdict": "skip",
       "rule": "owns-similar",
-      "flags": [
-        "non-returnable-opened"
-      ],
+      "flags": [],
       "shelfItem": "sh-lrp-milk",
       "score": 0.95,
-      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+      "policyUrl": "https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases"
     },
     {
       "id": "c25",
@@ -311,19 +303,17 @@
       "flags": [],
       "shelfItem": "sh-lrp-milk",
       "score": 0.875,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c26",
       "expected": "skip",
-      "verdict": "skip",
-      "rule": "overlap-non-returnable",
-      "flags": [
-        "non-returnable-opened"
-      ],
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [],
       "shelfItem": "sh-lrp-milk",
       "score": 0.75,
-      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+      "policyUrl": "https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases"
     },
     {
       "id": "c27",
@@ -333,7 +323,7 @@
       "flags": [],
       "shelfItem": "sh-lrp-milk",
       "score": 1,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c28",
@@ -345,7 +335,7 @@
       ],
       "shelfItem": "sh-lrp-milk",
       "score": 1,
-      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp"
+      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp#A0467"
     },
     {
       "id": "c29",
@@ -415,7 +405,7 @@
       "flags": [],
       "shelfItem": "sh-cleanser",
       "score": 0.75,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened?"
     },
     {
       "id": "c35",
@@ -437,7 +427,7 @@
       "flags": [],
       "shelfItem": "sh-foundation",
       "score": 0.95,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c37",
@@ -526,12 +516,10 @@
       "expected": "buy",
       "verdict": "wait",
       "rule": "no-price-history",
-      "flags": [
-        "non-returnable-opened"
-      ],
+      "flags": [],
       "shelfItem": "sh-lipstick",
       "score": 0.4,
-      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+      "policyUrl": "https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases"
     },
     {
       "id": "c45",
@@ -551,7 +539,7 @@
       "flags": [],
       "shelfItem": "sh-lipoil",
       "score": 1,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c47",
@@ -561,7 +549,7 @@
       "flags": [],
       "shelfItem": "sh-lipoil",
       "score": 0.625,
-      "policyUrl": "https://www.ulta.com/guestservices/all"
+      "policyUrl": "https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used"
     },
     {
       "id": "c48",
@@ -593,7 +581,7 @@
       "flags": [],
       "shelfItem": "sh-setting",
       "score": 0.75,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened?"
     },
     {
       "id": "c51",
@@ -612,12 +600,10 @@
       "expected": "buy",
       "verdict": "buy",
       "rule": "replacing-run-out",
-      "flags": [
-        "non-returnable-opened"
-      ],
+      "flags": [],
       "shelfItem": null,
       "score": null,
-      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+      "policyUrl": "https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases"
     },
     {
       "id": "c53",
@@ -723,7 +709,7 @@
       ],
       "shelfItem": "sh-headphones",
       "score": 0.65,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Are%20there%20any%20return%20exceptions?"
     },
     {
       "id": "c62",
@@ -767,7 +753,7 @@
       "flags": [],
       "shelfItem": "sh-vitc",
       "score": 0.5,
-      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened?"
     }
   ]
 }

@@ -27,7 +27,18 @@ interface Change {
   what: string;
   result: string;
 }
-const provenance = JSON.parse(readFileSync(`${DIR}/provenance.json`, "utf8")) as { expectations: { commit: string; at: string }; engine: { commit: string; at: string }; firstRun: { commit: string; at: string }; changes: Change[] };
+/** A corrected input (a store policy read from the wrong document) and the expectations it changed, fixed before any re-run. */
+interface Correction {
+  on: string;
+  what: string;
+  policy: { commit: string; at: string };
+  expectations: { commit: string; at: string; cases: string[] };
+  before: string;
+  after: string;
+  afterNote?: string;
+}
+const provenance = JSON.parse(readFileSync(`${DIR}/provenance.json`, "utf8")) as { expectations: { commit: string; at: string }; engine: { commit: string; at: string }; firstRun: { commit: string; at: string }; changes: Change[]; corrections?: Correction[] };
+const corrections = provenance.corrections ?? [];
 
 const outcomes = set.cases.map((c) => runCase(c, set, shelf, bands));
 const s = scoreOutcomes(outcomes);
@@ -88,19 +99,27 @@ ${base.map((b) => `| ${b.label} | ${b.skipCorrect} of ${s.n} | ${b.skipsMade} | 
 - Near-duplicates caught: ${s.nearDuplicatesCaught}
 - Full verdict agreement (skip, wait, buy, ask): ${pct(s.verdictAgreement)}; deciding reason matches the expected one in ${pct(s.reasonAgreement)} of agreeing cases.
 
-Test set: ${s.n} real products with the prices and store policies captured on 2026-11-06 (US Eastern), a fictional shopper's shelf and budgets with the scenario's "today" set to ${set.asOf}, and expected verdicts written by hand before the engine ran. See \`README.md\` in this folder.
+Test set: ${s.n} real products with the prices and store policies captured on 2026-11-06 (US Eastern)${corrections.length ? `, store policies corrected on ${corrections.map((c) => c.on).join(", ")}` : ""}, a fictional shopper's shelf and budgets with the scenario's "today" set to ${set.asOf}, and expected verdicts written by hand before the engine ran. See \`README.md\` in this folder.
 
-Order of work: expectations committed in ${provenance.expectations.commit.slice(0, 7)} at ${et(provenance.expectations.at)}; the engine in ${provenance.engine.commit.slice(0, 7)} at ${et(provenance.engine.at)}; the first scored run in ${provenance.firstRun.commit.slice(0, 7)} at ${et(provenance.firstRun.at)}. Later engine changes are listed in \`provenance.json\`; the expectations have not changed.
+Order of work: expectations committed in ${provenance.expectations.commit.slice(0, 7)} at ${et(provenance.expectations.at)}; the engine in ${provenance.engine.commit.slice(0, 7)} at ${et(provenance.engine.at)}; the first scored run in ${provenance.firstRun.commit.slice(0, 7)} at ${et(provenance.firstRun.at)}. Later engine changes are listed in \`provenance.json\`; ${corrections.length ? `the expectations were corrected ${corrections.length === 1 ? "once, before re-running" : `${corrections.length} times, each before re-running`} (see Corrections).` : "the expectations have not changed."}
 
 Engine settings: identity confidence at least ${SETTINGS.minIdentityConfidence}, lead time ${SETTINGS.leadDays} days, urgent within ${SETTINGS.urgentDays} days, price tolerance ${SETTINGS.tolerance}, minimum depth ${SETTINGS.minDepth}, well above typical at +${SETTINGS.aboveTypical * 100}%.
 
 ## After later changes
 
-Engine changes after the first scored run, each scored against the same expectations (from \`provenance.json\`). The numbers above are from the engine as it is now.
+Engine changes after the first scored run, each scored against the expectations as they stood at the time (from \`provenance.json\`). The numbers above are from the engine as it is now.
 
 ${provenance.changes.length ? `| Code at | Committed (US Eastern) | What changed | Skip decisions correct |\n|---|---|---|---|\n${provenance.changes.map((c) => `| ${c.commit?.slice(0, 7) ?? ""} | ${c.at ? et(c.at) : ""} | ${c.what} | ${c.result} |`).join("\n")}` : "None."}
 
-## Wrong skips
+${corrections.length ? `## Corrections
+
+Inputs found wrong after the first run. The input was fixed first, then the expectations it affected, both before re-running; the engine was not changed with them.
+
+| Date | What was wrong | Input fixed in | Expectations fixed in | Cases | Skip decisions correct before | After |
+|---|---|---|---|---|---|---|
+${corrections.map((c) => `| ${c.on} | ${c.what} | ${c.policy.commit.slice(0, 7)} at ${et(c.policy.at)} | ${c.expectations.commit.slice(0, 7)} at ${et(c.expectations.at)} | ${c.expectations.cases.join(", ")} | ${c.before} | ${c.after}${c.afterNote ? `. ${c.afterNote}` : ""} |`).join("\n")}
+
+` : ""}## Wrong skips
 
 ${list(s.wrongSkips)}
 

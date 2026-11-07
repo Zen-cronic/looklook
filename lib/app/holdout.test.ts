@@ -79,6 +79,22 @@ describe("held-out re-runs after later changes", () => {
   });
 });
 
+describe("held-out corrections", () => {
+  it("correct h09's reasons for CVS's beauty policy without touching the scored verdict or headline", () => {
+    const r = heldOutResult();
+    expect(r.skipCorrect).toBe(28);
+    expect(r.corrections).toHaveLength(1);
+    const [c] = r.corrections;
+    expect(c.expectations.cases).toEqual(["h09"]);
+    expect(c.policy.at < c.expectations.at).toBe(true);
+    const h09 = r.cases.find((x) => x.id === "h09")!;
+    expect(h09).toMatchObject({ expected: "skip", got: "skip", rule: "owns-similar", expectedReasons: ["owns-similar"] });
+    expect(h09.why).not.toMatch(/CVS/);
+    expect(frozen.cases.find((x: { id: string }) => x.id === "h09")).toMatchObject({ expected: "skip", verdict: "skip", rule: "owns-similar" });
+    expect(history.afterChanges.find((a: { commit: string }) => a.commit === c.expectations.commit)?.skipCorrect).toBe(29);
+  });
+});
+
 describe("eval routes", () => {
   let skipGET: () => Promise<Response>;
   let holdoutGET: () => Promise<Response>;

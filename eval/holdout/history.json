@@ -48,6 +48,50 @@
         "h10"
       ],
       "verdictAgreement": 0.9
+    },
+    {
+      "commit": "e2c06ee60e7cb6d062188f59224e4a745c0b2e11",
+      "at": "2026-11-07T00:42:40-05:00",
+      "what": "Store return policies corrected (CVS beauty takes opened items back; Target's opened-electronics rule) and h09's expected reasons; engine unchanged.",
+      "skipCorrect": 29,
+      "n": 30,
+      "precision": 1,
+      "recall": 0.9230769230769231,
+      "baselines": [
+        {
+          "id": "always-skip",
+          "label": "Always say skip",
+          "skipCorrect": 13
+        },
+        {
+          "id": "same-category",
+          "label": "Skip whenever you own anything in the same category",
+          "skipCorrect": 18
+        }
+      ],
+      "wrongSkips": [],
+      "missedSkips": [
+        "h10"
+      ],
+      "verdictAgreement": 0.9
+    }
+  ],
+  "corrections": [
+    {
+      "on": "2026-11-07",
+      "what": "The policy table said CVS may refuse opened beauty; it cited CVS's general returns PDF, and the beauty section of CVS's return policy page takes it back with a receipt.",
+      "policy": {
+        "commit": "a37226a51fde1044551e7f850c471cd9e165fc98",
+        "at": "2026-11-07T00:41:35-05:00"
+      },
+      "expectations": {
+        "commit": "e2c06ee60e7cb6d062188f59224e4a745c0b2e11",
+        "at": "2026-11-07T00:42:40-05:00",
+        "cases": [
+          "h09"
+        ]
+      },
+      "scoredRunEffect": "None on the verdict or the 28 of 30: h09 was a near-duplicate skip the engine decided on the shelf (owns-similar). Only its reasons and why text changed."
     }
   ]
 }

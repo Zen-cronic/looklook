@@ -50,6 +50,15 @@ export interface AfterChangesRun {
   verdictAgreement: number;
 }
 
+/** An input found wrong after the scored run, fixed before re-running. The scored run is never re-scored. */
+export interface HeldOutCorrection {
+  on: string;
+  what: string;
+  policy: { commit: string; at: string };
+  expectations: { commit: string; at: string; cases: string[] };
+  scoredRunEffect: string;
+}
+
 export interface HeldOutResult {
   source: string;
   asOf: string;
@@ -72,6 +81,7 @@ export interface HeldOutResult {
   otherMisses: HeldOutRow[];
   cases: HeldOutRow[];
   afterChanges: AfterChangesRun[];
+  corrections: HeldOutCorrection[];
 }
 
 interface CaseJson {
@@ -153,6 +163,7 @@ export function heldOutResult(): HeldOutResult {
     otherMisses: rows.filter((x) => x.expected !== x.got && isSkip(x.expected) === isSkip(x.got)),
     cases: rows,
     afterChanges: history.afterChanges as unknown as AfterChangesRun[],
+    corrections: ((history as unknown as { corrections?: HeldOutCorrection[] }).corrections ?? []),
   };
 }
 
@@ -204,6 +215,7 @@ export function heldOutJson(r: HeldOutResult, full = false) {
     wrongSkips: r.wrongSkips.map(rowJson),
     missedSkips: r.missedSkips.map(rowJson),
     otherMisses: r.otherMisses.map(rowJson),
+    corrections: r.corrections.map((c) => ({ on: c.on, what: c.what, policyFix: { commit: c.policy.commit.slice(0, 7), at: c.policy.at }, expectationsFix: { commit: c.expectations.commit.slice(0, 7), at: c.expectations.at, cases: c.expectations.cases }, effectOnScoredRun: c.scoredRunEffect })),
     ...(full ? { verdictAgreement: round3(r.verdictAgreement), runnerFixes: r.runnerFixes, cases: r.cases.map(rowJson) } : {}),
     scenarioDate: r.asOf,
   };

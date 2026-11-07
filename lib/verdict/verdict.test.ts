@@ -77,16 +77,18 @@ describe("decide: owning it already", () => {
 
   it("skips a near-duplicate and records the shelf item and the store policy", () => {
     const d = run({ product: product({ attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] } }), store: "cvs" });
-    expect(d).toMatchObject({ verdict: "skip", rule: "owns-similar", flags: ["non-returnable-opened"] });
+    expect(d).toMatchObject({ verdict: "skip", rule: "owns-similar", flags: [] });
     expect(d.evidence.shelf).toMatchObject({ itemId: "vitc", relation: "near-duplicate" });
-    expect(d.evidence.policy).toMatchObject({ retailerId: "cvs", returnableOpened: "no" });
+    expect(d.evidence.policy).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: 60 });
     expect(d.evidence.policy?.sourceUrl).toMatch(/^https:\/\/www\.cvs\.com\//);
   });
 
   it("skips a partial overlap only where opened returns aren't accepted", () => {
     const overlap = product({ category: "sunscreen", attributes: { filter: "mineral", area: "face", spfBand: "50+", finish: "sheer" } });
-    expect(run({ product: overlap, store: "cvs" })).toMatchObject({ verdict: "skip", rule: "overlap-non-returnable" });
+    expect(run({ product: overlap, store: "walgreens" })).toMatchObject({ verdict: "skip", rule: "overlap-non-returnable" });
     expect(run({ product: overlap, store: "dermstore.com" }).rule).toBe("overlap-non-returnable");
+    // CVS takes opened beauty back, so a partial overlap there is not a skip.
+    expect(run({ product: overlap, store: "cvs" }).verdict).not.toBe("skip");
     const atUlta = run({ product: overlap, store: "ulta" });
     expect(atUlta.verdict).toBe("buy");
     expect(atUlta.evidence.shelf?.relation).toBe("overlap");
@@ -152,7 +154,9 @@ describe("reasons", () => {
   const p = product({ attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] } });
 
   it("builds a template from evidence only", () => {
-    expect(templateReason(d, p)).toBe("You already own TruSkin Vitamin C Serum, which does the same job, and CVS Pharmacy may refuse it once opened.");
+    expect(templateReason(d, p)).toBe("You already own TruSkin Vitamin C Serum, which does the same job.");
+    const atWalgreens = run({ product: p, store: "walgreens" });
+    expect(templateReason(atWalgreens, p)).toBe("You already own TruSkin Vitamin C Serum, which does the same job, and Walgreens takes it back opened only on conditions.");
   });
 
   it("uses the model's sentence and never sends a verdict choice back", async () => {

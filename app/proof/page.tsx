@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { devSetRuns, runSkipEval, replaySummary, type CaseRow } from "@/lib/app/eval";
+import { devCorrections, devSetRuns, runSkipEval, replaySummary, type CaseRow } from "@/lib/app/eval";
 import { RULE_TEXT } from "@/lib/app/explain";
 import { baselineScore, heldOutHeadline, heldOutResult, type HeldOutRow } from "@/lib/app/holdout";
 import { formatDollars } from "@/lib/app/money";
@@ -43,6 +43,7 @@ export default function ProofPage() {
       <Suspense fallback={<div className="skeleton" />}>
         <DevelopmentSet />
       </Suspense>
+      <Corrections />
     </main>
   );
 }
@@ -156,7 +157,8 @@ function HeldOut() {
           </li>
         </ol>
         <p className="small muted">
-          The numbers on this page are read from that run&apos;s committed results (eval/holdout/results.json), not re-run, so later engine changes can&apos;t move them. Neither the expected answers nor the engine were changed after seeing the result.
+          The numbers on this page are read from that run&apos;s committed results (eval/holdout/results.json), not re-run, so later engine changes can&apos;t move them. The engine was not changed after seeing the result.{" "}
+          {r.corrections.length ? "One expected answer's reason text was later corrected for a store policy we had misread; see Corrections." : "Nor were the expected answers."}
         </p>
       </section>
 
@@ -209,6 +211,47 @@ function HeldOut() {
         </section>
       ))}
     </>
+  );
+}
+
+/** Inputs found wrong after a run: what was wrong, the commits that fixed it (input first, then the expected answers), and the numbers before and after. */
+function Corrections() {
+  const held = heldOutResult();
+  const dev = devCorrections();
+  if (!held.corrections.length && !dev.length) return null;
+  return (
+    <section className="card stack-sm" data-testid="corrections">
+      <h2>Corrections</h2>
+      {dev.map((c) => {
+        const h = held.corrections.find((x) => x.expectations.commit === c.expectations.commit);
+        const rerun = held.afterChanges.find((a) => a.commit === c.expectations.commit);
+        return (
+          <div key={c.expectations.commit} className="stack-sm">
+            <p>
+              <strong>{et(c.policy.at).split(",").slice(0, 2).join(",")}: store return policies.</strong> {c.what}
+            </p>
+            <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
+              <li>
+                Policy table fixed first: commit <span className="mono">{c.policy.commit.slice(0, 7)}</span>, {et(c.policy.at)}.
+              </li>
+              <li>
+                Expected answers corrected next, before any re-run: commit <span className="mono">{c.expectations.commit.slice(0, 7)}</span>, {et(c.expectations.at)}. Development set: {c.expectations.cases.join(", ")}
+                {h ? `. Held out: ${h.expectations.cases.join(", ")}` : ""}. Each corrected case keeps the answer it replaced.
+              </li>
+              <li>
+                Development set: {c.before} before, {c.after} after.{c.afterNote ? ` ${c.afterNote}` : ""}
+              </li>
+              {h && (
+                <li>
+                  Held out: the headline stays {held.skipCorrect} of {held.n}, read from the scored run in <span className="mono">{held.order.scoredRun.commit.slice(0, 7)}</span>. {h.scoredRunEffect}
+                  {rerun ? ` Re-run after the correction: ${rerun.skipCorrect} of ${rerun.n} (not a held-out number).` : ""}
+                </li>
+              )}
+            </ul>
+          </div>
+        );
+      })}
+    </section>
   );
 }
 
@@ -299,7 +342,9 @@ async function DevelopmentSet() {
               {run.at ? `, ${et(run.at)}` : ""}): {run.result}.
             </li>
           ))}
-          <li>The expected answers were never touched. Case by case: eval/skip-set/RESULTS.md in the repository.</li>
+          <li>
+            {devCorrections(p).length ? "The expected answers changed once, for a store policy we had misread, before re-running (see Corrections)." : "The expected answers were never touched."} Case by case: eval/skip-set/RESULTS.md in the repository.
+          </li>
         </ul>
       </section>
 

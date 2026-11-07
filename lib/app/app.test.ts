@@ -10,7 +10,7 @@ import type { Product } from "../channel3/types";
 import { recordSpend, remainingBudgets } from "./budgets";
 import { buildCheck, confirmCheck, type CheckServices } from "./checks";
 import { addDays, appToday, daysBetween } from "./dates";
-import { runSkipEval } from "./eval";
+import { devCorrections, devSetRuns, runSkipEval } from "./eval";
 import { returnsLine } from "./explain";
 import {
   chargeKind,
@@ -301,17 +301,17 @@ describe("return-policy line", () => {
     expect(returnsLine(decision("yes"))).toEqual({ tone: "ok", text: "Ulta Beauty takes opened beauty back within 30 days, so trying it is low risk." });
     expect(returnsLine(decision("yes", "skip"))?.text).not.toContain("low risk");
     expect(returnsLine(decision("no"))?.text).toContain("may refuse");
-    expect(returnsLine(decision("unknown"))?.tone).toBe("unknown");
   });
 });
 
 describe("skip number", () => {
-  it("recomputes 60 of 65 from the committed test set, with both baselines and the split", () => {
+  it("recomputes 58 of 65 from the committed test set, with both baselines and the split", () => {
     const r = runSkipEval();
-    expect(r.skipCorrect).toBe(60);
+    expect(r.skipCorrect).toBe(58);
     expect(r.n).toBe(65);
     expect(r.wrongSkips).toHaveLength(1);
-    expect(r.missedSkips).toHaveLength(4);
+    expect(r.missedSkips).toHaveLength(6);
+    expect(r.missedSkips.map((c) => c.id)).toEqual(expect.arrayContaining(["c06", "c26"]));
     expect(r.baselines.map((b) => [b.id, b.skipCorrect])).toEqual([
       ["always-skip", 39],
       ["same-category", 40],
@@ -319,6 +319,17 @@ describe("skip number", () => {
     expect(r.split.onEvidence + r.split.onDefault).toBe(r.skipsRight);
     expect(r.split.dollarsAvoided).toBeCloseTo(r.split.dollarsOnEvidence + r.split.dollarsOnDefault, 2);
     expect(r.provenance.expectations.at < r.provenance.engine.at).toBe(true);
+  });
+
+  it("records the store-policy correction: policy first, then expectations, then the re-run", () => {
+    const [c] = devCorrections();
+    expect(c.before).toBe("60 of 65");
+    expect(c.after).toBe(`${runSkipEval().skipCorrect} of 65`);
+    expect(c.policy.at < c.expectations.at).toBe(true);
+    expect(c.expectations.cases).toEqual(["c02", "c06", "c24", "c26", "c61"]);
+    const run = runSkipEval().provenance.changes.find((x) => x.commit === c.expectations.commit);
+    expect(run?.result).toBe(c.after);
+    expect(devSetRuns().find((x) => x.commit === c.expectations.commit)?.label).toMatch(/correction/);
   });
 });
 
@@ -485,11 +496,11 @@ describe("offers at other stores", () => {
     ]);
     const lines = offerLines(offers, "serum");
     expect(lines.map((l) => [l.store, l.returns])).toEqual([
-      ["CVS Pharmacy", "no"],
+      ["CVS Pharmacy", "yes"],
       ["Ulta Beauty", "yes"],
       ["Sephora", "yes"],
     ]);
-    expect(lines[0].returnsText).toBe("may refuse opened");
+    expect(lines[0].returnsText).toBe("takes opened back within 60 days");
     expect(lines[2].returnsText).toMatch(/^takes opened back within \d+ days$/);
   });
 });
