@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { APP_NAME } from "@/lib/brand";
+import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { ResetButton } from "../components/RebuyControls";
 
 export const metadata = { title: "Start here" };
@@ -9,7 +9,7 @@ export default function JudgePage() {
     <main className="page stack-lg">
       <div>
         <h1>Start here</h1>
-        <p className="lede">Six short steps through {APP_NAME}, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
+        <p className="lede">{APP_NAME}, {APP_TAGLINE}. Six short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
       </div>
 
       <ol className="steps">
@@ -25,7 +25,7 @@ export default function JudgePage() {
         <li>
           <div className="stack-sm">
             <h2>Buy once and save PayPal for rebuys</h2>
-            <p>Tap the peptide serum post (buy). Tick Save this payment method, keep the cap, and pay with PayPal or the card fields. Use the sandbox buyer login or test card from the testing instructions on the project's submission page.</p>
+            <p>Tap the peptide serum post (buy). Tick Save this payment method, keep the cap, and pay with PayPal or the card fields. Use the sandbox buyer login or test card from the testing instructions on the project&apos;s submission page.</p>
           </div>
         </li>
         <li>

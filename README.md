@@ -1,5 +1,7 @@
 # LookLook
 
+*look twice before you buy*
+
 **Skip correctness: 55 of 65 skip decisions match answers written down before the engine ran** (skip precision 91.4%, recall 82.1%), on 65 real products against a sample shopper's shelf. Every wrong and missed skip is listed in [`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md) and on the app's `/proof` page; `GET /api/eval/skip` and `npm run eval:skip` recompute it with no network calls.
 
 Before you buy what you saw on your feed, LookLook checks it, and its most common answer is skip. Send it a screenshot of a creator post or a store link. It reads the product, finds it in the catalogue, and checks it against what you already own, this month's budget, the 90-day price history and whether the store takes it back once opened. Then it says **skip**, **wait**, **buy** or asks you to confirm, with the one-line reason and the evidence behind it.
