@@ -1,5 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
+import { DEV_SET_SIZE } from "@/lib/app/eval";
+import { heldOutHeadline, heldOutResult } from "@/lib/app/holdout";
 import { currentSession } from "@/lib/app/session";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { ResetButton } from "../components/RebuyControls";
@@ -7,7 +9,11 @@ import { SampleWeekControls } from "../components/SampleWeek";
 
 export const metadata = { title: "Start here" };
 
+const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
+
 export default function JudgePage() {
+  const heldOut = heldOutResult();
+  const devN = DEV_SET_SIZE;
   return (
     <main className="page stack-lg">
       <div>
@@ -15,6 +21,20 @@ export default function JudgePage() {
         <p className="lede">{APP_NAME}, {APP_TAGLINE}. Seven short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
         <p style={{ marginTop: "0.75rem" }}>PayPal&apos;s shopping tools help you buy what you saw. {APP_NAME} asks whether you should, and when it&apos;s a staple, PayPal Vault makes buying it again one yes.</p>
       </div>
+
+      <section className="card stack-sm" data-testid="headline">
+        <h2>The number</h2>
+        <p>{heldOutHeadline(heldOut)}</p>
+        <p className="small muted">
+          Precision {pct(heldOut.precision)}, recall {pct(heldOut.recall)}. {heldOut.split.onEvidence} of the {heldOut.skipsRight} right skips rest on evidence; {heldOut.split.onDefault} on our default for a store whose opened-return policy we couldn&apos;t find. Expected answers committed in{" "}
+          <span className="mono">{heldOut.order.expectations.commit.slice(0, 7)}</span> after the engine&apos;s last change (<span className="mono">{heldOut.order.engine.commit.slice(0, 7)}</span>), then scored once (<span className="mono">{heldOut.order.scoredRun.commit.slice(0, 7)}</span>).
+        </p>
+        <div className="actions">
+          <Link className="btn small outline" href="/proof">
+            Every case and every miss
+          </Link>
+        </div>
+      </section>
 
       <section className="card stack-sm" data-testid="sample-week">
         <h2>Sample week</h2>
@@ -31,7 +51,7 @@ export default function JudgePage() {
         <li>
           <div className="stack-sm">
             <h2>Check a post</h2>
-            <p>On Check, the last check is the sunscreen post (or tap it again). You already own a sunscreen that does the same job and CVS may refuse opened sunscreen, so the answer is skip. Open See why for the rule, the shelf item and the cited policy, and see the same product at other stores with each store&apos;s policy.</p>
+            <p>On Check, the last check is the sunscreen post (or tap it again). You already own a sunscreen that does the same job, so the answer is skip. Open See why for the rule, the shelf item and the cited policy, and see the same product at other stores with each store&apos;s policy.</p>
             <Link className="btn small" href="/">
               Open Check
             </Link>
@@ -76,7 +96,7 @@ export default function JudgePage() {
         <li>
           <div className="stack-sm">
             <h2>See the events and the number</h2>
-            <p>Webhook events lists what PayPal and Channel3 sent and whether each one verified. How often skip is right re-runs the 65-case test on the server.</p>
+            <p>Webhook events lists what PayPal and Channel3 sent and whether each one verified. How often skip is right leads with the held-out result ({heldOut.skipCorrect} of {heldOut.n} on products it had never seen) and lists every miss with the rule that fired; the {devN}-product set the matching was developed on comes second and re-runs on the server.</p>
             <div className="actions">
               <Link className="btn small" href="/events">
                 Webhook events

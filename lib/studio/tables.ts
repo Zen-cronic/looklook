@@ -191,13 +191,16 @@ export function studioPayload(state: SessionState, today: string): StudioPayload
   };
 }
 
-/** The skip number for the workspace figure, from the same run the proof page shows. */
-export function skipFigure(r: { skipCorrect: number; n: number; baselines: Array<{ id: string; skipCorrect: number }>; split: { dollarsAvoided: number } }): SkipFigure {
+type SkipRun = { skipCorrect: number; n: number; baselines: Array<{ id: string; skipCorrect: number }>; split: { dollarsAvoided: number } };
+
+/** The skip number for the workspace figure: the held-out run first (as the proof page shows it), the development set second. */
+export function skipFigure(heldOut: SkipRun, dev: Pick<SkipRun, "skipCorrect" | "n">): SkipFigure {
   return {
-    right: r.skipCorrect,
-    n: r.n,
-    alwaysSkip: r.baselines.find((b) => b.id === "always-skip")?.skipCorrect ?? 0,
-    sameCategory: r.baselines.find((b) => b.id === "same-category")?.skipCorrect ?? 0,
-    avoided: r.split.dollarsAvoided,
+    right: heldOut.skipCorrect,
+    n: heldOut.n,
+    alwaysSkip: heldOut.baselines.find((b) => b.id === "always-skip")?.skipCorrect ?? 0,
+    sameCategory: heldOut.baselines.find((b) => b.id === "same-category")?.skipCorrect ?? 0,
+    avoided: heldOut.split.dollarsAvoided,
+    dev: { right: dev.skipCorrect, n: dev.n },
   };
 }

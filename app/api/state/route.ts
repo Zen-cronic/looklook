@@ -1,13 +1,14 @@
 import { connection } from "next/server";
 import { appToday } from "@/lib/app/dates";
 import { runSkipEval } from "@/lib/app/eval";
+import { heldOutResult } from "@/lib/app/holdout";
 import { handle, sessionIdOrThrow } from "@/lib/app/http";
 import { dueStaples } from "@/lib/app/payments";
 import { remainingBudgets } from "@/lib/app/budgets";
 import { loadSession } from "@/lib/app/store";
 import { skipFigure, studioPayload, type SkipFigure } from "@/lib/studio/tables";
 
-// The skip test set and engine are fixed in a build, so one run per process is enough.
+// The held-out result is a committed record and the development set and engine are fixed in a build, so once per process is enough.
 let skip: SkipFigure | undefined;
 
 /**
@@ -21,7 +22,7 @@ export async function GET() {
     const sid = await sessionIdOrThrow();
     const s = loadSession(sid);
     const today = appToday(s.dayOffset);
-    skip ??= skipFigure(runSkipEval());
+    skip ??= skipFigure(heldOutResult(), runSkipEval());
     return Response.json({
       today,
       dayOffset: s.dayOffset,

@@ -4,9 +4,11 @@
 
 For anyone who buys skincare and makeup they saw on their feed and ends up with a second of something they already own: LookLook checks the post against your shelf, your budget, the price history and the store's return policy before you pay.
 
-<img src="docs/verdict-skip.png" alt="A skip verdict on a phone: you already own a sunscreen that does the same job, and CVS may refuse it once opened" width="320">
+<img src="docs/verdict-skip.png" alt="A skip verdict on a phone: you already own a sunscreen that does the same job" width="320">
 
-**60 of 65 skip decisions match answers written down before the engine ran.** Saying skip to everything gets 39 of 65; skipping anything in a category you already own gets 40 of 65. Of the 35 right skips, 28 rest on evidence (the shelf, or a cited store policy) and 7 on our default that an unknown opened-return policy counts as not returnable; together they avoid $2,481.21 of duplicate or hard-to-return buys. Every wrong and missed skip is in [`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md) and on the app's `/proof` page; `GET /api/eval/skip` and `npm run eval:skip` recompute it with no network calls.
+**On 30 products it had never seen, LookLook's skip was right 28 times. Saying skip to everything gets 13; skipping anything in a category you own gets 19.** Skip precision 92.3% (12 of 13 skips right), recall 92.3% (12 of 13 caught). Of the 12 right skips, 10 rest on evidence (the shelf, or a cited store policy) and 2 on our default that an unknown opened-return policy counts as not returnable. The order of work is in git: the engine last changed in `4fbf420` (2026-11-06 22:28 EST), the 30 expected answers were committed in `effe79b` (2026-11-07 00:17 EST), and the one scored run was committed as generated in `e3cd601` (2026-11-07 00:20 EST). The wrong skip, the missed skip and the five other misses are in [`eval/holdout/RESULTS.md`](eval/holdout/RESULTS.md) and on the app's `/proof` page; `GET /api/eval/holdout` returns every case, read from that run's committed results.
+
+The 65 products the matching was developed on come second, because they were used to improve it: 60 of 65 there (saying skip to everything gets 39; same category gets 40). Its first scored run was 55 of 65; one similarity change later it was 60 of 65, with the expected answers untouched ([`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md)). `GET /api/eval/skip` and `npm run eval:skip` re-run it with no network calls.
 
 PayPal's shopping tools help you buy what you saw. LookLook asks whether you should, and when it's a staple, PayPal Vault makes buying it again one yes.
 
@@ -23,7 +25,7 @@ Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login
 3. **Rebuy with one yes.** On Rebuys, move the simulated date a week ahead; staples due within five days ask for your yes.
 4. **See a decline and recover.** A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.
 5. **Wait for a lower price.** A wait verdict can start a real Channel3 price alert; a labelled test drop runs a price event through the same handler.
-6. **See the events and the number.** `/events` lists every webhook and whether it verified; `/proof` re-runs the 65-case test.
+6. **See the events and the number.** `/events` lists every webhook and whether it verified; `/proof` shows the held-out result with every miss, then re-runs the 65-product development set.
 
 ## Built with
 
@@ -91,7 +93,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 - **Who sells what.** Checkout and rebuys inside LookLook are sold by "LookLook Test Store (PayPal sandbox)", a PayPal sandbox merchant, not by the retailer in the post; the store names on a verdict are links to the retailers, and we may earn a commission when you buy through them.
 - **PayPal activity import is off.** Filling the shelf from PayPal activity needs the Transaction Search permission on the PayPal app, which this sandbox app doesn't have yet (403). The shelf comes from manual adds and purchases made in the app.
 - **Waiting saves little on beauty.** In the wait-timing replay (28 purchases, real price histories), waiting by our rule paid $58.56 (1.7%) less than buying on the first price alert, and only $1.07 of that was beauty. For beauty the value is in the skip, not the wait.
-- The skip test set's shopper, shelf, budgets and expected answers are made up by one person. Five of 65 skip decisions disagree with them; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable; 7 of the 35 right skips depend on that default.
+- Both skip sets' shoppers, shelves, budgets and expected answers are made up by one person. On the held-out set the wrong skip is a body sunscreen read as overlapping a face sunscreen, the missed skip a matte setting spray when a dewy one is owned, and three products (a conditioner, a hair oil, a kettle) got "ask" because the app had no such category at the time. On the development set five of 65 skip decisions disagree; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable; 7 of the 35 right skips depend on that default.
 - The first scored run was 55 of 65. Since then the similarity rule changed once (product type, actives, finish and form compared with half credit for neighbouring values; see `eval/skip-set/provenance.json`); the expected answers were not touched. A first version of that change scored 58 of 65 before its actives rule was replaced; both runs are recorded in `eval/skip-set/README.md`.
 - Dates: receipts, notices, refunds, restocks and event times are real, in US Eastern time. The Rebuys date control moves only run-out dates, look-again dates and this month's budgets; while it is ahead, every page that uses it says "Simulated date" and dates counted from it carry "(simulated date)". A bought verdict keeps the reason it had when it was decided, shown as "At the time: …" under a Bought state.
 - The four sample posts are mock creator posts we drew; the products and prices in them are real.

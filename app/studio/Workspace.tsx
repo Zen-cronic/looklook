@@ -296,7 +296,7 @@ export default function Workspace({ initial, narrow }: Props) {
             comp: SkipWidget,
             defaultSize: { width: 300, height: 240 },
             minSize: { width: 220, height: 160 },
-            ai: { description: "How often skip is right on the 65-product test, with a link to every case. Needs no data." },
+            ai: { description: "How often skip is right on 30 held-out products it had never seen (the single scored run), beside saying skip to everything, with a link to every case. Needs no data." },
           },
         ],
         menu: [...base.menu, { label: APP_NAME, widgetIds: ["verdictList", "budgetFigure", "skipFigure"] }],

@@ -272,7 +272,7 @@ export function BudgetWidget(params: AgWidgetParams) {
   );
 }
 
-/** How often skip is right on the 65-case test, beside saying skip to everything. */
+/** How often skip is right: the held-out run, beside the two simple baselines, with the development set second. */
 export function SkipWidget(params: AgWidgetParams) {
   const skip = (params.context as WorkspaceContext).skip;
   useEffect(() => {
@@ -286,7 +286,7 @@ export function SkipWidget(params: AgWidgetParams) {
         {skip.right} of {skip.n}
       </div>
       <div className="small muted">
-        test products. Saying skip to everything gets {skip.alwaysSkip} of {skip.n}.
+        products it had never seen. Saying skip to everything gets {skip.alwaysSkip}; skipping anything in a category you own gets {skip.sameCategory}. On the {skip.dev.n} it was developed on: {skip.dev.right}.
       </div>
       <a className="btn small outline" href="/proof">
         See every case

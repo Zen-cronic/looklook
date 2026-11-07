@@ -1,0 +1,21 @@
+{
+  "note": "The order of work for the held-out set. Times in US Eastern. The scored numbers shown in the app and README are read from results.json (the single scored run); they are never re-run.",
+  "engine": {
+    "commit": "4fbf4208732ffc08f4f6351ec8a1b1763b9e06e7",
+    "at": "2026-11-06T22:28:30-05:00",
+    "what": "the verdict engine and scorer as last changed before the expectations"
+  },
+  "expectations": {
+    "commit": "effe79b2b93f7296e9e3f758decd09c58a1ba81a",
+    "at": "2026-11-07T00:17:29-05:00",
+    "what": "30 products, the second shopper's shelf and budgets, and the expected verdicts"
+  },
+  "scoredRun": {
+    "commit": "e3cd6017f98208be5a580f1f1c0166ebcf993bb9",
+    "ranAt": "2026-11-07T00:19:52-05:00",
+    "at": "2026-11-07T00:20:06-05:00",
+    "what": "the single scored run on the code at the expectations commit, committed as generated: 28 of 30"
+  },
+  "unsupportedCategoriesAtRun": ["conditioner", "hair-oil", "kettle", "lip-balm"],
+  "afterChanges": []
+}

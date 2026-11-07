@@ -1,7 +1,8 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { runSkipEval, replaySummary, type CaseRow } from "@/lib/app/eval";
+import { devSetRuns, runSkipEval, replaySummary, type CaseRow } from "@/lib/app/eval";
 import { RULE_TEXT } from "@/lib/app/explain";
+import { baselineScore, heldOutHeadline, heldOutResult, type HeldOutRow } from "@/lib/app/holdout";
 import { formatDollars } from "@/lib/app/money";
 import type { RuleId } from "@/lib/verdict/types";
 import { RerunEval } from "../components/RerunEval";
@@ -11,22 +12,203 @@ export const metadata = { title: "How often skip is right" };
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
-/** "Nov 6, 2026, 8:57 PM ET" from an ISO time with its offset. */
+/** "Nov 6, 2026, 10:28 PM EST" from an ISO time with its offset. */
 function et(iso: string): string {
-  return `${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).format(new Date(iso))} ET`;
+  return new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York", timeZoneName: "short" }).format(new Date(iso));
+}
+
+const CATEGORY_WORDS: Record<string, string> = { conditioner: "conditioner", "hair-oil": "hair oil", kettle: "kettle", "lip-balm": "lip balm" };
+
+function Chip({ verdict }: { verdict: string }) {
+  return <span className={`chip ${verdict}`}>{VERDICT_WORD[verdict as keyof typeof VERDICT_WORD] ?? verdict}</span>;
+}
+
+/** The rule that fired, in words; for an ask on a category the app didn't have yet, says so. */
+function ruleText(rule: string, onDefault: boolean, unsupported?: string): string {
+  if (unsupported) return `It asked: the app had no ${CATEGORY_WORDS[unsupported] ?? unsupported} category yet, so the product couldn't be matched (rule: ${RULE_TEXT[rule as RuleId]})`;
+  return `${RULE_TEXT[rule as RuleId] ?? rule}${onDefault ? " (store policy unknown)" : ""}`;
 }
 
 export default function ProofPage() {
+  const held = heldOutResult();
   return (
     <main className="page wide stack-lg">
-      <div style={{ maxWidth: "46rem" }}>
+      <div style={{ maxWidth: "48rem" }}>
         <h1>How often is skip right?</h1>
-        <p className="lede">65 real products, a sample shopper&apos;s shelf and budgets, and the store return policies we cite. The right answer for each was written down and committed before the engine existed.</p>
+        <p className="lede" data-testid="headline">
+          {heldOutHeadline(held)}
+        </p>
       </div>
+      <HeldOut />
       <Suspense fallback={<div className="skeleton" />}>
-        <Proof />
+        <DevelopmentSet />
       </Suspense>
     </main>
+  );
+}
+
+function HeldOutRows({ rows, showExpected }: { rows: HeldOutRow[]; showExpected?: boolean }) {
+  return (
+    <div className="table-wrap stacked">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            <th>Store</th>
+            {showExpected && <th>Expected</th>}
+            <th>Engine said</th>
+            <th>Why (written first)</th>
+            <th>Rule that fired</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id}>
+              <td data-label="Product">
+                <span className="mono small">{r.id}</span> {r.product}
+              </td>
+              <td data-label="Store">{r.store}</td>
+              {showExpected && (
+                <td data-label="Expected">
+                  <Chip verdict={r.expected} />
+                </td>
+              )}
+              <td data-label="Engine said">
+                <Chip verdict={r.got} />
+              </td>
+              <td data-label="Why (written first)">{r.why}</td>
+              <td data-label="Rule that fired" className="small">
+                {ruleText(r.rule, r.onDefault, r.unsupportedCategory)}
+                {r.owned && !r.unsupportedCategory ? `. Closest owned: ${r.owned} (${(r.score ?? 0).toFixed(2)})` : ""}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function HeldOut() {
+  const r = heldOutResult();
+  const o = r.order;
+  return (
+    <>
+      <div className="figures">
+        <div className="figure lead">
+          <div className="big">
+            {r.skipCorrect} of {r.n}
+          </div>
+          <p>skip decisions right on products it had never seen, against answers written down first.</p>
+        </div>
+        <div className="figure">
+          <div className="big">
+            {baselineScore(r, "always-skip")} of {r.n}
+          </div>
+          <p>if you said skip to everything.</p>
+        </div>
+        <div className="figure">
+          <div className="big">
+            {baselineScore(r, "same-category")} of {r.n}
+          </div>
+          <p>if you skipped anything in a category you already own.</p>
+        </div>
+        <div className="figure">
+          <div className="big">{pct(r.precision)}</div>
+          <p>
+            precision: {r.skipsRight} of {r.skipsMade} skips were right. Recall {pct(r.recall)}: it caught {r.skipsRight} of the {r.skipsExpected} that should be skipped.
+          </p>
+        </div>
+      </div>
+
+      <section className="card stack-sm">
+        <h2>What the held-out skips rest on</h2>
+        <div className="split-bars">
+          <div className="split-row evidence">
+            <strong>{r.split.onEvidence}</strong>
+            <span>
+              right skips decided on evidence: you own the same or a near-identical item, or the store&apos;s cited policy takes opened returns only on conditions or not at all ({formatDollars(r.split.dollarsOnEvidence)}).
+            </span>
+          </div>
+          <div className="split-row default">
+            <strong>{r.split.onDefault}</strong>
+            <span>
+              right skips that needed our default: a partial overlap at a store whose opened-return policy we couldn&apos;t find, counted as not returnable ({formatDollars(r.split.dollarsOnDefault)}).
+            </span>
+          </div>
+        </div>
+        <p className="small muted">
+          {r.n} real products not used while building the matching, a second fictional shopper with her own shelf and budgets, and expected answers written by hand before the engine saw any of them. Scored once. Full agreement on skip, wait, buy or ask: {pct(r.verdictAgreement)}.
+        </p>
+      </section>
+
+      <section className="card stack-sm" data-testid="order-of-work">
+        <h2>Order of work</h2>
+        <ol style={{ marginLeft: "1.1rem" }} className="stack-sm">
+          <li>
+            Engine last changed: commit <span className="mono">{o.engine.commit.slice(0, 7)}</span>, {et(o.engine.at)}.
+          </li>
+          <li>
+            Expected answers, shelf and prices committed: <span className="mono">{o.expectations.commit.slice(0, 7)}</span>, {et(o.expectations.at)}.
+          </li>
+          <li>
+            The one scored run, at {et(o.scoredRun.ranAt)} on the code at <span className="mono">{o.expectations.commit.slice(0, 7)}</span>, committed as generated in <span className="mono">{o.scoredRun.commit.slice(0, 7)}</span>, {et(o.scoredRun.at)}: {r.skipCorrect} of {r.n}.
+          </li>
+        </ol>
+        <p className="small muted">
+          The numbers on this page are read from that run&apos;s committed results (eval/holdout/results.json), not re-run, so later engine changes can&apos;t move them. Neither the expected answers nor the engine were changed after seeing the result.
+        </p>
+      </section>
+
+      <section>
+        <div className="section-head">
+          <h2>Held out: every wrong skip ({r.wrongSkips.length})</h2>
+        </div>
+        <p className="small muted" style={{ marginBottom: "0.6rem" }}>
+          It said skip, but the written answer was something else.
+        </p>
+        <HeldOutRows rows={r.wrongSkips} showExpected />
+      </section>
+
+      <section>
+        <div className="section-head">
+          <h2>Held out: every missed skip ({r.missedSkips.length})</h2>
+        </div>
+        <p className="small muted" style={{ marginBottom: "0.6rem" }}>
+          The written answer was skip, and the engine said something else.
+        </p>
+        <HeldOutRows rows={r.missedSkips} showExpected />
+      </section>
+
+      <section>
+        <div className="section-head">
+          <h2>Held out: the other misses ({r.otherMisses.length})</h2>
+        </div>
+        <p className="small muted" style={{ marginBottom: "0.6rem" }}>
+          Not about skip, so they don&apos;t change the number, but the answer was wrong.
+        </p>
+        <HeldOutRows rows={r.otherMisses} showExpected />
+      </section>
+
+      <details className="card disclosure">
+        <summary>The {r.catches.length} correct held-out skips</summary>
+        <div style={{ marginTop: "0.85rem" }}>
+          <HeldOutRows rows={r.catches} />
+        </div>
+      </details>
+
+      {r.afterChanges.map((a) => (
+        <section className="card stack-sm" key={a.commit} data-testid="after-changes">
+          <h2>Held out, after later changes</h2>
+          <p>
+            Re-run on commit <span className="mono">{a.commit.slice(0, 7)}</span>, {et(a.at)}: {a.skipCorrect} of {a.n} skip decisions right (saying skip to everything gets {baselineScore(a, "always-skip")}; skipping anything in a category you own gets {baselineScore(a, "same-category")}). {a.what}
+          </p>
+          <p className="small muted">
+            These products showed the gaps that change fills, so this is no longer a held-out number. The headline stays {r.skipCorrect} of {r.n}, from the run before it. Wrong skips: {a.wrongSkips.length ? a.wrongSkips.join(", ") : "none"}. Missed skips: {a.missedSkips.length ? a.missedSkips.join(", ") : "none"}.
+          </p>
+        </section>
+      ))}
+    </>
   );
 }
 
@@ -50,13 +232,12 @@ function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
               <td data-label="Store">{r.store}</td>
               {showGot && (
                 <td data-label="Engine said">
-                  <span className={`chip ${r.got}`}>{VERDICT_WORD[r.got as keyof typeof VERDICT_WORD]}</span>
+                  <Chip verdict={r.got} />
                 </td>
               )}
               <td data-label="Why">{r.why}</td>
               <td data-label="Rule that fired" className="small">
-                {RULE_TEXT[r.rule as RuleId]}
-                {r.onDefault ? " (store policy unknown)" : ""}
+                {ruleText(r.rule, r.onDefault)}
               </td>
             </tr>
           ))}
@@ -66,85 +247,80 @@ function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
   );
 }
 
-async function Proof() {
+async function DevelopmentSet() {
   await connection();
   const r = runSkipEval();
   const replay = replaySummary();
-  const always = r.baselines.find((b) => b.id === "always-skip")!;
-  const sameCategory = r.baselines.find((b) => b.id === "same-category")!;
   const p = r.provenance;
   return (
     <>
+      <section className="stack-sm" data-testid="development-set">
+        <h2>The set the matching was developed on</h2>
+        <p className="small muted" style={{ maxWidth: "48rem" }}>
+          {r.n} real products and a different fictional shopper. Expected answers were committed before the engine existed, but this set was then used to improve the matching, so its score is partly fitted. That is why the held-out number above leads.
+        </p>
+      </section>
       <div className="figures">
-        <div className="figure lead">
+        <div className="figure">
           <div className="big">
             {r.skipCorrect} of {r.n}
           </div>
-          <p>skip decisions matched the answers written down first.</p>
+          <p>skip decisions right on the development set, re-run on this request.</p>
         </div>
         <div className="figure">
           <div className="big">
-            {always.skipCorrect} of {r.n}
+            {baselineScore(r, "always-skip")} of {r.n}
           </div>
           <p>if you said skip to everything.</p>
         </div>
         <div className="figure">
           <div className="big">
-            {sameCategory.skipCorrect} of {r.n}
+            {baselineScore(r, "same-category")} of {r.n}
           </div>
           <p>if you skipped anything in a category you already own.</p>
         </div>
         <div className="figure">
           <div className="big">{formatDollars(r.split.dollarsAvoided)}</div>
-          <p>of duplicate or hard-to-return buys not made on the {r.skipsRight} right skips (prices shown).</p>
+          <p>
+            of duplicate or hard-to-return buys not made on the {r.skipsRight} right skips ({r.split.onEvidence} on evidence, {r.split.onDefault} on the unknown-policy default).
+          </p>
         </div>
       </div>
 
       <section className="card stack-sm">
-        <h2>What the skips rest on</h2>
-        <div className="split-bars">
-          <div className="split-row evidence">
-            <strong>{r.split.onEvidence}</strong>
-            <span>
-              right skips decided on evidence: you own the same or a near-identical item, or the store&apos;s cited policy refuses opened returns or takes them only on conditions ({formatDollars(r.split.dollarsOnEvidence)}).
-            </span>
-          </div>
-          <div className="split-row default">
-            <strong>{r.split.onDefault}</strong>
-            <span>
-              right skips that needed our default: a partial overlap at a store whose opened-return policy we couldn&apos;t find, counted as not returnable ({formatDollars(r.split.dollarsOnDefault)}).
-            </span>
-          </div>
-        </div>
-        <p className="small muted">
-          It said skip {r.skipsMade} times and was right {r.skipsRight} times; it caught {r.skipsRight} of the {r.skipsExpected} items that should be skipped. Full agreement on skip, wait, buy or ask: {pct(r.verdictAgreement)}.
-        </p>
+        <h2>Its runs</h2>
+        <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
+          <li>
+            Expected answers: commit <span className="mono">{p.expectations.commit.slice(0, 7)}</span>, {et(p.expectations.at)}. The engine: <span className="mono">{p.engine.commit.slice(0, 7)}</span>, {et(p.engine.at)}.
+          </li>
+          {devSetRuns(p).map((run) => (
+            <li key={run.commit}>
+              {run.label} (<span className="mono">{run.commit.slice(0, 7)}</span>
+              {run.at ? `, ${et(run.at)}` : ""}): {run.result}.
+            </li>
+          ))}
+          <li>The expected answers were never touched. Case by case: eval/skip-set/RESULTS.md in the repository.</li>
+        </ul>
       </section>
 
       <RerunEval />
 
       <section>
         <div className="section-head">
-          <h2>Every wrong skip ({r.wrongSkips.length})</h2>
+          <h2>Development set: every wrong skip ({r.wrongSkips.length})</h2>
         </div>
-        <p className="small muted" style={{ marginBottom: "0.6rem" }}>
-          It said skip, but the written answer was something else.
-        </p>
         <Rows rows={r.wrongSkips} />
       </section>
 
       <section>
         <div className="section-head">
-          <h2>Every missed skip ({r.missedSkips.length})</h2>
+          <h2>Development set: every missed skip ({r.missedSkips.length})</h2>
         </div>
-        <p className="small muted" style={{ marginBottom: "0.6rem" }}>
-          The written answer was skip, and the engine said something else.
-        </p>
         <Rows rows={r.missedSkips} showGot />
       </section>
 
       <details className="card disclosure">
-        <summary>The {r.catches.length} correct skips</summary>
+        <summary>The {r.catches.length} correct development-set skips</summary>
         <div style={{ marginTop: "0.85rem" }}>
           <Rows rows={r.catches} />
         </div>
@@ -158,18 +334,11 @@ async function Proof() {
       </section>
 
       <section className="card stack-sm">
-        <h2>How the test was built</h2>
+        <h2>How the tests were built</h2>
         <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
-          <li>The products, prices and store policies are real, captured on Nov 6, 2026 (US Eastern). The shopper, shelf and budgets are made up; the shopper&apos;s &quot;today&quot; in the test is Nov 7, 2026.</li>
-          <li>
-            Expected answers: commit <span className="mono">{p.expectations.commit.slice(0, 7)}</span>, {et(p.expectations.at)}. The engine: commit <span className="mono">{p.engine.commit.slice(0, 7)}</span>, {et(p.engine.at)}. First scored run: <span className="mono">{p.firstRun.commit.slice(0, 7)}</span>, {et(p.firstRun.at)}, 55 of 65.
-          </li>
-          {p.changes.map((c) => (
-            <li key={c.what}>
-              Later engine change{c.commit ? <> (<span className="mono">{c.commit.slice(0, 7)}</span>{c.at ? `, ${et(c.at)}` : ""})</> : ""}: {c.what} Result: {c.result}. The expected answers were not touched.
-            </li>
-          ))}
-          <li>Full results, case by case: eval/skip-set/RESULTS.md in the repository.</li>
+          <li>The products, prices and store policies are real catalogue listings and published policies. The shoppers, shelves and budgets are made up; the shopper&apos;s &quot;today&quot; in both tests is Nov 7, 2026.</li>
+          <li>Each expected answer was written by hand from plain-language rules (eval/holdout/README.md) and committed before the engine saw it.</li>
+          <li>Full results, case by case: eval/holdout/RESULTS.md and eval/skip-set/RESULTS.md in the repository; both sets as JSON at /api/eval/holdout.</li>
         </ul>
       </section>
     </>

@@ -128,12 +128,15 @@ export const TABLES: TableSpec[] = [
   },
 ];
 
+/** The held-out skip number (its single scored run), with the development set second. */
 export interface SkipFigure {
   right: number;
   n: number;
   alwaysSkip: number;
   sameCategory: number;
   avoided: number;
+  /** The set the matching was developed on, re-run. */
+  dev: { right: number; n: number };
 }
 
 /**

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 
-interface Result {
+interface DevSet {
   skipCorrect: number;
   n: number;
   skipsRight: number;
@@ -13,14 +13,14 @@ interface Result {
 
 export function RerunEval() {
   const [busy, setBusy] = useState(false);
-  const [result, setResult] = useState<Result | null>(null);
+  const [result, setResult] = useState<DevSet | null>(null);
   const [error, setError] = useState<string | null>(null);
   return (
     <div className="card stack-sm">
       <div className="split">
         <div>
           <h2>Run it again</h2>
-          <p className="small muted">The server re-runs the verdict engine over all 65 cases. No model, no network.</p>
+          <p className="small muted">The server re-runs the current verdict engine over the 65 development products. No model, no network. The held-out number above is the record of its one scored run and is not re-run.</p>
         </div>
         <button
           className="btn"
@@ -31,7 +31,7 @@ export function RerunEval() {
             try {
               const res = await fetch("/api/eval/skip", { cache: "no-store" });
               if (!res.ok) throw new Error();
-              setResult(await res.json());
+              setResult(((await res.json()) as { developmentSet: DevSet }).developmentSet);
             } catch {
               setError("The re-run failed. Try again.");
             } finally {
@@ -48,7 +48,7 @@ export function RerunEval() {
           <strong>
             {result.skipCorrect} of {result.n}
           </strong>{" "}
-          skip decisions correct; {result.skipsRight} of {result.skipsMade} skips right. Took {result.ms} ms on the server at {new Date(result.ranAt).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit", second: "2-digit" })} ET.
+          skip decisions correct on the development set; {result.skipsRight} of {result.skipsMade} skips right. Took {result.ms} ms on the server at {new Date(result.ranAt).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit", second: "2-digit" })} ET.
         </p>
       )}
     </div>

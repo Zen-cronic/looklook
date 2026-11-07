@@ -137,7 +137,7 @@ describe("/api/state", () => {
     expect(j.shelf.length).toBe(j.studio.tables.shelf.length);
     expect(new Set(j.studio.tables.shelf.map((r: { id: string }) => r.id))).toEqual(new Set(j.shelf.map((i: { id: string }) => i.id)));
     expect(j.studio.tables.rebuys.map((r: { sourceRef: string }) => r.sourceRef)).toEqual(j.due.map((d: { id: string }) => d.id));
-    expect(j.studio.skip).toEqual({ right: 60, n: 65, alwaysSkip: 39, sameCategory: 40, avoided: expect.any(Number) });
+    expect(j.studio.skip).toEqual({ right: 28, n: 30, alwaysSkip: 13, sameCategory: 19, avoided: 470.25, dev: { right: expect.any(Number), n: 65 } });
     expect(j.studio.waits.total).toBe(j.studio.tables.verdicts.filter((r: { verdict: string }) => r.verdict === "Wait").length);
   });
 });
