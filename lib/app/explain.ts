@@ -13,7 +13,7 @@ export const RULE_TEXT: Record<RuleId, string> = {
   "no-price-history": "Not enough price history to judge the price",
   "above-usual-price": "The price is above its usual low",
   "replacing-run-out": "It replaces something of the same type that runs out soon, at a fair price",
-  "clear-to-buy": "Nothing similar on your shelf, within budget, fair price",
+  "clear-to-buy": "No near-duplicate on your shelf (or the store takes it back opened), within budget, fair price",
 };
 
 export const RULE_ORDER: RuleId[] = [

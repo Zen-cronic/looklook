@@ -52,7 +52,9 @@ export function templateReason(d: Decision, product: ProductFacts): string {
     case "replacing-run-out":
       return `Your ${e.replaces!.brand} ${e.replaces!.name} ${inDays(e.replaces!.daysLeft)}, and this is a fair price.`;
     case "clear-to-buy":
-      return "Nothing like it on your shelf, it fits your budget, and the price is fair.";
+      return e.shelf && e.shelf.relation === "overlap"
+        ? `It only partly overlaps with your ${owned}, ${returnPhrase(d)}, it fits your budget, and the price is fair.`
+        : "Nothing like it on your shelf, it fits your budget, and the price is fair.";
   }
 }
 

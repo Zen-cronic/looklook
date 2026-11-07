@@ -48,7 +48,8 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
   const d = check.decision;
   const e = d.evidence;
   const price = check.facts.priceShown;
-  const returns = returnsLine(d, storeLabel(check.store));
+  const storeName = e.policy && !e.policy.fallback ? e.policy.retailerName : storeLabel(check.store);
+  const returns = returnsLine(d, storeName);
   const method = activeMethod(state);
   const watch = check.watchId ? state.watch.find((w) => w.id === check.watchId && !w.closedAt) : undefined;
   const ruleIndex = RULE_ORDER.indexOf(d.rule) + 1;
@@ -80,7 +81,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
           <div className="meta">
             <div className="brand-line">{check.facts.brand || "Brand not shown"}</div>
             <div className="name-line">{check.facts.name || "Product not readable"}</div>
-            {check.store && <div className="small muted">at {storeLabel(check.store)}</div>}
+            {storeName && <div className="small muted">at {storeName}</div>}
           </div>
           {price !== null && <div className="price-line">{formatDollars(price)}</div>}
         </div>
