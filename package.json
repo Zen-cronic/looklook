@@ -19,7 +19,8 @@
     "spike:transaction-search": "tsx scripts/spike-transaction-search.ts",
     "smoke:channel3": "tsx scripts/smoke-channel3.ts",
     "eval:skip": "tsx scripts/skip-set/run.ts",
-    "eval:skip:bands": "tsx scripts/skip-set/price-bands.ts"
+    "eval:skip:bands": "tsx scripts/skip-set/price-bands.ts",
+    "smoke:vision": "tsx scripts/smoke-vision.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",
