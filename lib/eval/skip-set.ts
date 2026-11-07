@@ -66,6 +66,7 @@ export interface CaseOutcome {
   id: string;
   label: string;
   store: string;
+  priceShown: number | null;
   expected: SkipCase["expected"];
   decision: Decision;
   skipCorrect: boolean;
@@ -83,6 +84,7 @@ export function runCase(c: SkipCase, set: SkipSet, shelf: ShelfFile, bands: Reco
     id: c.id,
     label: `${c.brand} ${c.name}${c.variant ? ` (${c.variant})` : ""}`,
     store: c.store,
+    priceShown: c.priceShown,
     expected: c.expected,
     decision,
     skipCorrect: expectedSkip === actualSkip,
@@ -148,4 +150,62 @@ export function scoreOutcomes(outcomes: CaseOutcome[]): SkipScore {
     otherMismatches: outcomes.filter((o) => !o.verdictCorrect && o.skipCorrect),
     confusion,
   };
+}
+
+/** True when this skip leaned on the unknown-policy default: a partial overlap at a store whose opened-return policy we couldn't find. */
+export function skipOnDefault(o: CaseOutcome): boolean {
+  return o.decision.verdict === "skip" && o.decision.rule === "overlap-non-returnable" && o.decision.evidence.policy?.returnableOpened === "unknown";
+}
+
+export interface SkipSplit {
+  /** Correct skips decided on evidence: the shelf, or a cited no/conditional opened-return policy. */
+  onEvidence: number;
+  /** Correct skips that needed the unknown-policy default. */
+  onDefault: number;
+  /** Sum of the prices shown on correct skips (duplicate or non-returnable spending avoided), dollars. */
+  dollarsAvoided: number;
+  dollarsOnEvidence: number;
+  dollarsOnDefault: number;
+}
+
+const round2 = (n: number) => Math.round(n * 100) / 100;
+
+export function splitCorrectSkips(outcomes: CaseOutcome[]): SkipSplit {
+  const tp = outcomes.filter((o) => o.expected.verdict === "skip" && o.decision.verdict === "skip");
+  const def = tp.filter(skipOnDefault);
+  const ev = tp.filter((o) => !skipOnDefault(o));
+  const sum = (xs: CaseOutcome[]) => round2(xs.reduce((s, o) => s + (o.priceShown ?? 0), 0));
+  return { onEvidence: ev.length, onDefault: def.length, dollarsAvoided: sum(tp), dollarsOnEvidence: sum(ev), dollarsOnDefault: sum(def) };
+}
+
+export interface Baseline {
+  id: "always-skip" | "same-category";
+  label: string;
+  skipCorrect: number;
+  skipsMade: number;
+  skipsRight: number;
+}
+
+/**
+ * Two simple ways to say skip, scored the same way:
+ * always skip, and skip whenever the shelf has anything in the same category.
+ */
+export function baselines(set: SkipSet, shelf: ShelfFile): Baseline[] {
+  const score = (id: Baseline["id"], label: string, skips: (c: SkipCase) => boolean): Baseline => {
+    let skipCorrect = 0;
+    let skipsMade = 0;
+    let skipsRight = 0;
+    for (const c of set.cases) {
+      const s = skips(c);
+      const expected = c.expected.verdict === "skip";
+      if (s === expected) skipCorrect += 1;
+      if (s) skipsMade += 1;
+      if (s && expected) skipsRight += 1;
+    }
+    return { id, label, skipCorrect, skipsMade, skipsRight };
+  };
+  return [
+    score("always-skip", "Always say skip", () => true),
+    score("same-category", "Skip whenever you own anything in the same category", (c) => shelfFor(c, shelf.items).some((i) => i.category === c.category)),
+  ];
 }

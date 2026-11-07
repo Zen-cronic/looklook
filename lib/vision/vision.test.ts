@@ -165,7 +165,7 @@ describe("pickMatch", () => {
 
 describe("checkScreenshot", () => {
   const shelf = new MemoryShelfStore([
-    { id: "vitc", brand: "TruSkin", name: "Vitamin C Serum", category: "serum", attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] }, opened: true, runOutDate: "2027-01-15" },
+    { id: "vitc", brand: "TruSkin", name: "Vitamin C Serum", category: "serum", attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c", "ceramides"] }, opened: true, runOutDate: "2027-01-15" },
   ]).list();
 
   it("reads, matches, decides and words the reason in that order", async () => {

@@ -9,7 +9,6 @@ import {
   JsonShelfStore,
   MemoryShelfStore,
   NEAR_DUPLICATE,
-  OVERLAP,
   ShelfValidationError,
   categoryFromSlug,
   identityKey,
@@ -19,7 +18,12 @@ import {
   rankShelf,
   sameProduct,
   shelfSku,
+  sameType,
   similarity,
+  compareAttribute,
+  TYPE_WEIGHT,
+  type Attributes,
+  type Category,
   type ShelfItemInput,
 } from "./index";
 
@@ -34,9 +38,10 @@ const vitC: ShelfItemInput = {
 };
 
 describe("category specs", () => {
-  it("weights each category's attributes to 1", () => {
+  it("weights each category's type and details to 1", () => {
     for (const c of CATEGORIES) {
-      const total = CATEGORY_SPECS[c].attributes.reduce((s, a) => s + a.weight, 0);
+      const spec = CATEGORY_SPECS[c];
+      const total = (spec.type?.weight ?? TYPE_WEIGHT) + spec.details.reduce((s, a) => s + a.weight, 0);
       expect(total).toBeCloseTo(1, 9);
     }
   });
@@ -49,6 +54,8 @@ describe("category specs", () => {
 });
 
 describe("similarity", () => {
+  const sim = (category: Category, a: Attributes, b: Attributes) => similarity({ category, attributes: a }, { category, attributes: b });
+
   it("scores different categories 0", () => {
     expect(similarity({ category: "serum", attributes: {} }, { category: "moisturizer", attributes: {} }).score).toBe(0);
   });
@@ -57,24 +64,82 @@ describe("similarity", () => {
     const r = similarity({ category: "serum", attributes: { primaryActive: "Vitamin C", actives: ["vitamin c", "ferulic-acid", "vitamin-e"] } }, { category: "serum", attributes: vitC.attributes });
     expect(r.score).toBeGreaterThanOrEqual(NEAR_DUPLICATE);
     expect(r.matched).toEqual(["primaryActive"]);
+    expect(r.sameType).toBe(true);
   });
 
-  it("keeps a different main active below the overlap line", () => {
+  it("scores a different main active low, with no floor for sharing the category", () => {
     const r = similarity({ category: "serum", attributes: { primaryActive: "retinol", actives: ["retinol"] } }, { category: "serum", attributes: vitC.attributes });
-    expect(r.score).toBeLessThan(OVERLAP);
+    expect(r.score).toBe(0);
+    expect(r.sameType).toBe(false);
   });
 
-  it("is symmetric and deterministic", () => {
+  it("counts the share of the new item's actives you already own", () => {
+    // A cream with ceramides and hyaluronic acid against a gel cream with hyaluronic acid only: half covered.
+    expect(sim("moisturizer", { texture: "cream", actives: ["ceramides", "hyaluronic-acid"] }, { texture: "gel-cream", actives: ["hyaluronic-acid"] }).score).toBe(0.75);
+    // The other way round, everything in the gel cream is already in the cream.
+    expect(sim("moisturizer", { texture: "gel-cream", actives: ["hyaluronic-acid"] }, { texture: "cream", actives: ["ceramides", "hyaluronic-acid"] }).score).toBe(0.85);
+  });
+
+  it("gives neighbouring finishes, coverages and forms half credit", () => {
+    // Concealer: natural vs radiant, full vs medium, shade unknown.
+    expect(sim("concealer", { finish: "natural", coverage: "full" }, { finish: "radiant", coverage: "medium" }).score).toBe(0.75);
+    // Matte vs radiant is two steps apart.
+    expect(sim("concealer", { finish: "matte", coverage: "full" }, { finish: "radiant", coverage: "medium" }).score).toBe(0.65);
+    // Gel vs cream cleanser: one step on the form scale.
+    expect(sim("cleanser", { form: "gel" }, { form: "cream", actives: ["ceramides"] }).score).toBe(0.75);
+    // Foam vs cream: two steps.
+    expect(sim("cleanser", { form: "foam" }, { form: "cream" }).score).toBe(0.6);
+    // Setting spray: matte vs natural.
+    expect(sim("setting-spray", { finish: "matte" }, { finish: "natural" }).score).toBe(0.75);
+    // Aliases fold onto the scale: dewy is radiant.
+    expect(compareAttribute({ key: "finish", weight: 1, kind: "equal", scale: ["matte", "natural", "radiant"], aliases: { dewy: "radiant" } }, "dewy", "radiant")).toBe(1);
+  });
+
+  it("scores lip oils by tint and shade, and lipsticks by shade first", () => {
+    expect(sim("lip-oil", { tint: "tinted", shadeFamily: "pink" }, { tint: "tinted", shadeFamily: "pink" }).score).toBe(1);
+    expect(sim("lip-oil", { tint: "clear", shadeFamily: "clear" }, { tint: "tinted", shadeFamily: "pink" }).score).toBe(0.625);
+    expect(sim("lipstick", { shadeFamily: "red", finish: "matte" }, { shadeFamily: "nude", finish: "matte" }).score).toBe(0.4);
+    expect(sim("lipstick", { shadeFamily: "nude", finish: "matte" }, { shadeFamily: "nude", finish: "matte" }).score).toBe(0.9);
+  });
+
+  it("never calls two items near-duplicates on the type alone", () => {
+    // Two full-size blenders: same type, capacity and power unknown.
+    const blenders = sim("blender", { type: "full-size" }, { type: "full-size" });
+    expect(blenders.score).toBe(0.75);
+    expect(blenders.score).toBeLessThan(NEAR_DUPLICATE);
+    // Two matte, medium, liquid foundations: the shade is not known, so not a perfect match.
+    expect(sim("foundation", { finish: "matte", coverage: "medium", form: "liquid" }, { finish: "matte", coverage: "medium", form: "liquid" }).score).toBe(0.95);
+    // Nothing known at all within a one-at-a-time category.
+    expect(sim("cleanser", {}, {}).score).toBe(0.75);
+  });
+
+  it("keeps earbuds apart from over-ear headphones but on-ear close", () => {
+    const overEar = { style: "over-ear", noiseCancelling: "yes" };
+    expect(sim("headphones", { style: "earbuds", noiseCancelling: "yes" }, overEar).score).toBe(0.4);
+    expect(sim("headphones", { style: "on-ear", noiseCancelling: "yes" }, overEar).score).toBe(0.65);
+    expect(sim("headphones", { style: "over-ear", noiseCancelling: "yes" }, overEar).score).toBe(0.9);
+  });
+
+  it("is deterministic and symmetric for single-value attributes", () => {
     const a = { category: "sunscreen" as const, attributes: { filter: "chemical", area: "face", spfBand: "50+", finish: "matte" } };
     const b = { category: "sunscreen" as const, attributes: { filter: "chemical", area: "face", spfBand: "30-49", finish: "sheer" } };
     expect(similarity(a, b)).toEqual(similarity(b, a));
-    expect(similarity(a, b).score).toBe(0.79);
+    expect(similarity(a, b).score).toBe(0.91);
   });
 
-  it("treats a missing attribute as no match", () => {
+  it("gives an unknown detail half credit and lists it", () => {
     const r = similarity({ category: "lipstick", attributes: { finish: "matte" } }, { category: "lipstick", attributes: { finish: "matte", shadeFamily: "nude" } });
-    expect(r.missing).toEqual(["shadeFamily"]);
-    expect(r.score).toBe(0.58);
+    expect(r.missing).toEqual(["shadeFamily", "form"]);
+    expect(r.score).toBe(0.65);
+    expect(r.sameType).toBe(false);
+  });
+
+  it("knows the same type for replacements", () => {
+    const ha = { category: "serum" as const, attributes: { primaryActive: "hyaluronic-acid" } };
+    expect(sameType(ha, { category: "serum", attributes: { primaryActive: "sodium hyaluronate" } })).toBe(true);
+    expect(sameType(ha, { category: "serum", attributes: { primaryActive: "hyaluronic-acid", actives: ["panthenol"] } })).toBe(true);
+    expect(sameType(ha, { category: "serum", attributes: { primaryActive: "vitamin-c" } })).toBe(false);
+    expect(sameType({ category: "cleanser", attributes: { form: "gel" } }, { category: "cleanser", attributes: { form: "cream" } })).toBe(true);
   });
 
   it("ranks the shelf best first", () => {

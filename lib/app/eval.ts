@@ -2,8 +2,9 @@ import cases from "@/eval/skip-set/cases.json";
 import bandsFile from "@/eval/skip-set/price-bands.json";
 import shelf from "@/eval/skip-set/shelf.json";
 import replay from "@/data/replay/result.json";
+import provenance from "@/eval/skip-set/provenance.json";
 import type { PriceBand } from "../channel3/band";
-import { runCase, scoreOutcomes, type CaseOutcome, type ShelfFile, type SkipSet } from "../eval/skip-set";
+import { baselines, runCase, scoreOutcomes, splitCorrectSkips, type Baseline, type CaseOutcome, type ShelfFile, type SkipSet, type SkipSplit, skipOnDefault } from "../eval/skip-set";
 
 export interface CaseRow {
   id: string;
@@ -13,6 +14,9 @@ export interface CaseRow {
   got: string;
   rule: string;
   why: string;
+  price: number | null;
+  /** A skip that needed the unknown-policy default. */
+  onDefault: boolean;
   owned?: string;
   policy?: string;
   policyUrl?: string | null;
@@ -33,6 +37,9 @@ export interface SkipEvalResult {
   nonReturnableCaught: number;
   unknownPolicyCaught: number;
   verdictAgreement: number;
+  baselines: Baseline[];
+  split: SkipSplit;
+  provenance: { expectations: { commit: string; at: string }; engine: { commit: string; at: string }; firstRun: { commit: string; at: string }; changes: Array<{ what: string; result: string; commit?: string; at?: string }> };
   catches: CaseRow[];
   wrongSkips: CaseRow[];
   missedSkips: CaseRow[];
@@ -43,6 +50,8 @@ function row(o: CaseOutcome): CaseRow {
   return {
     id: o.id,
     product: o.label,
+    price: o.priceShown,
+    onDefault: skipOnDefault(o),
     store: o.store,
     expected: o.expected.verdict,
     got: o.decision.verdict,
@@ -62,6 +71,9 @@ export function runSkipEval(): SkipEvalResult {
   const outcomes = set.cases.map((c) => runCase(c, set, shelf as unknown as ShelfFile, bands));
   const s = scoreOutcomes(outcomes);
   return {
+    baselines: baselines(set, shelf as unknown as ShelfFile),
+    split: splitCorrectSkips(outcomes),
+    provenance,
     ranAt: new Date().toISOString(),
     ms: Math.round((performance.now() - start) * 10) / 10,
     asOf: set.asOf,

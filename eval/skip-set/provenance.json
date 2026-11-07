@@ -1,0 +1,12 @@
+{
+  "note": "Commits that fix the order: expectations first, then the engine. Times in US Eastern.",
+  "expectations": { "commit": "f50330f96432249888e2e4270c30382e9e84c2da", "at": "2026-11-06T20:57:44-05:00", "what": "65 cases, the shelf and expected verdicts" },
+  "engine": { "commit": "85415bc8f037ccd2bcd659372bec67f26e9b23ab", "at": "2026-11-06T21:00:00-05:00", "what": "the verdict engine" },
+  "firstRun": { "commit": "0d54885317bcc86ef6cf27b1ea0109bf4dbd2b19", "at": "2026-11-06T21:01:36-05:00", "what": "first scored run: 55 of 65" },
+  "changes": [
+    {
+      "what": "Similarity compares product type, actives, finish and form with half credit for neighbouring values and unknown details; no flat score for sharing a category. A replacement must be the same product type.",
+      "result": "60 of 65"
+    }
+  ]
+}

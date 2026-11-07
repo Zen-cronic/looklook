@@ -286,12 +286,19 @@ describe("return-policy line", () => {
 });
 
 describe("skip number", () => {
-  it("recomputes 55 of 65 from the committed test set", () => {
+  it("recomputes 60 of 65 from the committed test set, with both baselines and the split", () => {
     const r = runSkipEval();
-    expect(r.skipCorrect).toBe(55);
+    expect(r.skipCorrect).toBe(60);
     expect(r.n).toBe(65);
-    expect(r.wrongSkips).toHaveLength(3);
-    expect(r.missedSkips).toHaveLength(7);
+    expect(r.wrongSkips).toHaveLength(1);
+    expect(r.missedSkips).toHaveLength(4);
+    expect(r.baselines.map((b) => [b.id, b.skipCorrect])).toEqual([
+      ["always-skip", 39],
+      ["same-category", 40],
+    ]);
+    expect(r.split.onEvidence + r.split.onDefault).toBe(r.skipsRight);
+    expect(r.split.dollarsAvoided).toBeCloseTo(r.split.dollarsOnEvidence + r.split.dollarsOnDefault, 2);
+    expect(r.provenance.expectations.at < r.provenance.engine.at).toBe(true);
   });
 });
 

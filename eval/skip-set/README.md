@@ -20,3 +20,9 @@ Where more than one reason fits, `reasons` lists each acceptable one. Only the v
 - Overall verdict agreement and reason agreement.
 
 The engine reads only the structured fields in these files. No model or network call is made when scoring.
+
+## Changes since the first run
+
+The expectations, the shelf and the price bands are unchanged since they were committed. Engine changes are recorded in `provenance.json` with the score they produced.
+
+- Similarity now compares product type (the main active for serums, the shade family for lipstick and blush, the style for headphones, the kind of appliance for kitchen tools, the category itself for products used one at a time), then actives, finish, form and coverage. Neighbouring values (matte and natural, gel and cream cleanser, on-ear and over-ear) get half credit; a detail unknown on either side gets half credit, so knowing only the type can't make a near-duplicate. The flat 0.40 for sharing a category is gone. A purchase now counts as replacing something that runs out only when it is the same product type. Actives are scored as the share of the new item's actives the owned item already has. A first version scored actives by the overlap of the two lists in either direction; it ran once on this set (58 of 65: a cream against an owned gel cream with fewer actives became a near-duplicate) before the one-direction share replaced it. Result: 60 of 65.

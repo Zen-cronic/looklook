@@ -1,6 +1,6 @@
 import { openedReturnPolicy } from "../policies";
 import { budgetGroupOf } from "../shelf/categories";
-import { NEAR_DUPLICATE, OVERLAP, rankShelf, sameProduct } from "../shelf/similarity";
+import { NEAR_DUPLICATE, OVERLAP, rankShelf, sameProduct, sameType } from "../shelf/similarity";
 import type { ShelfItem } from "../shelf/types";
 import type { Decision, Evidence, RuleId, ShelfEvidence, Verdict, VerdictInput } from "./types";
 
@@ -53,7 +53,7 @@ function tier(score: number): ShelfEvidence["relation"] {
  *  8. over-budget           price above what's left in the budget group -> wait
  *  9. no-price-history      no usable price history, and not urgent -> wait
  * 10. above-usual-price     above its usual low (or well above typical), and not urgent -> wait
- * 11. replacing-run-out     buy: it replaces something that runs out soon
+ * 11. replacing-run-out     buy: it replaces something of the same type that runs out soon
  * 12. clear-to-buy          buy
  *
  * Anything that can't be resolved lands on ask or wait, never buy.
@@ -112,8 +112,14 @@ export function decide(input: VerdictInput): Decision {
   }
   pass("not-needed-yet");
 
-  // What this purchase would replace: the same product, else the soonest same-category item running out.
-  const replaced = sameOpen ?? sameCategory.filter(runningOut).sort((a, b) => a.runOutDate!.localeCompare(b.runOutDate!))[0];
+  // What this purchase would replace: the same product, else the soonest item of the same type running out
+  // (a hyaluronic serum replaces a hyaluronic serum, not any serum).
+  const target = { category, attributes: product.attributes };
+  const replaced =
+    sameOpen ??
+    sameCategory
+      .filter((i) => runningOut(i) && sameType(target, i))
+      .sort((a, b) => a.runOutDate!.localeCompare(b.runOutDate!))[0];
   let needBy: string | undefined;
   if (replaced) {
     const s = sameOpen ? { score: 1, matched: [] as string[] } : (rankShelf({ category, attributes: product.attributes }, [replaced])[0] ?? { score: 0, matched: [] });

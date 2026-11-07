@@ -37,6 +37,27 @@ describe("decide: identity", () => {
   });
 });
 
+describe("decide: replacing something that runs out", () => {
+  const withHa = new MemoryShelfStore([
+    ...shelfItems,
+    { id: "ha", brand: "The Ordinary", name: "Hyaluronic Acid 2% + B5", category: "serum", attributes: { primaryActive: "hyaluronic-acid", actives: ["hyaluronic-acid", "panthenol"] }, opened: true, runOutDate: "2026-11-14" },
+  ]).list();
+
+  it("counts only the same product type as a replacement", () => {
+    const ha = run({ shelf: withHa, product: product({ attributes: { primaryActive: "hyaluronic-acid", actives: ["hyaluronic-acid"] } }) });
+    expect(ha).toMatchObject({ verdict: "buy", rule: "replacing-run-out" });
+    expect(ha.evidence.replaces?.itemId).toBe("ha");
+    const peptide = run({ shelf: withHa, product: product({ attributes: { primaryActive: "peptides", actives: ["peptides"] } }) });
+    expect(peptide).toMatchObject({ verdict: "buy", rule: "clear-to-buy" });
+    expect(peptide.evidence.replaces).toBeUndefined();
+  });
+
+  it("lets any cleanser replace a cleanser: the category is the type", () => {
+    const gel = run({ product: product({ category: "cleanser", attributes: { form: "gel" } }) });
+    expect(gel.evidence.replaces?.itemId).toBe("cleanser");
+  });
+});
+
 describe("decide: owning it already", () => {
   it("skips the same product when one is unopened", () => {
     const d = run({ product: product({ brand: "Neutrogena", name: "Hydro Boost Gel Cream 1.7 oz", category: "moisturizer" }) });
@@ -55,7 +76,7 @@ describe("decide: owning it already", () => {
   });
 
   it("skips a near-duplicate and records the shelf item and the store policy", () => {
-    const d = run({ product: product({ attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c", "ferulic-acid"] } }), store: "cvs" });
+    const d = run({ product: product({ attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] } }), store: "cvs" });
     expect(d).toMatchObject({ verdict: "skip", rule: "owns-similar", flags: ["non-returnable-opened"] });
     expect(d.evidence.shelf).toMatchObject({ itemId: "vitc", relation: "near-duplicate" });
     expect(d.evidence.policy).toMatchObject({ retailerId: "cvs", returnableOpened: "no" });
@@ -127,8 +148,8 @@ describe("decide: money and timing", () => {
 });
 
 describe("reasons", () => {
-  const d = run({ product: product({ attributes: { primaryActive: "vitamin-c" } }), store: "cvs" });
-  const p = product({ attributes: { primaryActive: "vitamin-c" } });
+  const d = run({ product: product({ attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] } }), store: "cvs" });
+  const p = product({ attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] } });
 
   it("builds a template from evidence only", () => {
     expect(templateReason(d, p)).toBe("You already own TruSkin Vitamin C Serum, which does the same job, and CVS Pharmacy may refuse it once opened.");

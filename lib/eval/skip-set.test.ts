@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import type { Decision, RuleId, Verdict } from "../verdict/types";
-import { runCase, scoreOutcomes, shelfFor, type CaseOutcome, type ShelfFile, type SkipCase, type SkipSet } from "./skip-set";
+import { baselines, runCase, scoreOutcomes, shelfFor, splitCorrectSkips, type CaseOutcome, type ShelfFile, type SkipCase, type SkipSet } from "./skip-set";
 
 function outcome(id: string, expected: Verdict, actual: Verdict, rule: RuleId, flags: string[] = [], reasons: RuleId[] = [rule], opened: "yes" | "no" | "conditional" | "unknown" = flags.length ? "no" : "yes"): CaseOutcome {
   const policy = { retailerId: "x", retailerName: "X", group: "beauty" as const, returnableOpened: opened, windowDays: 30, sourceUrl: null, checkedOn: "2026-11-06", fallback: false };
@@ -10,6 +10,7 @@ function outcome(id: string, expected: Verdict, actual: Verdict, rule: RuleId, f
     id,
     label: id,
     store: "ulta",
+    priceShown: 10,
     expected: { verdict: expected, reasons, why: "" },
     decision,
     skipCorrect: (expected === "skip") === (actual === "skip"),
@@ -67,7 +68,7 @@ describe("scoreOutcomes", () => {
 describe("runCase", () => {
   const shelf: ShelfFile = {
     budgets: { remaining: { skincare: 50 } },
-    items: [{ id: "vitc", brand: "TruSkin", name: "Vitamin C Serum", category: "serum", attributes: { primaryActive: "vitamin-c" }, opened: true, runOutDate: "2027-01-15" }],
+    items: [{ id: "vitc", brand: "TruSkin", name: "Vitamin C Serum", category: "serum", attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] }, opened: true, runOutDate: "2027-01-15" }],
   };
   const set: SkipSet = { asOf: "2026-11-07", cases: [] };
   const base: SkipCase = {
@@ -75,7 +76,7 @@ describe("runCase", () => {
     brand: "Other",
     name: "C Serum",
     category: "serum",
-    attributes: { primaryActive: "vitamin-c" },
+    attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] },
     store: "ulta",
     source: "creator-post",
     priceShown: 20,
@@ -94,5 +95,46 @@ describe("runCase", () => {
     const patched = runCase({ ...base, shelfPatch: [{ id: "vitc", runOutDate: "2026-11-10" }] }, set, shelf, {});
     expect(patched.decision.verdict).not.toBe("skip");
     expect(patched.skipCorrect).toBe(false);
+  });
+});
+
+describe("baselines and the skip split", () => {
+  const shelf: ShelfFile = {
+    budgets: { remaining: { skincare: 50 } },
+    items: [{ id: "vitc", brand: "TruSkin", name: "Vitamin C Serum", category: "serum", attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] }, opened: true, runOutDate: "2027-01-15" }],
+  };
+  const mk = (id: string, over: Partial<SkipCase>): SkipCase => ({
+    id,
+    brand: "B",
+    name: id,
+    category: "serum",
+    attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] },
+    store: "ulta",
+    source: "creator-post",
+    priceShown: 10,
+    expected: { verdict: "skip", reasons: ["owns-similar"], why: "" },
+    ...over,
+  });
+  const set: SkipSet = {
+    asOf: "2026-11-07",
+    cases: [
+      mk("dup", {}),
+      mk("overlap-unknown", { attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c", "ferulic-acid"] }, store: "example-brand.com", priceShown: 30, expected: { verdict: "skip", reasons: ["overlap-non-returnable"], why: "" } }),
+      mk("retinol", { attributes: { primaryActive: "retinol" }, expected: { verdict: "buy", reasons: ["clear-to-buy"], why: "" } }),
+      mk("lipstick", { category: "lipstick", attributes: { shadeFamily: "red" }, expected: { verdict: "buy", reasons: ["clear-to-buy"], why: "" } }),
+    ],
+  };
+
+  it("scores always-skip and same-category-means-skip the same way as the engine", () => {
+    const b = baselines(set, shelf);
+    expect(b.find((x) => x.id === "always-skip")).toMatchObject({ skipCorrect: 2, skipsMade: 4, skipsRight: 2 });
+    // The retinol serum shares the category with the vitamin C serum, so the category rule skips it too.
+    expect(b.find((x) => x.id === "same-category")).toMatchObject({ skipCorrect: 3, skipsMade: 3, skipsRight: 2 });
+  });
+
+  it("splits correct skips into evidence and the unknown-policy default, with the dollars", () => {
+    const outcomes = set.cases.map((c) => runCase(c, set, shelf, {}));
+    expect(outcomes.map((o) => o.decision.rule).slice(0, 2)).toEqual(["owns-similar", "overlap-non-returnable"]);
+    expect(splitCorrectSkips(outcomes)).toEqual({ onEvidence: 1, onDefault: 1, dollarsAvoided: 40, dollarsOnEvidence: 10, dollarsOnDefault: 30 });
   });
 });
