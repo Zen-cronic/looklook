@@ -1,0 +1,74 @@
+import type { Channel3Event } from "../channel3/webhooks";
+import { currentPrice } from "../channel3/webhooks";
+import { formatDollars } from "./money";
+import type { CheckRecord, SessionState, WatchItem } from "./types";
+
+/** A target from the verdict's price band, else 10% under the price seen. */
+export function targetFor(check: CheckRecord): number {
+  const t = check.decision.evidence.price?.target;
+  const shown = check.facts.priceShown ?? check.product?.offerPrice ?? 0;
+  if (t && t < shown) return t;
+  return Math.round(shown * 0.9 * 100) / 100;
+}
+
+export function newWatch(check: CheckRecord, subscription: WatchItem["subscription"], now = new Date()): WatchItem {
+  if (!check.product) throw new Error("Confirm the product before watching it.");
+  const start = check.facts.priceShown ?? check.product.offerPrice ?? 0;
+  const sameShelf = check.decision.evidence.shelf?.relation === "same-product" ? check.decision.evidence.shelf.itemId : undefined;
+  return {
+    id: `wt_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`,
+    checkId: check.id,
+    product: check.product,
+    category: check.facts.category,
+    startPrice: start,
+    targetPrice: targetFor(check),
+    currentPrice: start,
+    shelfItemId: sameShelf ?? check.decision.evidence.replaces?.itemId,
+    subscription,
+    createdAt: now.toISOString(),
+  };
+}
+
+/**
+ * Apply a price event to every open watch on that subscription (or product).
+ * Returns a short description of what changed, for the event log.
+ */
+export function applyPriceEvent(state: SessionState, event: Channel3Event, now = new Date()): string[] {
+  if (event.type !== "offer.price.changed") return [];
+  const price = currentPrice(event);
+  if (price === undefined) return [];
+  const subId = event.data.subscription_id;
+  const productId = event.data.subject?.product_id;
+  const effects: string[] = [];
+  for (const w of state.watch) {
+    if (w.closedAt) continue;
+    const bySub = subId && w.subscription.status === "active" && w.subscription.id === subId;
+    const byProduct = productId && w.product.id === productId;
+    if (!bySub && !byProduct) continue;
+    if (w.lastEventId === event.id) continue;
+    w.lastEventId = event.id;
+    w.currentPrice = price;
+    if (price <= w.targetPrice) {
+      w.droppedAt ??= now.toISOString();
+      effects.push(`${w.product.brand} ${w.product.title}: now ${formatDollars(price)}, at or under the ${formatDollars(w.targetPrice)} target. Asking for a yes.`);
+    } else {
+      effects.push(`${w.product.brand} ${w.product.title}: now ${formatDollars(price)}, still above the ${formatDollars(w.targetPrice)} target.`);
+    }
+  }
+  return effects;
+}
+
+/** A labelled test event, built by the app, in Channel3's event shape. */
+export function simulatedDropEvent(w: WatchItem, price: number): Channel3Event {
+  return {
+    id: `sim_${crypto.randomUUID().replace(/-/g, "")}`,
+    timestamp: new Date().toISOString(),
+    type: "offer.price.changed",
+    data: {
+      subscription_id: w.subscription.status === "active" ? w.subscription.id : undefined,
+      subject: { product_id: w.product.id, domain: w.product.offerDomain },
+      previous: { price: w.currentPrice, currency: "USD" },
+      current: { price, currency: "USD" },
+    },
+  };
+}

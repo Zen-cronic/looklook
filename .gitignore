@@ -13,3 +13,4 @@ build/
 *.tsbuildinfo
 next-env.d.ts
 *.pem
+.data/
