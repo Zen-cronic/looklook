@@ -3,17 +3,31 @@ services:
     name: looklook
     runtime: node
     plan: free
+    region: ohio
+    autoDeploy: false
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
     envVars:
       - key: NODE_VERSION
         value: "22"
+      # PayPal sandbox REST app (never live keys)
       - key: PAYPAL_CLIENT_ID
         sync: false
       - key: PAYPAL_CLIENT_SECRET
         sync: false
+      # Webhook ID of https://<service>.onrender.com/api/webhooks/paypal in the PayPal app
       - key: PAYPAL_WEBHOOK_ID
         sync: false
+      # Product data, price history and price-drop subscriptions
       - key: CHANNEL3_API_KEY
         sync: false
+      # Signing secret (whsec_...) of https://<service>.onrender.com/api/webhooks/channel3 in Channel3
+      - key: CHANNEL3_WEBHOOK_SECRET
+        sync: false
+      # Screenshot reading and reason wording
+      - key: ANTHROPIC_API_KEY
+        sync: false
+      # Allows the labelled "make the next rebuy decline" sandbox test
+      - key: DEMO_NEGATIVE_TESTING
+        value: "1"

@@ -1,30 +1,59 @@
 # LookLook
 
-**Skip correctness: 55 of 65 skip decisions match answers written down before the engine ran** (skip precision 91.4%, recall 82.1%), on 65 real products against a fictional shopper's shelf. Every wrong and missed skip is listed in [`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md); `npm run eval:skip` recomputes it with no network calls.
+**Skip correctness: 55 of 65 skip decisions match answers written down before the engine ran** (skip precision 91.4%, recall 82.1%), on 65 real products against a sample shopper's shelf. Every wrong and missed skip is listed in [`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md) and on the app's `/proof` page; `GET /api/eval/skip` and `npm run eval:skip` recompute it with no network calls.
 
-Before you buy what you saw on your feed, LookLook checks it, and its most common answer is skip.
+Before you buy what you saw on your feed, LookLook checks it, and its most common answer is skip. Send it a screenshot of a creator post or a store link. It reads the product, finds it in the catalogue, and checks it against what you already own, this month's budget, the 90-day price history and whether the store takes it back once opened. Then it says **skip**, **wait**, **buy** or asks you to confirm, with the one-line reason and the evidence behind it.
 
-Work in progress. Payments run in the PayPal sandbox only.
+The things you do buy again (a cleanser, a moisturizer) come back as one-tap rebuys: when a staple nears its run-out date or a watched price drops, you get an approval card, and only your yes charges the payment method you saved with PayPal.
 
-## What works today
+## Try it
 
-- **Verdicts** in `lib/verdict`: skip, wait, buy or ask, decided by twelve ordered rules that read only structured fields: the product and its category, shelf matches and their similarity scores, the store's return-once-opened policy, the budget left, the cleaned price band and run-out dates. Each verdict carries its evidence (the rule that fired, the shelf item, the policy URL, the price target). Anything that can't be resolved lands on ask or wait, never buy. The model never decides; it only writes the one-line reason after the verdict is set.
-- **Screenshot reader** in `lib/vision`: Claude (`claude-sonnet-5-5`, structured output against a strict JSON schema) reads brand, product name, shade, size, price, store, whether it's a creator post or a store page, and key attributes. A catalogue text search follows and the best match is scored in code; a weak or tied match asks you to confirm.
-- **Shelf** in `lib/shelf`: what you already own, with category, key attributes (active, finish, form, shade family), opened state and run-out date. Similarity is deterministic. Items come from manual add, the app's own orders, or PayPal activity (behind `SHELF_IMPORT_PAYPAL=1`; it needs the Transaction Search permission and falls back cleanly without it).
-- **Return policies** in `data/return-policies.json`: whether Sephora, Ulta, Target, CVS, Walgreens and Kohl's take an item back once opened, with the window, conditions, source URL and the date checked. Unknown answers stay unknown and count as not returnable.
-- **PayPal (sandbox)** in `lib/paypal`: checkout with the PayPal wallet or a card (Orders v2), saving a method for later (Vault v3 setup and payment tokens), a one-tap rebuy on the saved method after the buyer's yes (a customer-initiated payment, capped per rebuy), partial and full refunds, revoking a saved method, and webhook signature verification at `POST /api/webhooks/paypal`. Payment results are read from the capture status, because a declined card can still return a completed order. Every POST carries a `PayPal-Request-Id`; a rebuy's id is built from the item and the cycle, so two triggers for the same item and cycle charge once.
-- **Product data** in `lib/channel3`: search, product detail, 90-day price history, and price-drop subscriptions. Histories are cleaned before any decision (junk points, one-day blips, and sizes or sellers mixed into one series), and listings of the same item are merged by normalised title.
-- **Replay** in `lib/replay` and `scripts/replay`: tests the wait rule on real price histories against buying on the first price alert. The rule is fixed on days 1–60 and tested unchanged on days 61–90. Only timing is measured; a skipped purchase is never counted as money saved. The product list is frozen in `data/replay/products.json` and the latest result is in `data/replay/result.json`.
+Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login and test card: see the testing instructions on the project's submission page.
 
-## Setup
+1. **Check a post.** Four sample posts (mock posts of real products) are on the Check page, or upload your own screenshot or paste a store link.
+2. **Buy once and save PayPal for rebuys.** The checkout shows the save-for-later agreement and a per-rebuy cap, then the PayPal buttons and card fields.
+3. **Rebuy with one yes.** On Rebuys, move the simulated date a week ahead; staples due within five days ask for your yes.
+4. **See a decline and recover.** A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.
+5. **Wait for a lower price.** A wait verdict can start a real Channel3 price alert; a labelled test drop runs a price event through the same handler.
+6. **See the events and the number.** `/events` lists every webhook and whether it verified; `/proof` re-runs the 65-case test.
+
+## Sponsor technology
+
+| Service | What it does here |
+|---|---|
+| PayPal JS SDK (Buttons and Card Fields) | The shopper approves the first purchase with the PayPal wallet or a card. |
+| PayPal Orders v2 | Creates and captures every payment; success is read from the capture status, because a declined card can still return a completed order. |
+| PayPal Vault v3 (save during purchase) | Saves the wallet or card for later under a short customer id, only when the shopper ticks the save box. |
+| Customer-initiated charges on a saved method | Each rebuy is the shopper's yes on an approval card (`payment_initiator: CUSTOMER`, `usage: SUBSEQUENT`), capped per rebuy. |
+| `PayPal-Request-Id` idempotency | One id per shopper, item and cycle, and saved method, so a repeated yes, or a price drop and a run-out date for the same item, charge once. |
+| Payment token delete | Saved methods: remove a method and confirm PayPal no longer has it. |
+| Refunds | A charge can be refunded in full from its receipt. |
+| Webhooks + verify-webhook-signature | `/api/webhooks/paypal` verifies every delivery with PayPal, handles a repeated event id once, and confirms receipts and removed methods. |
+| Negative testing | Behind `DEMO_NEGATIVE_TESTING=1`: the labelled switch that makes the next rebuy decline. |
+| Channel3 search and URL lookup | Finds the catalogue product behind a screenshot (text search on what Claude read) or a pasted link. |
+| Channel3 price history | 90-day history, cleaned of junk points and mixed sizes, gives the usual price, the low and the price to wait for. |
+| Channel3 product subscriptions + webhooks | A wait verdict starts a price-drop subscription; `/api/webhooks/channel3` checks the signature, handles a repeated event once, and turns a drop to the target into an approval card. |
+| Channel3 buy links | The product link on a verdict, with the commission notice next to it. |
+| Claude (`claude-sonnet-5-5`) | Reads a screenshot or a listing into structured fields (strict JSON schema), and words the one-line reason after the verdict is decided. |
+| Render | One web service runs the app, the API and both webhook endpoints (`render.yaml`). |
+
+## How a verdict is decided
+
+The model observes; code decides. Claude turns the screenshot into fields (brand, name, price, store, key attributes); a catalogue match is scored in code, and a weak or tied match asks you to confirm. Twelve ordered rules then decide from structured fields only: shelf similarity, run-out dates, the store's cited return-once-opened policy, the budget left and the cleaned price band. Anything unresolved lands on ask or wait, never buy. Money moves only after your tap, on a method you saved, under the cap you set.
+
+Most big beauty stores take opened beauty back (Sephora, Ulta, Target and Kohl's do; CVS may refuse it; Walgreens leaves it to the manager), so the return line is usually reassurance ("Ulta Beauty takes opened beauty back within 30 days, so trying it is low risk") and a reason to skip only where the cited policy refuses opened items or no policy was found.
+
+## Run it
 
 Node 22 or later.
 
 ```bash
 npm install
-cp .env.example .env   # fill in sandbox PayPal keys and the product-data key
-npm run dev
+cp .env.example .env   # sandbox PayPal keys, Channel3 key, Anthropic key
+npm run dev            # or: npm run build && npm start
 ```
+
+Each browser gets its own session (a cookie) with the sample shelf. Sessions, the webhook event log and caches are written under `.data/` (`APP_DATA_DIR`).
 
 ## Checks
 
@@ -35,31 +64,33 @@ npm run lint
 npm run typecheck
 npm run build
 
-npm run replay               # recompute the replay from the local cache
-npm run replay -- --fetch    # fetch any history not cached yet
-npm run replay -- --select   # rebuild and freeze the product list (uses API calls)
-
-PAYPAL_SMOKE=1 DEMO_NEGATIVE_TESTING=1 npm run smoke:paypal   # live sandbox run
+npm run replay               # wait-timing replay from the local cache
+PAYPAL_SMOKE=1 DEMO_NEGATIVE_TESTING=1 npm run smoke:paypal   # live sandbox run of the payment library
 CHANNEL3_SMOKE=1 npm run smoke:channel3                       # live product-data run
-npm run spike:transaction-search    # does PayPal activity include item lines?
 VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot to verdict
-npm run eval:skip:bands -- --fetch  # rebuild the test set's price bands (uses API calls)
 ```
 
-`DEMO_NEGATIVE_TESTING=1` allows PayPal's sandbox failure simulation (for example a declined card on a rebuy). Without it the app never sends the simulation header.
+## Real and sandbox
 
-Raw product-data responses are cached only under `data/cache/`, which is not committed.
+- Real: the product catalogue, prices, 90-day price histories and price alerts (Channel3), the screenshot and listing reading (Claude), and the store return policies, each with its source page and the date checked.
+- Sandbox: every PayPal payment. Money goes to a PayPal sandbox merchant account presented as "LookLook Test Store"; no real money moves.
+- Simulated, and labelled in the app: the date control on Rebuys, the test price drop, and the forced decline.
 
 ## What we'll tell you before you find it
 
-- The skip test set's shelf, budgets and expected answers are made up by one person for a fictional shopper. The products, prices and store policies are real.
-- Ten of 65 skip decisions disagree with the written answers. The causes are listed in `eval/skip-set/RESULTS.md`: a second concealer, setting spray or lip oil whose finish or tint differs is not treated as a duplicate; earbuds score as overlapping with over-ear headphones; and a differently named listing of a product you already own is treated as a near-duplicate rather than a restock.
-- 29 of the 65 test cases are at stores outside the policy table (brand sites and other retailers). Their opened-return policy is unknown and treated as not returnable, which decides 7 of the skips. Sephora's and Kohl's own returns pages blocked automated reading on the check date, so their entries cite other pages from the same companies.
+- **The store is a sandbox merchant.** Purchases are paid to a PayPal sandbox account, not to the retailer in the post. LookLook is the seller of record in this build.
+- **PayPal activity import is off.** Filling the shelf from PayPal activity needs the Transaction Search permission on the PayPal app, which this sandbox app doesn't have yet (403). The shelf comes from manual adds and purchases made in the app.
+- **Waiting saves little on beauty.** In the wait-timing replay (28 purchases, real price histories), waiting by our rule paid $58.56 (1.7%) less than buying on the first price alert, and only $1.07 of that was beauty. For beauty the value is in the skip, not the wait.
+- The skip test set's shopper, shelf, budgets and expected answers are made up by one person. Ten of 65 skip decisions disagree with them; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable.
+- The four sample posts are mock creator posts we drew; the products and prices in them are real.
+- Two sandbox behaviours we design around: two simultaneous order requests with the same `PayPal-Request-Id` created two orders (sequential repeats return the first), so same-key payment calls are merged in the app before they reach PayPal; and a payment token deleted seconds after it was saved came back a few seconds later, so removal repeats the delete until two checks find nothing. Both are handled inside one process: run a single instance.
+- PayPal's sandbox Orders API rejects a `PayPal-Request-Id` of about 70 characters or more with a bare 422, so longer ids are hashed to at most 64.
+- On Render's free plan the disk is reset on each deploy and restart, which clears sessions and the event log.
 - Price bands follow each catalogue listing's headline offer, not a single seller.
 
 ## Deploy
 
-`render.yaml` describes a Render web service: `npm ci && npm run build`, then `npm start` (listens on `$PORT`), with a health check at `/api/health`.
+`render.yaml` describes one Render web service: `npm ci && npm run build`, then `npm start` on `$PORT`, health check `/api/health`, auto-deploy off. Secrets are entered in the Render dashboard. After the first deploy, register `https://<service>.onrender.com/api/webhooks/paypal` in the PayPal app (copy its webhook ID to `PAYPAL_WEBHOOK_ID`) and `https://<service>.onrender.com/api/webhooks/channel3` in the Channel3 dashboard (copy its signing secret to `CHANNEL3_WEBHOOK_SECRET`).
 
 ## Licence
 
