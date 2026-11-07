@@ -56,7 +56,7 @@ export const firstAlert: Strategy = (p, sight, deadline) => {
 };
 
 /**
- * LookLook's wait rule: if the item has a real low (at least minDepth
+ * The app's wait rule: if the item has a real low (at least minDepth
  * under its typical price) in the reference window, wait for a price within
  * tolerance of that low, buying on the deadline if it never comes. If the
  * item has no real low, there is nothing to wait for: buy now.

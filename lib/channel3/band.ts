@@ -1,7 +1,7 @@
 import { cleanHistory, median } from "./clean";
 import type { RawPricePoint } from "./types";
 
-/** Derived price statistics for one product: what LookLook keeps instead of the raw series. */
+/** Derived price statistics for one product: what the app keeps instead of the raw series. */
 export interface PriceBand {
   /** Median daily price over the window. */
   typical: number;

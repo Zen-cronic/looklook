@@ -1,5 +1,5 @@
 /**
- * Replay of LookLook's wait rule against the price-alert baseline.
+ * Replay of the app's wait rule against the price-alert baseline.
  *
  *   npm run replay -- --select   build and freeze the product list (searches + history lookups)
  *   npm run replay -- --fetch    run, fetching any history not yet cached

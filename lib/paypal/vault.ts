@@ -1,3 +1,4 @@
+import { APP_NAME } from "../brand";
 import type { PayPalClient } from "./client";
 import type { CardInput, ExperienceContext } from "./orders";
 
@@ -19,7 +20,7 @@ export interface PaymentToken {
 
 /** Plain consent text shown before a method is saved. Kept with the code that saves it. */
 export const SAVE_FOR_LATER_CONSENT =
-  "Save this payment method with PayPal so LookLook can rebuy items you approve. " +
+  `Save this payment method with PayPal so ${APP_NAME} can rebuy items you approve. ` +
   "Each rebuy asks for your yes, stays under the cap you set, and you get a notice after every charge. " +
   "You can remove the saved method at any time in Saved methods.";
 
@@ -43,19 +44,19 @@ export async function createSetupToken(
             expiry: c.expiry,
             security_code: c.securityCode,
             billing_address: c.billingAddress,
-            experience_context: { brand_name: "LookLook" },
+            experience_context: { brand_name: APP_NAME },
           }
         : {},
     };
   } else {
     payment_source = {
       paypal: {
-        description: input.source.description ?? "LookLook: rebuy staples you approve",
+        description: input.source.description ?? `${APP_NAME}: rebuy staples you approve`,
         usage_type: "MERCHANT",
         customer_type: "CONSUMER",
         permit_multiple_payment_tokens: false,
         experience_context: {
-          brand_name: input.source.experience.brandName ?? "LookLook",
+          brand_name: input.source.experience.brandName ?? APP_NAME,
           return_url: input.source.experience.returnUrl,
           cancel_url: input.source.experience.cancelUrl,
           shipping_preference: "NO_SHIPPING",

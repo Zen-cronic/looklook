@@ -1,5 +1,5 @@
 /**
- * LookLook talks to the PayPal sandbox only. There is no switch for live
+ * The app talks to the PayPal sandbox only. There is no switch for live
  * keys: the base URL is fixed here and every request is checked against it.
  */
 export const PAYPAL_API_BASE = "https://api-m.sandbox.paypal.com";

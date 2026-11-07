@@ -1,3 +1,4 @@
+import { APP_NAME } from "../brand";
 import type { PayPalClient } from "./client";
 import { CaptureDeclinedError } from "./errors";
 import { money, toCents, type Money } from "./money";
@@ -37,7 +38,7 @@ export interface ExperienceContext {
   brandName?: string;
 }
 
-/** Orders v2 response, only the fields LookLook reads. */
+/** Orders v2 response, only the fields the app reads. */
 export interface PayPalOrder {
   id: string;
   status: string;
@@ -155,7 +156,7 @@ export async function createWalletOrder(
 ) {
   const paypal: Record<string, unknown> = {
     experience_context: {
-      brand_name: input.experience.brandName ?? "LookLook",
+      brand_name: input.experience.brandName ?? APP_NAME,
       return_url: input.experience.returnUrl,
       cancel_url: input.experience.cancelUrl,
       user_action: "PAY_NOW",

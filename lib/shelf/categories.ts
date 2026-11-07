@@ -1,5 +1,5 @@
 /**
- * Product categories LookLook understands, with the attributes that make
+ * Product categories the app understands, with the attributes that make
  * two items "the same job" and the groups used for return policies and budgets.
  */
 
