@@ -16,10 +16,15 @@ export const CATEGORIES = [
   "setting-spray",
   "mascara",
   "shampoo",
+  "conditioner",
+  "hair-oil",
+  "lip-balm",
   "headphones",
   "blender",
   "coffee-maker",
   "air-fryer",
+  "kettle",
+  "toaster",
 ] as const;
 
 export type Category = (typeof CATEGORIES)[number];
@@ -48,6 +53,8 @@ export interface AttributeWeight {
   near?: Array<[string, string]>;
   /** Spellings folded onto a scale value before comparing. */
   aliases?: Record<string, string>;
+  /** Values that stand for several at once (face-body is face and body), expanded before comparing. */
+  expand?: Record<string, string[]>;
 }
 
 interface CategorySpec {
@@ -84,8 +91,10 @@ const unknownDetail = (key: string, weight: number): AttributeWeight => ({ key, 
 /**
  * What decides whether a second item does the same job. The type is the main
  * active for serums (a hyaluronic serum and a retinol serum do different
- * jobs), the shade family for colour cosmetics people keep several of, the
- * style for headphones and the kind of appliance for kitchen tools. For
+ * jobs), where a sunscreen goes (a body sunscreen doesn't do a face
+ * sunscreen's job; a face-and-body one does both), the shade family for
+ * colour cosmetics people keep several of, the style for headphones and the
+ * kind of appliance for kitchen tools. For
  * products used one at a time the category is the type. Details then compare
  * actives, finish, form, coverage and the like, with half credit for
  * neighbours (matte and natural, gel and gel cream, on-ear and over-ear).
@@ -111,11 +120,12 @@ export const CATEGORY_SPECS: Record<Category, CategorySpec> = {
   sunscreen: {
     policyGroup: "beauty",
     budgetGroup: "skincare",
+    // Where it goes is the job: the share of the new one's areas the owned one already covers.
+    type: { key: "area", weight: TYPE_WEIGHT, kind: "overlap", expand: { "face-body": ["face", "body"], "face-and-body": ["face", "body"] } },
     details: [
-      { key: "filter", weight: 0.2, kind: "equal" },
-      { key: "area", weight: 0.12, kind: "equal", scale: ["face", "face-body", "body"] },
-      { key: "spfBand", weight: 0.1, kind: "equal", scale: ["under-30", "30-49", "50+"] },
-      { key: "finish", weight: 0.08, kind: "equal", ...FINISH },
+      { key: "filter", weight: 0.25, kind: "equal" },
+      { key: "spfBand", weight: 0.15, kind: "equal", scale: ["under-30", "30-49", "50+"] },
+      { key: "finish", weight: 0.1, kind: "equal", ...FINISH },
     ],
   },
   cleanser: {
@@ -189,6 +199,31 @@ export const CATEGORY_SPECS: Record<Category, CategorySpec> = {
     budgetGroup: "haircare",
     details: [{ key: "purpose", weight: 0.3, kind: "equal" }, unknownDetail("hairType", 0.2)],
   },
+  conditioner: {
+    policyGroup: "beauty",
+    budgetGroup: "haircare",
+    details: [
+      { key: "purpose", weight: 0.25, kind: "equal" },
+      // Rinse-out, leave-in or a mask: a neighbouring use is half the job.
+      { key: "use", weight: 0.25, kind: "equal", scale: ["leave-in", "rinse-out", "mask"] },
+    ],
+  },
+  "hair-oil": {
+    policyGroup: "beauty",
+    budgetGroup: "haircare",
+    details: [
+      { key: "purpose", weight: 0.3, kind: "equal" },
+      { key: "form", weight: 0.2, kind: "equal", near: [["oil", "serum"]] },
+    ],
+  },
+  "lip-balm": {
+    policyGroup: "beauty",
+    budgetGroup: "skincare",
+    details: [
+      { key: "tint", weight: 0.3, kind: "equal", scale: ["clear", "tinted"] },
+      { key: "shadeFamily", weight: 0.2, kind: "equal", near: SHADE_NEAR },
+    ],
+  },
   headphones: {
     policyGroup: "electronics",
     budgetGroup: "electronics",
@@ -211,6 +246,18 @@ export const CATEGORY_SPECS: Record<Category, CategorySpec> = {
     policyGroup: "general",
     budgetGroup: "kitchen",
     type: { key: "type", weight: TYPE_WEIGHT, kind: "equal" },
+    details: [unknownDetail("capacity", 0.25), unknownDetail("features", 0.25)],
+  },
+  kettle: {
+    policyGroup: "general",
+    budgetGroup: "kitchen",
+    type: { key: "type", weight: TYPE_WEIGHT, kind: "equal", aliases: { "electric-kettle": "electric", "stovetop-kettle": "stovetop", "stove-top": "stovetop" } },
+    details: [unknownDetail("capacity", 0.25), unknownDetail("features", 0.25)],
+  },
+  toaster: {
+    policyGroup: "general",
+    budgetGroup: "kitchen",
+    type: { key: "type", weight: TYPE_WEIGHT, kind: "equal", aliases: { "pop-up-toaster": "pop-up", oven: "toaster-oven" } },
     details: [unknownDetail("capacity", 0.25), unknownDetail("features", 0.25)],
   },
 };
@@ -244,6 +291,18 @@ const SLUG_MAP: Record<string, Category> = {
   mascara: "mascara",
   shampoo: "shampoo",
   shampoos: "shampoo",
+  conditioner: "conditioner",
+  conditioners: "conditioner",
+  "hair-conditioners": "conditioner",
+  "leave-in-conditioners": "conditioner",
+  "hair-oils": "hair-oil",
+  "hair-oil": "hair-oil",
+  "hair-serums": "hair-oil",
+  "hair-oils-serums": "hair-oil",
+  "lip-balms": "lip-balm",
+  "lip-balm": "lip-balm",
+  "lip-care": "lip-balm",
+  "lip-treatments": "lip-balm",
   headphones: "headphones",
   "in-ear-headphones": "headphones",
   "over-ear-headphones": "headphones",
@@ -253,6 +312,11 @@ const SLUG_MAP: Record<string, Category> = {
   "coffee-makers": "coffee-maker",
   "drip-coffee-makers": "coffee-maker",
   "air-fryers": "air-fryer",
+  kettles: "kettle",
+  "electric-kettles": "kettle",
+  "tea-kettles": "kettle",
+  toasters: "toaster",
+  "toaster-ovens": "toaster",
 };
 
 export function categoryFromSlug(slug: string | undefined, path: string[] = []): Category | undefined {

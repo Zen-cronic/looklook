@@ -25,6 +25,7 @@ const nullAttrs = {
   spfBand: "",
   finish: "",
   form: "",
+  use: "",
   coverage: "",
   shadeFamily: "",
   tint: "",

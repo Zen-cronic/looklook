@@ -346,7 +346,7 @@ describe("check pipeline", () => {
     source: "creator-post" as const,
     store: "Ulta",
     category: "serum" as const,
-    attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"], texture: "", filter: "" as const, area: "" as const, spfBand: "" as const, finish: "", form: "", coverage: "" as const, shadeFamily: "", tint: "" as const, effect: "", formula: "", purpose: "", style: "" as const, noiseCancelling: "" as const, type: "" },
+    attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"], texture: "", filter: "" as const, area: "" as const, spfBand: "" as const, finish: "", form: "", use: "" as const, coverage: "" as const, shadeFamily: "", tint: "" as const, effect: "", formula: "", purpose: "", style: "" as const, noiseCancelling: "" as const, type: "" },
     legibility: 1,
   };
 

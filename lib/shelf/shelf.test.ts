@@ -124,7 +124,7 @@ describe("similarity", () => {
     const a = { category: "sunscreen" as const, attributes: { filter: "chemical", area: "face", spfBand: "50+", finish: "matte" } };
     const b = { category: "sunscreen" as const, attributes: { filter: "chemical", area: "face", spfBand: "30-49", finish: "sheer" } };
     expect(similarity(a, b)).toEqual(similarity(b, a));
-    expect(similarity(a, b).score).toBe(0.91);
+    expect(similarity(a, b).score).toBe(0.875);
   });
 
   it("gives an unknown detail half credit and lists it", () => {
@@ -239,5 +239,79 @@ describe("importers", () => {
     expect(r.withItemLines).toBe(2);
     expect(r.added).toHaveLength(1);
     expect(r.added[0]).toMatchObject({ category: "cleanser", source: "paypal-activity", addedOn: "2026-11-05", opened: false });
+  });
+});
+
+describe("categories added for common screenshots", () => {
+  const sim2 = (category: Category, a: Attributes, b: Attributes) => similarity({ category, attributes: a }, { category, attributes: b });
+
+  it("knows conditioner, hair oil, lip balm, kettle and toaster, with their catalogue slugs", () => {
+    for (const c of ["conditioner", "hair-oil", "lip-balm", "kettle", "toaster"] as const) expect(CATEGORIES).toContain(c);
+    expect(categoryFromSlug("conditioners")).toBe("conditioner");
+    expect(categoryFromSlug("hair-serums")).toBe("hair-oil");
+    expect(categoryFromSlug("lip-care")).toBe("lip-balm");
+    expect(categoryFromSlug(undefined, ["kitchen", "small-appliances", "electric-kettles"])).toBe("kettle");
+    expect(categoryFromSlug("toaster-ovens")).toBe("toaster");
+    expect(CATEGORY_SPECS.conditioner.budgetGroup).toBe("haircare");
+    expect(CATEGORY_SPECS.kettle.policyGroup).toBe("general");
+  });
+
+  it("keeps shampoo and conditioner, and lip balm and lip oil, as different jobs", () => {
+    expect(similarity({ category: "conditioner", attributes: { purpose: "hydrating" } }, { category: "shampoo", attributes: { purpose: "hydrating" } }).score).toBe(0);
+    expect(similarity({ category: "lip-balm", attributes: { tint: "tinted" } }, { category: "lip-oil", attributes: { tint: "tinted" } }).score).toBe(0);
+  });
+
+  it("scores conditioners by purpose and use", () => {
+    expect(sim2("conditioner", { purpose: "hydrating", use: "rinse-out" }, { purpose: "hydrating", use: "rinse-out" }).score).toBe(1);
+    expect(sim2("conditioner", { purpose: "hydrating" }, { purpose: "hydrating", use: "rinse-out" }).score).toBe(0.875);
+    expect(sim2("conditioner", { purpose: "hydrating", use: "leave-in" }, { purpose: "hydrating", use: "rinse-out" }).score).toBe(0.875);
+    expect(sim2("conditioner", { purpose: "hydrating", use: "leave-in" }, { purpose: "hydrating", use: "mask" }).score).toBe(0.75);
+    expect(sim2("conditioner", { purpose: "volume" }, { purpose: "hydrating" }).score).toBe(0.625);
+  });
+
+  it("treats a hair serum as a neighbour of a hair oil", () => {
+    expect(sim2("hair-oil", { purpose: "smoothing", form: "serum" }, { purpose: "smoothing", form: "oil" }).score).toBe(0.9);
+    expect(sim2("hair-oil", { purpose: "shine", form: "oil" }, { purpose: "smoothing", form: "oil" }).score).toBe(0.7);
+  });
+
+  it("scores lip balms by tint and shade", () => {
+    expect(sim2("lip-balm", { tint: "tinted", shadeFamily: "pink" }, { tint: "tinted", shadeFamily: "pink" }).score).toBe(1);
+    expect(sim2("lip-balm", { tint: "clear" }, { tint: "tinted", shadeFamily: "pink" }).score).toBe(0.75);
+  });
+
+  it("separates an electric kettle from a stovetop one, and a pop-up toaster from a toaster oven", () => {
+    expect(sim2("kettle", { type: "electric" }, { type: "electric-kettle" }).sameType).toBe(true);
+    expect(sim2("kettle", { type: "electric" }, { type: "electric" }).score).toBe(0.75);
+    expect(sim2("kettle", { type: "electric" }, { type: "stovetop" }).score).toBe(0.25);
+    expect(sim2("toaster", { type: "pop-up" }, { type: "oven" }).sameType).toBe(false);
+  });
+});
+
+describe("sunscreen: face and body are different jobs", () => {
+  const spf = (area: string, more: Attributes = {}) => ({ category: "sunscreen" as const, attributes: { filter: "mineral", spfBand: "50+", finish: "sheer", area, ...more } });
+
+  it("a body sunscreen doesn't do a face sunscreen's job, or the other way round", () => {
+    const r = similarity(spf("body"), spf("face"));
+    expect(r.sameType).toBe(false);
+    expect(r.score).toBe(0.5);
+    expect(similarity(spf("face"), spf("body")).score).toBe(0.5);
+  });
+
+  it("a face-and-body sunscreen you own covers either", () => {
+    expect(similarity(spf("body"), spf("face-body"))).toMatchObject({ score: 1, sameType: true });
+    expect(similarity(spf("face"), spf("face-body"))).toMatchObject({ score: 1, sameType: true });
+  });
+
+  it("a face-and-body sunscreen is only half covered by a face one", () => {
+    const r = similarity(spf("face-body"), spf("face"));
+    expect(r.sameType).toBe(false);
+    expect(r.score).toBe(0.75);
+  });
+
+  it("an unknown area is half credit and never the same type", () => {
+    const r = similarity({ category: "sunscreen", attributes: { filter: "mineral", spfBand: "50+", finish: "sheer" } }, spf("face"));
+    expect(r.missing).toContain("area");
+    expect(r.score).toBe(0.75);
+    expect(r.sameType).toBe(false);
   });
 });

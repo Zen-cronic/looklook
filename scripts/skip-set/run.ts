@@ -2,10 +2,14 @@
  * Runs the verdict engine on the skip test set and writes the score.
  *
  *   npm run eval:skip
+ *   npm run eval:skip -- --record "what changed in the engine"
  *
  * Reads eval/skip-set/{cases,shelf,price-bands}.json, makes no network or
- * model calls, and writes eval/skip-set/RESULTS.md and results.json.
+ * model calls, and writes eval/skip-set/RESULTS.md and results.json. With
+ * --record, the run is added to provenance.json's later changes, naming the
+ * committed engine code it ran on (the engine must have no uncommitted changes).
  */
+import { execFileSync } from "node:child_process";
 import { readFileSync, writeFileSync } from "node:fs";
 import type { PriceBand } from "../../lib/channel3/band";
 import { baselines, runCase, scoreOutcomes, splitCorrectSkips, type CaseOutcome, type ShelfFile, type SkipSet } from "../../lib/eval/skip-set";
@@ -17,10 +21,29 @@ const set = JSON.parse(readFileSync(`${DIR}/cases.json`, "utf8")) as SkipSet;
 const shelf = JSON.parse(readFileSync(`${DIR}/shelf.json`, "utf8")) as ShelfFile;
 const bands = (JSON.parse(readFileSync(`${DIR}/price-bands.json`, "utf8")) as { bands: Record<string, PriceBand | null> }).bands;
 
-const provenance = JSON.parse(readFileSync(`${DIR}/provenance.json`, "utf8")) as { expectations: { commit: string; at: string }; engine: { commit: string; at: string }; firstRun: { commit: string; at: string } };
+interface Change {
+  commit?: string;
+  at?: string;
+  what: string;
+  result: string;
+}
+const provenance = JSON.parse(readFileSync(`${DIR}/provenance.json`, "utf8")) as { expectations: { commit: string; at: string }; engine: { commit: string; at: string }; firstRun: { commit: string; at: string }; changes: Change[] };
 
 const outcomes = set.cases.map((c) => runCase(c, set, shelf, bands));
 const s = scoreOutcomes(outcomes);
+
+const recordAt = process.argv.indexOf("--record");
+if (recordAt > 0) {
+  const what = process.argv[recordAt + 1]?.trim();
+  if (!what) throw new Error('Say what changed: npm run eval:skip -- --record "..."');
+  const git = (...args: string[]) => execFileSync("git", args, { encoding: "utf8" }).trim();
+  const enginePaths = ["lib/verdict", "lib/shelf", "lib/eval", "lib/policies", "lib/channel3/band.ts", "lib/channel3/clean.ts", "data/return-policies.json"];
+  if (git("status", "--porcelain", "--", ...enginePaths)) throw new Error("Commit the engine change first, so the run can name the code it ran on.");
+  const commit = git("rev-parse", "HEAD");
+  const entry: Change = { commit, at: git("show", "-s", "--format=%cI", commit), what, result: `${s.skipCorrect} of ${s.n}` };
+  provenance.changes = [...provenance.changes.filter((c) => c.commit !== commit), entry];
+  writeFileSync(`${DIR}/provenance.json`, JSON.stringify(provenance, null, 2) + "\n");
+}
 const split = splitCorrectSkips(outcomes);
 const base = baselines(set, shelf);
 const money = (n: number) => `$${n.toFixed(2)}`;
@@ -70,6 +93,12 @@ Test set: ${s.n} real products with the prices and store policies captured on 20
 Order of work: expectations committed in ${provenance.expectations.commit.slice(0, 7)} at ${et(provenance.expectations.at)}; the engine in ${provenance.engine.commit.slice(0, 7)} at ${et(provenance.engine.at)}; the first scored run in ${provenance.firstRun.commit.slice(0, 7)} at ${et(provenance.firstRun.at)}. Later engine changes are listed in \`provenance.json\`; the expectations have not changed.
 
 Engine settings: identity confidence at least ${SETTINGS.minIdentityConfidence}, lead time ${SETTINGS.leadDays} days, urgent within ${SETTINGS.urgentDays} days, price tolerance ${SETTINGS.tolerance}, minimum depth ${SETTINGS.minDepth}, well above typical at +${SETTINGS.aboveTypical * 100}%.
+
+## After later changes
+
+Engine changes after the first scored run, each scored against the same expectations (from \`provenance.json\`). The numbers above are from the engine as it is now.
+
+${provenance.changes.length ? `| Code at | Committed (US Eastern) | What changed | Skip decisions correct |\n|---|---|---|---|\n${provenance.changes.map((c) => `| ${c.commit?.slice(0, 7) ?? ""} | ${c.at ? et(c.at) : ""} | ${c.what} | ${c.result} |`).join("\n")}` : "None."}
 
 ## Wrong skips
 

@@ -30,6 +30,7 @@ export interface ReaderAttributes {
   spfBand: "under-30" | "30-49" | "50+" | "";
   finish: string;
   form: string;
+  use: "rinse-out" | "leave-in" | "mask" | "";
   coverage: "sheer" | "light" | "medium" | "full" | "";
   shadeFamily: string;
   tint: "clear" | "tinted" | "";
@@ -53,19 +54,20 @@ const ATTRIBUTE_PROPS = {
   actives: { type: "array", items: str, description: "All named actives, kebab-case; empty if none shown" },
   texture: astr("Moisturizer texture: cream, gel-cream, lotion, balm"),
   filter: aenum(["chemical", "mineral"]),
-  area: aenum(["face", "body", "face-body"]),
+  area: { ...aenum(["face", "body", "face-body"]), description: "Where a sunscreen is for. Empty string if not shown." },
   spfBand: aenum(["under-30", "30-49", "50+"]),
   finish: astr("matte, natural, radiant, dewy, sheer, satin"),
-  form: astr("cream, foam, gel, liquid, stick, powder, oil"),
+  form: astr("cream, foam, gel, liquid, stick, powder, oil, serum"),
+  use: aenum(["rinse-out", "leave-in", "mask"]),
   coverage: aenum(["sheer", "light", "medium", "full"]),
   shadeFamily: astr("nude, pink, red, berry, peach, coral, brown, clear"),
   tint: aenum(["clear", "tinted"]),
   effect: astr("Mascara effect: volumizing, lengthening, curling"),
   formula: astr("washable, waterproof"),
-  purpose: astr("Shampoo purpose: clarifying, bond-repair, moisture, volume"),
+  purpose: astr("Shampoo, conditioner or hair oil purpose: clarifying, bond-repair, hydrating, smoothing, volume, shine"),
   style: aenum(["over-ear", "on-ear", "earbuds"]),
   noiseCancelling: aenum(["yes", "no"]),
-  type: astr("Appliance type: full-size or personal blender, drip or pod or espresso coffee maker, basket or oven air fryer"),
+  type: astr("Appliance type: full-size or personal blender, drip or pod or espresso coffee maker, basket or oven air fryer, electric or stovetop kettle, pop-up or toaster-oven toaster"),
 };
 
 /** JSON schema for structured output. All properties are required; absent values are null. */

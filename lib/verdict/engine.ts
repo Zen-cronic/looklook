@@ -1,6 +1,6 @@
 import { openedReturnPolicy } from "../policies";
 import { budgetGroupOf } from "../shelf/categories";
-import { NEAR_DUPLICATE, OVERLAP, rankShelf, sameProduct, sameType } from "../shelf/similarity";
+import { NEAR_DUPLICATE, OVERLAP, rankShelf, replacesJob, sameProduct } from "../shelf/similarity";
 import type { ShelfItem } from "../shelf/types";
 import type { Decision, Evidence, RuleId, ShelfEvidence, Verdict, VerdictInput } from "./types";
 
@@ -113,12 +113,12 @@ export function decide(input: VerdictInput): Decision {
   pass("not-needed-yet");
 
   // What this purchase would replace: the same product, else the soonest item of the same type running out
-  // (a hyaluronic serum replaces a hyaluronic serum, not any serum).
+  // that the new one does the whole job of (a hyaluronic serum replaces a hyaluronic serum, not any serum).
   const target = { category, attributes: product.attributes };
   const replaced =
     sameOpen ??
     sameCategory
-      .filter((i) => runningOut(i) && sameType(target, i))
+      .filter((i) => runningOut(i) && replacesJob(target, i))
       .sort((a, b) => a.runOutDate!.localeCompare(b.runOutDate!))[0];
   let needBy: string | undefined;
   if (replaced) {

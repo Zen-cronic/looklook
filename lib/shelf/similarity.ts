@@ -33,7 +33,8 @@ function asSet(v: AttributeValue | undefined, spec: AttributeWeight): Set<string
     (Array.isArray(v) ? v : [v])
       .map(norm)
       .filter(Boolean)
-      .map((x) => spec.aliases?.[x] ?? x),
+      .map((x) => spec.aliases?.[x] ?? x)
+      .flatMap((x) => spec.expand?.[x] ?? [x]),
   );
 }
 
@@ -98,9 +99,18 @@ export function similarity(a: Comparable, b: Comparable): SimilarityResult {
   return { score: Math.round(sum * 1000) / 1000, matched, missing, sameType };
 }
 
-/** Same product type: the same category and, where the category has a type attribute, the same known value. */
+/**
+ * Same product type: the same category and, where the category has a type
+ * attribute, the same known value. For a type compared as a list (where a
+ * sunscreen goes), a counts as b's type when b already covers all of a's.
+ */
 export function sameType(a: Comparable, b: Comparable): boolean {
   return similarity(a, b).sameType;
+}
+
+/** The new item does the whole job of the one it would replace (a face-and-body sunscreen replaces a face one; a face one doesn't replace a face-and-body one). */
+export function replacesJob(newItem: Comparable, owned: Comparable): boolean {
+  return sameType(owned, newItem);
 }
 
 export interface ShelfMatch extends SimilarityResult {

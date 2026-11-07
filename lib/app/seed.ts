@@ -93,6 +93,7 @@ const EMPTY_READER_ATTRIBUTES: ReaderAttributes = {
   spfBand: "",
   finish: "",
   form: "",
+  use: "",
   coverage: "",
   shadeFamily: "",
   tint: "",

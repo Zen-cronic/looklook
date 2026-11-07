@@ -172,3 +172,54 @@ describe("reasons", () => {
     expect((await writeReason(d, p, { client: long })).source).toBe("template");
   });
 });
+
+describe("decide: face and body sunscreen", () => {
+  const body = (store: string) => run({ product: product({ category: "sunscreen", attributes: { filter: "mineral", area: "body", spfBand: "50+", finish: "sheer" }, priceShown: 26 }), store });
+
+  it("buys a body sunscreen when only a face one is owned, even where the policy is unknown", () => {
+    const d = body("lather.com");
+    expect(d).toMatchObject({ verdict: "buy", rule: "clear-to-buy" });
+    expect(d.evidence.shelf?.relation).toBe("different");
+  });
+
+  it("skips a body sunscreen when a face-and-body one is owned", () => {
+    const withMilk = new MemoryShelfStore([...shelfItems, { id: "milk", brand: "La Roche-Posay", name: "Melt-in Milk", category: "sunscreen", attributes: { filter: "mineral", area: "face-body", spfBand: "50+", finish: "sheer" }, opened: true, runOutDate: "2027-01-10" }]).list();
+    const d = run({ product: product({ category: "sunscreen", attributes: { filter: "mineral", area: "body", spfBand: "50+", finish: "sheer" }, priceShown: 26 }), shelf: withMilk });
+    expect(d).toMatchObject({ verdict: "skip", rule: "owns-similar" });
+    expect(d.evidence.shelf?.itemId).toBe("milk");
+  });
+
+  it("counts a face-and-body sunscreen as replacing a face one that runs out, but not the reverse", () => {
+    const faceRunningOut = new MemoryShelfStore([{ id: "face", brand: "B", name: "Face SPF", category: "sunscreen", attributes: { filter: "chemical", area: "face" }, opened: true, runOutDate: "2026-11-10" }]).list();
+    const faceBody = run({ product: product({ category: "sunscreen", attributes: { filter: "mineral", area: "face-body" } }), shelf: faceRunningOut });
+    expect(faceBody).toMatchObject({ verdict: "buy", rule: "replacing-run-out" });
+    const bothRunningOut = new MemoryShelfStore([{ id: "fb", brand: "B", name: "Face and Body SPF", category: "sunscreen", attributes: { filter: "chemical", area: "face-body" }, opened: true, runOutDate: "2026-11-10" }]).list();
+    const faceOnly = run({ product: product({ category: "sunscreen", attributes: { filter: "mineral", area: "face" } }), shelf: bothRunningOut });
+    expect(faceOnly.rule).not.toBe("replacing-run-out");
+  });
+});
+
+describe("decide: the added categories", () => {
+  const shelfWith = new MemoryShelfStore([
+    ...shelfItems,
+    { id: "oil", brand: "OUAI", name: "Hair Oil", category: "hair-oil", attributes: { purpose: "smoothing" }, opened: true, runOutDate: "2027-03-01" },
+    { id: "balm", brand: "Summer Fridays", name: "Lip Butter Balm", category: "lip-balm", attributes: { tint: "tinted", shadeFamily: "pink" }, opened: true, runOutDate: null },
+  ]).list();
+  const go = (p: Partial<ProductFacts>, store = "ulta", budgets = { skincare: 75, makeup: 45, haircare: 40, kitchen: 120 }) => run({ product: product(p), shelf: shelfWith, store, budgets });
+
+  it("decides a conditioner instead of asking", () => {
+    expect(go({ category: "conditioner", attributes: { purpose: "hydrating" }, priceShown: 14 })).toMatchObject({ verdict: "buy", rule: "clear-to-buy" });
+  });
+
+  it("waits on the same hair oil you already have open", () => {
+    expect(go({ brand: "OUAI", name: "Hair Oil", category: "hair-oil", attributes: { purpose: "smoothing" }, priceShown: 18 }, "kohls")).toMatchObject({ verdict: "wait", rule: "not-needed-yet" });
+  });
+
+  it("skips a second tinted pink lip balm", () => {
+    expect(go({ category: "lip-balm", attributes: { tint: "tinted", shadeFamily: "pink" }, priceShown: 12 }, "sephora")).toMatchObject({ verdict: "skip", rule: "owns-similar" });
+  });
+
+  it("waits on a kettle over the kitchen budget", () => {
+    expect(go({ category: "kettle", attributes: { type: "electric" }, priceShown: 136.99 }, "bestbuy.com")).toMatchObject({ verdict: "wait", rule: "over-budget" });
+  });
+});
