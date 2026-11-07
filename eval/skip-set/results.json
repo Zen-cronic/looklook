@@ -1,0 +1,750 @@
+{
+  "asOf": "2026-11-07",
+  "headline": {
+    "skipCorrect": 55,
+    "n": 65,
+    "precision": 0.9142857142857143,
+    "recall": 0.8205128205128205
+  },
+  "counts": {
+    "tp": 32,
+    "fp": 3,
+    "fn": 7,
+    "tn": 23,
+    "nearDuplicatesCaught": 24,
+    "nonReturnableCaught": 7,
+    "unknownPolicyCaught": 17
+  },
+  "verdictAgreement": 0.8,
+  "reasonAgreement": 0.9615384615384616,
+  "cases": [
+    {
+      "id": "c01",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-vitc",
+      "score": 0.88,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c02",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-vitc",
+      "score": 0.88,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "c03",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-vitc",
+      "score": 0.91,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c04",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-vitc",
+      "score": 0.94,
+      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp"
+    },
+    {
+      "id": "c05",
+      "expected": "buy",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [],
+      "shelfItem": "sh-vitc",
+      "score": 0.46,
+      "policyUrl": "https://www.sephora.com/beauty/sephora-at-kohls-faq"
+    },
+    {
+      "id": "c06",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-ha",
+      "score": 0.88,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "c07",
+      "expected": "buy",
+      "verdict": "wait",
+      "rule": "no-price-history",
+      "flags": [],
+      "shelfItem": "sh-niacinamide",
+      "score": 0.4,
+      "policyUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq"
+    },
+    {
+      "id": "c08",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-niacinamide",
+      "score": 0.445,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "c09",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "over-budget",
+      "flags": [],
+      "shelfItem": "sh-niacinamide",
+      "score": 0.4,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c10",
+      "expected": "wait",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-niacinamide",
+      "score": 1,
+      "policyUrl": "https://www.sephora.com/beauty/sephora-at-kohls-faq"
+    },
+    {
+      "id": "c11",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [],
+      "shelfItem": "sh-niacinamide",
+      "score": 0.4,
+      "policyUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq"
+    },
+    {
+      "id": "c12",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-vitc",
+      "score": 0.88,
+      "policyUrl": null
+    },
+    {
+      "id": "c13",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-niacinamide",
+      "score": 0.4,
+      "policyUrl": null
+    },
+    {
+      "id": "c14",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [],
+      "shelfItem": "sh-gel",
+      "score": 0.52,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "c15",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "not-needed-yet",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-cream",
+      "score": 1,
+      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp"
+    },
+    {
+      "id": "c16",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [],
+      "shelfItem": "sh-gel",
+      "score": 0.52,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "c17",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-gel",
+      "score": 0.88,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c18",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-gel",
+      "score": 1,
+      "policyUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq"
+    },
+    {
+      "id": "c19",
+      "expected": "skip",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [],
+      "shelfItem": "sh-gel",
+      "score": 0.76,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "c20",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-gel",
+      "score": 1,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "c21",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-gel",
+      "score": 0.76,
+      "policyUrl": null
+    },
+    {
+      "id": "c22",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-gel",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c23",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-unseen",
+      "score": 0.88,
+      "policyUrl": null
+    },
+    {
+      "id": "c24",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-unseen",
+      "score": 0.79,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "c25",
+      "expected": "skip",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [],
+      "shelfItem": "sh-unseen",
+      "score": 0.79,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c26",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-unseen",
+      "score": 0.67,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "c27",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "not-needed-yet",
+      "flags": [],
+      "shelfItem": "sh-lrp-milk",
+      "score": 1,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c28",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-unseen",
+      "score": 0.88,
+      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp"
+    },
+    {
+      "id": "c29",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-unseen",
+      "score": 0.67,
+      "policyUrl": null
+    },
+    {
+      "id": "c30",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-unseen",
+      "score": 0.67,
+      "policyUrl": null
+    },
+    {
+      "id": "c31",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-lrp-milk",
+      "score": 0.61,
+      "policyUrl": null
+    },
+    {
+      "id": "c32",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "c33",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "c34",
+      "expected": "skip",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [],
+      "shelfItem": "sh-cleanser",
+      "score": 0.4,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "c35",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "c36",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-foundation",
+      "score": 1,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c37",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-foundation",
+      "score": 0.76,
+      "policyUrl": null
+    },
+    {
+      "id": "c38",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-foundation",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c39",
+      "expected": "skip",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [],
+      "shelfItem": "sh-concealer",
+      "score": 0.4,
+      "policyUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq"
+    },
+    {
+      "id": "c40",
+      "expected": "skip",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-concealer",
+      "score": 0.4,
+      "policyUrl": null
+    },
+    {
+      "id": "c41",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-lipstick",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c42",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-lipstick",
+      "score": 0.58,
+      "policyUrl": null
+    },
+    {
+      "id": "c43",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-lipstick",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c44",
+      "expected": "buy",
+      "verdict": "wait",
+      "rule": "no-price-history",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-lipstick",
+      "score": 0.58,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "c45",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-lipoil",
+      "score": 1,
+      "policyUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq"
+    },
+    {
+      "id": "c46",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [],
+      "shelfItem": "sh-lipoil",
+      "score": 1,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c47",
+      "expected": "skip",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [],
+      "shelfItem": "sh-lipoil",
+      "score": 0.4,
+      "policyUrl": "https://www.ulta.com/guestservices/all"
+    },
+    {
+      "id": "c48",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [],
+      "shelfItem": "sh-blush",
+      "score": 0.64,
+      "policyUrl": "https://www.sephora.com/beauty/sephora-at-kohls-faq"
+    },
+    {
+      "id": "c49",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-blush",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c50",
+      "expected": "skip",
+      "verdict": "wait",
+      "rule": "no-price-history",
+      "flags": [],
+      "shelfItem": "sh-setting",
+      "score": 0.4,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "c51",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-setting",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c52",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "replacing-run-out",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf"
+    },
+    {
+      "id": "c53",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "over-budget",
+      "flags": [],
+      "shelfItem": "sh-shampoo",
+      "score": 0.4,
+      "policyUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq"
+    },
+    {
+      "id": "c54",
+      "expected": "buy",
+      "verdict": "buy",
+      "rule": "clear-to-buy",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "c55",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-blender",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c56",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-blender",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c57",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-blender",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c58",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-coffee",
+      "score": 0.4,
+      "policyUrl": null
+    },
+    {
+      "id": "c59",
+      "expected": "wait",
+      "verdict": "wait",
+      "rule": "above-usual-price",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-coffee",
+      "score": 0.4,
+      "policyUrl": null
+    },
+    {
+      "id": "c60",
+      "expected": "buy",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-headphones",
+      "score": 0.64,
+      "policyUrl": null
+    },
+    {
+      "id": "c61",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-headphones",
+      "score": 0.64,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    },
+    {
+      "id": "c62",
+      "expected": "skip",
+      "verdict": "skip",
+      "rule": "owns-similar",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-headphones",
+      "score": 1,
+      "policyUrl": null
+    },
+    {
+      "id": "c63",
+      "expected": "wait",
+      "verdict": "skip",
+      "rule": "overlap-non-returnable",
+      "flags": [
+        "non-returnable-opened"
+      ],
+      "shelfItem": "sh-headphones",
+      "score": 0.64,
+      "policyUrl": null
+    },
+    {
+      "id": "c64",
+      "expected": "ask",
+      "verdict": "ask",
+      "rule": "identity-unconfirmed",
+      "flags": [],
+      "shelfItem": null,
+      "score": null,
+      "policyUrl": null
+    },
+    {
+      "id": "c65",
+      "expected": "ask",
+      "verdict": "ask",
+      "rule": "price-unknown",
+      "flags": [],
+      "shelfItem": "sh-vitc",
+      "score": 0.46,
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns"
+    }
+  ]
+}
