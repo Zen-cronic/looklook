@@ -41,6 +41,11 @@ export function validateShelfItem(input: ShelfItemInput): ShelfItem {
     ...(input.size ? { size: input.size } : {}),
     source: input.source ?? "manual",
     addedOn: input.addedOn ?? today(),
+    ...(typeof input.price === "number" && input.price > 0 ? { price: Math.round(input.price * 100) / 100 } : {}),
+    ...(input.productId ? { productId: input.productId } : {}),
+    ...(input.store ? { store: input.store } : {}),
+    ...(Number.isInteger(input.cycleDays) && input.cycleDays! > 0 ? { cycleDays: input.cycleDays } : {}),
+    ...(input.lastRestockedOn && DATE.test(input.lastRestockedOn) ? { lastRestockedOn: input.lastRestockedOn } : {}),
   };
 }
 
