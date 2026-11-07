@@ -105,8 +105,10 @@ export interface SkipScore {
   reasonAgreement: number;
   /** Correct skips because the shopper owns the same or a near-identical item. */
   nearDuplicatesCaught: number;
-  /** Correct skips where the store won't (or may not) take the item back once opened. */
+  /** Correct skips at a store whose cited policy refuses opened returns or allows them only on conditions. */
   nonReturnableCaught: number;
+  /** Correct skips at a store whose opened-return policy is unknown (treated as not returnable). */
+  unknownPolicyCaught: number;
   wrongSkips: CaseOutcome[];
   missedSkips: CaseOutcome[];
   /** Verdict mismatches that don't involve skip (e.g. buy vs wait). */
@@ -139,7 +141,8 @@ export function scoreOutcomes(outcomes: CaseOutcome[]): SkipScore {
     verdictAgreement: ratio(verdictCorrect.length, outcomes.length),
     reasonAgreement: ratio(verdictCorrect.filter((o) => o.reasonCorrect).length, verdictCorrect.length),
     nearDuplicatesCaught: tp.filter((o) => o.decision.rule === "owns-similar" || o.decision.rule === "owns-unopened").length,
-    nonReturnableCaught: tp.filter((o) => o.decision.flags.includes("non-returnable-opened")).length,
+    nonReturnableCaught: tp.filter((o) => ["no", "conditional"].includes(o.decision.evidence.policy?.returnableOpened ?? "")).length,
+    unknownPolicyCaught: tp.filter((o) => o.decision.evidence.policy?.returnableOpened === "unknown").length,
     wrongSkips: fp,
     missedSkips: fn,
     otherMismatches: outcomes.filter((o) => !o.verdictCorrect && o.skipCorrect),

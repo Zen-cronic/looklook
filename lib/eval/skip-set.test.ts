@@ -2,8 +2,9 @@ import { describe, expect, it } from "vitest";
 import type { Decision, RuleId, Verdict } from "../verdict/types";
 import { runCase, scoreOutcomes, shelfFor, type CaseOutcome, type ShelfFile, type SkipCase, type SkipSet } from "./skip-set";
 
-function outcome(id: string, expected: Verdict, actual: Verdict, rule: RuleId, flags: string[] = [], reasons: RuleId[] = [rule]): CaseOutcome {
-  const decision: Decision = { verdict: actual, rule, flags, evidence: { trace: [rule] } };
+function outcome(id: string, expected: Verdict, actual: Verdict, rule: RuleId, flags: string[] = [], reasons: RuleId[] = [rule], opened: "yes" | "no" | "conditional" | "unknown" = flags.length ? "no" : "yes"): CaseOutcome {
+  const policy = { retailerId: "x", retailerName: "X", group: "beauty" as const, returnableOpened: opened, windowDays: 30, sourceUrl: null, checkedOn: "2026-11-06", fallback: false };
+  const decision: Decision = { verdict: actual, rule, flags, evidence: { trace: [rule], policy } };
   const verdictCorrect = expected === actual;
   return {
     id,
@@ -26,15 +27,16 @@ describe("scoreOutcomes", () => {
     outcome("e", "buy", "wait", "above-usual-price", [], ["clear-to-buy"]),
     outcome("f", "wait", "wait", "over-budget"),
     outcome("g", "skip", "skip", "owns-unopened", [], ["owns-similar"]),
+    outcome("h", "skip", "skip", "owns-similar", ["non-returnable-opened"], ["owns-similar"], "unknown"),
   ];
   const s = scoreOutcomes(outcomes);
 
   it("counts skip decisions and precision/recall", () => {
-    expect(s.n).toBe(7);
-    expect([s.truePositives, s.falsePositives, s.falseNegatives, s.trueNegatives]).toEqual([3, 1, 1, 2]);
-    expect(s.skipCorrect).toBe(5);
-    expect(s.precision).toBeCloseTo(0.75);
-    expect(s.recall).toBeCloseTo(0.75);
+    expect(s.n).toBe(8);
+    expect([s.truePositives, s.falsePositives, s.falseNegatives, s.trueNegatives]).toEqual([4, 1, 1, 2]);
+    expect(s.skipCorrect).toBe(6);
+    expect(s.precision).toBeCloseTo(0.8);
+    expect(s.recall).toBeCloseTo(0.8);
   });
 
   it("lists wrong, missed and other mismatches separately", () => {
@@ -44,13 +46,14 @@ describe("scoreOutcomes", () => {
   });
 
   it("counts catches by kind among correct skips only", () => {
-    expect(s.nearDuplicatesCaught).toBe(2);
+    expect(s.nearDuplicatesCaught).toBe(3);
     expect(s.nonReturnableCaught).toBe(1);
+    expect(s.unknownPolicyCaught).toBe(1);
   });
 
   it("scores verdict and reason agreement", () => {
-    expect(s.verdictAgreement).toBeCloseTo(4 / 7);
-    expect(s.reasonAgreement).toBeCloseTo(3 / 4);
+    expect(s.verdictAgreement).toBeCloseTo(5 / 8);
+    expect(s.reasonAgreement).toBeCloseTo(4 / 5);
     expect(s.confusion.skip.buy).toBe(1);
     expect(s.confusion.buy.skip).toBe(1);
   });
