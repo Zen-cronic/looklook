@@ -7,9 +7,16 @@ export interface Offer {
   max_commission_rate?: number;
 }
 
+export interface ProductImage {
+  url: string;
+  is_main_image?: boolean;
+  alt_text?: string;
+}
+
 export interface Product {
   id: string;
   title: string;
+  images?: ProductImage[];
   description?: string;
   brands?: Array<{ id: string; name: string }>;
   category?: { slug: string; title?: string; path?: Array<{ slug: string; title?: string }> };
@@ -53,5 +60,5 @@ export interface ProductSubscription {
   status?: string;
   events?: SubscriptionEvent[];
   domains?: string[] | null;
-  selection?: Record<string, string> | null;
+  selection?: unknown;
 }

@@ -18,12 +18,20 @@ export async function getPriceHistory(client: Channel3Client, id: string, days =
   return client.request<PriceHistory>("GET", `/v0/price-tracking/history/${encodeURIComponent(id)}?days=${d}`);
 }
 
+/** Look up the catalogue product behind a store page URL. */
+export async function lookupUrl(client: Channel3Client, url: string): Promise<Product> {
+  const res = await client.request<{ product?: Product } & Partial<Product>>("POST", "/v1/lookup", { url });
+  const product = res.product ?? (res.id ? (res as Product) : undefined);
+  if (!product) throw new Error("No catalogue product for that link");
+  return product;
+}
+
 export const PRICE_EVENTS: SubscriptionEvent[] = ["offer.price.changed", "offer.availability.changed"];
 
 /** Watch a product for price and stock changes. Variant products need a selection (size, colour). */
 export async function createSubscription(
   client: Channel3Client,
-  input: { productId: string; events?: SubscriptionEvent[]; selection?: Record<string, string>; domains?: string[] },
+  input: { productId: string; events?: SubscriptionEvent[]; selection?: unknown; domains?: string[] },
 ): Promise<ProductSubscription> {
   const body: Record<string, unknown> = { product_id: input.productId, events: input.events ?? PRICE_EVENTS };
   if (input.selection) body.selection = input.selection;
