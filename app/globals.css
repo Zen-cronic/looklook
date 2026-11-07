@@ -1349,3 +1349,38 @@ tr:last-child td {
 .disclosure > summary {
   padding: 0;
 }
+
+@media (max-width: 640px) {
+  .stacked td:empty {
+    display: none;
+  }
+}
+
+@media (max-width: 520px) {
+  .figures {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+
+/* Latest check, above the intake */
+.latest {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  text-decoration: none;
+  padding: 0.85rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  border-left: 6px solid var(--line-strong);
+  background: var(--card);
+}
+
+.latest.skip { border-left-color: var(--skip); }
+.latest.wait { border-left-color: var(--wait); }
+.latest.buy { border-left-color: var(--buy); }
+.latest.ask { border-left-color: var(--ask); }
+
+.latest p {
+  font-size: 0.9375rem;
+}

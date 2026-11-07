@@ -10,13 +10,14 @@ export default function JudgePage() {
       <div>
         <h1>Start here</h1>
         <p className="lede">{APP_NAME}, {APP_TAGLINE}. Six short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
+        <p style={{ marginTop: "0.75rem" }}>PayPal&apos;s shopping tools help you buy what you saw. {APP_NAME} asks whether you should, and when it&apos;s a staple, PayPal Vault makes buying it again one yes.</p>
       </div>
 
       <ol className="steps">
         <li>
           <div className="stack-sm">
             <h2>Check a post</h2>
-            <p>On Check, tap the sunscreen post. You already own two sunscreens and CVS may refuse opened sunscreen, so the answer is skip. Open See why for the rule, the shelf item and the cited policy.</p>
+            <p>On Check, the last check is the sunscreen post (or tap it again). You already own a sunscreen that does the same job and CVS may refuse opened sunscreen, so the answer is skip. Open See why for the rule, the shelf item and the cited policy, and see the same product at other stores with each store&apos;s policy.</p>
             <Link className="btn small" href="/">
               Open Check
             </Link>

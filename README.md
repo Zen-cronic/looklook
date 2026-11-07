@@ -2,9 +2,15 @@
 
 *look twice before you buy*
 
-**Skip correctness: 55 of 65 skip decisions match answers written down before the engine ran** (skip precision 91.4%, recall 82.1%), on 65 real products against a sample shopper's shelf. Every wrong and missed skip is listed in [`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md) and on the app's `/proof` page; `GET /api/eval/skip` and `npm run eval:skip` recompute it with no network calls.
+For anyone who buys skincare and makeup they saw on their feed and ends up with a second of something they already own: LookLook checks the post against your shelf, your budget, the price history and the store's return policy before you pay.
 
-Before you buy what you saw on your feed, LookLook checks it, and its most common answer is skip. Send it a screenshot of a creator post or a store link. It reads the product, finds it in the catalogue, and checks it against what you already own, this month's budget, the 90-day price history and whether the store takes it back once opened. Then it says **skip**, **wait**, **buy** or asks you to confirm, with the one-line reason and the evidence behind it.
+<img src="docs/verdict-skip.png" alt="A skip verdict on a phone: you already own a sunscreen that does the same job, and CVS may refuse it once opened" width="320">
+
+**60 of 65 skip decisions match answers written down before the engine ran.** Saying skip to everything gets 39 of 65; skipping anything in a category you already own gets 40 of 65. Of the 35 right skips, 28 rest on evidence (the shelf, or a cited store policy) and 7 on our default that an unknown opened-return policy counts as not returnable; together they avoid $2,481.21 of duplicate or hard-to-return buys. Every wrong and missed skip is in [`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md) and on the app's `/proof` page; `GET /api/eval/skip` and `npm run eval:skip` recompute it with no network calls.
+
+PayPal's shopping tools help you buy what you saw. LookLook asks whether you should, and when it's a staple, PayPal Vault makes buying it again one yes.
+
+Before you buy what you saw on your feed, LookLook checks it, and its most common answer is skip. Send it a screenshot of a creator post or a store link. It reads the product, finds it in the catalogue, and checks it against what you already own, this month's budget, the 90-day price history and whether the store takes it back once opened. Then it says **skip**, **wait**, **buy** or asks you to confirm, with the one-line reason and the evidence behind it, and lists the same product at other stores with what each store does with opened items. A wait says what it is waiting for: next month's budget (with a reminder), a lower price (with a price watch, the 90-day trend and the target), or the one you own running low.
 
 The things you do buy again (a cleanser, a moisturizer) come back as one-tap rebuys: when a staple nears its run-out date or a watched price drops, you get an approval card, and only your yes charges the payment method you saved with PayPal.
 
@@ -33,7 +39,8 @@ Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login
 | Webhooks + verify-webhook-signature | `/api/webhooks/paypal` verifies every delivery with PayPal, handles a repeated event id once, and confirms receipts and removed methods. |
 | Negative testing | Behind `DEMO_NEGATIVE_TESTING=1`: the labelled switch that makes the next rebuy decline. |
 | Channel3 search and URL lookup | Finds the catalogue product behind a screenshot (text search on what Claude read) or a pasted link. |
-| Channel3 price history | 90-day history, cleaned of junk points and mixed sizes, gives the usual price, the low and the price to wait for. |
+| Channel3 product detail and offers | The same product at other stores on a verdict, each joined with that store's opened-return policy; only the store, price and link are kept (cached for a day, never committed). |
+| Channel3 price history | 90-day history, filtered to one size and steady points, gives the usual price, the low, the price to wait for and the weekly trend line. |
 | Channel3 product subscriptions + webhooks | A wait verdict starts a price-drop subscription; `/api/webhooks/channel3` checks the signature, handles a repeated event once, and turns a drop to the target into an approval card. |
 | Channel3 buy links | The product link on a verdict, with the commission notice next to it. |
 | Claude (`claude-sonnet-5-5`) | Reads a screenshot or a listing into structured fields (strict JSON schema), and words the one-line reason after the verdict is decided. |
@@ -80,10 +87,12 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 
 ## What we'll tell you before you find it
 
-- **The store is a sandbox merchant.** Purchases are paid to a PayPal sandbox account, not to the retailer in the post. LookLook is the seller of record in this build.
+- **Who sells what.** Checkout and rebuys inside LookLook are sold by "LookLook Test Store (PayPal sandbox)", a PayPal sandbox merchant, not by the retailer in the post; the store names on a verdict are links to the retailers, and we may earn a commission when you buy through them.
 - **PayPal activity import is off.** Filling the shelf from PayPal activity needs the Transaction Search permission on the PayPal app, which this sandbox app doesn't have yet (403). The shelf comes from manual adds and purchases made in the app.
 - **Waiting saves little on beauty.** In the wait-timing replay (28 purchases, real price histories), waiting by our rule paid $58.56 (1.7%) less than buying on the first price alert, and only $1.07 of that was beauty. For beauty the value is in the skip, not the wait.
-- The skip test set's shopper, shelf, budgets and expected answers are made up by one person. Ten of 65 skip decisions disagree with them; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable.
+- The skip test set's shopper, shelf, budgets and expected answers are made up by one person. Five of 65 skip decisions disagree with them; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable; 7 of the 35 right skips depend on that default.
+- The first scored run was 55 of 65. Since then the similarity rule changed once (product type, actives, finish and form compared with half credit for neighbouring values; see `eval/skip-set/provenance.json`); the expected answers were not touched. A first version of that change scored 58 of 65 before its actives rule was replaced; both runs are recorded in `eval/skip-set/README.md`.
+- Dates: receipts, notices, refunds and event times are real, in US Eastern time. The Rebuys date control moves only run-out dates and this month's budgets, and every page that uses it says "Simulated date".
 - The four sample posts are mock creator posts we drew; the products and prices in them are real.
 - Two sandbox behaviours we design around: two simultaneous order requests with the same `PayPal-Request-Id` created two orders (sequential repeats return the first), so same-key payment calls are merged in the app before they reach PayPal; and a payment token deleted seconds after it was saved came back a few seconds later, so removal repeats the delete until two checks find nothing. Both are handled inside one process: run a single instance.
 - PayPal's sandbox Orders API rejects a `PayPal-Request-Id` of about 70 characters or more with a bare 422, so longer ids are hashed to at most 64.
