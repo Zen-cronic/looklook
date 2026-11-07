@@ -7,7 +7,7 @@ import { shelfSku } from "../shelf/import";
 import { validateShelfItem } from "../shelf/store";
 import type { ShelfItem } from "../shelf/types";
 import { recordSpend, refundSpend } from "./budgets";
-import { addDays, daysBetween, formatDate } from "./dates";
+import { addDays, daysBetween, formatDate, formatDay, realToday } from "./dates";
 import { formatCents } from "./money";
 import type { DeclinedAttempt, MethodType, PurchaseIntent, PurchaseSource, Receipt, SavedMethod, SessionState } from "./types";
 
@@ -201,13 +201,15 @@ function newId(prefix: string): string {
   return `${prefix}_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`;
 }
 
-function restock(item: ShelfItem, today: string, amount: number): string {
+function restock(item: ShelfItem, today: string, amount: number, now: Date): string {
   const from = item.runOutDate && item.runOutDate > today ? item.runOutDate : today;
   const next = addDays(from, item.cycleDays ?? DEFAULT_CYCLE_DAYS);
   item.runOutDate = next;
   item.lastRestockedOn = today;
   item.price = amount;
-  return `Restocked: next run-out ${formatDate(next)}.`;
+  // A run-out date counted from a simulated today says so.
+  const counted = today !== realToday(now) ? ` (counted from the simulated date ${formatDay(today)})` : "";
+  return `Restocked: next run-out ${formatDate(next)}${counted}.`;
 }
 
 /**
@@ -228,11 +230,11 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
   let shelfNote = "";
   if (source.kind === "staple") {
     const item = state.shelf.find((i) => i.id === source.shelfItemId);
-    shelfNote = item ? restock(item, today, amount) : "";
+    shelfNote = item ? restock(item, today, amount, now) : "";
   } else {
     const w = source.kind === "watch" ? state.watch.find((x) => x.id === source.watchId) : undefined;
     const linked = w?.shelfItemId ? state.shelf.find((i) => i.id === w.shelfItemId) : undefined;
-    if (linked) shelfNote = restock(linked, today, amount);
+    if (linked) shelfNote = restock(linked, today, amount, now);
     else if (details.category) {
       const fromCheck = source.kind === "check" ? state.checks.find((c) => c.id === source.checkId) : w?.checkId ? state.checks.find((c) => c.id === w.checkId) : undefined;
       const added = validateShelfItem({

@@ -12,7 +12,10 @@ import { cachedOffers } from "@/lib/app/services";
 import { currentSession } from "@/lib/app/session";
 import type { CheckRecord, StoreOffer } from "@/lib/app/types";
 import { targetFor } from "@/lib/app/watch";
+import { isSampleWeekCheck } from "@/lib/app/sample-week";
+import { atTheTime, boughtReceipt, countedDate, eventTime, SIMULATED } from "@/lib/app/when";
 import { PriceHistory } from "../../components/PriceHistory";
+import { SampleWeekNote } from "../../components/SampleWeek";
 import { SimDate } from "../../components/SimDate";
 import { VerdictActions } from "../../components/VerdictActions";
 import { VERDICT_WORD } from "../../components/VerdictChip";
@@ -55,7 +58,11 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
   const ruleIndex = RULE_ORDER.indexOf(d.rule) + 1;
   const product = check.product;
   const wait = waitAction(check, today);
-  const reminderOn = check.reminder && !check.reminder.doneAt ? formatDay(check.reminder.on) : undefined;
+  // Days counted from the shopper's today say so while the simulated date is on.
+  const countedDay = (date: string) => (state.dayOffset > 0 ? `${formatDay(date)} (${SIMULATED})` : formatDay(date));
+  const reminderOn = check.reminder && !check.reminder.doneAt ? countedDay(check.reminder.on) : undefined;
+  const bought = Boolean(check.purchasedReceiptId);
+  const receipt = boughtReceipt(state, check);
   const target = price !== null && product ? targetFor(check) : null;
   const offers = d.verdict === "ask" ? [] : offerLines(await offersFor(check), check.facts.category);
   const shelfItem = e.shelf ? state.shelf.find((i) => i.id === e.shelf!.itemId) : undefined;
@@ -66,10 +73,16 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
         Check another
       </Link>
       <SimDate today={today} dayOffset={state.dayOffset} />
+      {check.input.kind === "screenshot" && isSampleWeekCheck(check.input.sample) && <SampleWeekNote />}
       <article className={`verdict ${d.verdict}`}>
         <div className="verdict-head">
           <div className="verdict-word">{VERDICT_WORD[d.verdict]}</div>
-          <p className="verdict-reason">{check.reason.text}</p>
+          <p className="verdict-reason">{bought ? atTheTime(check.reason.text) : check.reason.text}</p>
+          {bought && (
+            <p className="small" data-testid="bought-note">
+              Bought{receipt ? ` ${eventTime(receipt.createdAt)}` : ""}. The verdict and its evidence are from when you checked.
+            </p>
+          )}
         </div>
         <div className="product-row">
           {product?.imageUrl ? (
@@ -98,7 +111,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
         )}
         {d.verdict === "wait" && wait?.kind === "budget" && e.budget && (
           <p className="returns maybe">
-            {formatDollars(e.budget.remaining)} left in {BUDGET_LABELS[e.budget.group].toLowerCase()} this month. The budget starts again on {formatDay(wait.on)}.
+            {formatDollars(e.budget.remaining)} left in {BUDGET_LABELS[e.budget.group].toLowerCase()} this month. The budget starts again on {countedDay(wait.on)}.
           </p>
         )}
         <details className="why">
@@ -115,7 +128,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                   {e.shelf.brand} {e.shelf.name}: {relationText(e.shelf.relation)}
                   {e.shelf.relation !== "same-product" && <> (match {Math.round(e.shelf.score * 100)}%)</>}
                   {e.shelf.matched.length > 0 && <>, same {e.shelf.matched.map(attributeWord).join(", ")}</>}. {(shelfItem?.opened ?? e.shelf.opened) ? "Opened" : "Unopened"}
-                  {shelfItem?.runOutDate ? `, runs out ${formatDate(shelfItem.runOutDate)}` : ""}.
+                  {shelfItem?.runOutDate ? `, runs out ${countedDate(shelfItem.runOutDate, state.dayOffset)}` : ""}.
                 </dd>
               </>
             )}
@@ -123,7 +136,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
               <>
                 <dt>Replaces</dt>
                 <dd>
-                  {e.replaces.brand} {e.replaces.name}, {daysText(e.replaces.daysLeft)} ({formatDate(e.replaces.runOutDate!)}).
+                  {e.replaces.brand} {e.replaces.name}, {daysText(e.replaces.daysLeft)} ({countedDate(e.replaces.runOutDate!, state.dayOffset)}).
                 </dd>
               </>
             )}
@@ -148,8 +161,8 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 <dt>Price</dt>
                 <dd>
                   {e.price.usable && e.price.typical !== undefined
-                    ? `${formatDollars(e.price.shown)} now. Usually ${formatDollars(e.price.typical)}, lowest ${formatDollars(e.price.low!)} in the last 90 days; a good price is ${formatDollars(e.price.target!)} or less.`
-                    : `${formatDollars(e.price.shown)} now. Not enough price history to judge.`}
+                    ? `${formatDollars(e.price.shown)} ${bought ? "when you checked" : "now"}. Usually ${formatDollars(e.price.typical)}, lowest ${formatDollars(e.price.low!)} in the last 90 days; a good price is ${formatDollars(e.price.target!)} or less.`
+                    : `${formatDollars(e.price.shown)} ${bought ? "when you checked" : "now"}. Not enough price history to judge.`}
                 </dd>
               </>
             )}
@@ -157,19 +170,19 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
               <>
                 <dt>Budget</dt>
                 <dd>
-                  {formatDollars(e.budget.remaining)} left in {BUDGET_LABELS[e.budget.group].toLowerCase()} this month.
+                  {formatDollars(e.budget.remaining)} left in {BUDGET_LABELS[e.budget.group].toLowerCase()} {bought ? "when you checked" : "this month"}.
                 </dd>
               </>
             )}
             {e.waitUntil && (
               <>
                 <dt>Look again</dt>
-                <dd>{formatDate(e.waitUntil)}</dd>
+                <dd>{countedDate(e.waitUntil, state.dayOffset)}</dd>
               </>
             )}
             <dt>Read from</dt>
             <dd>
-              {check.input.kind === "link" ? "The store link" : check.input.sample ? "The sample post" : "Your screenshot"}: {[check.fields.brand, check.fields.productName, check.fields.variant, check.fields.price ? formatDollars(check.fields.price.amount) : null, check.fields.store].filter(Boolean).join(", ") || "nothing legible"}.
+              {check.input.kind === "link" ? "The store link" : isSampleWeekCheck(check.input.sample) ? "A sample week entry (fictional shopper)" : check.input.sample ? "The sample post" : "Your screenshot"}: {[check.fields.brand, check.fields.productName, check.fields.variant, check.fields.price ? formatDollars(check.fields.price.amount) : null, check.fields.store].filter(Boolean).join(", ") || "nothing legible"}.
             </dd>
             {product && (
               <>
@@ -215,7 +228,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
           priceLabel={price !== null ? formatDollars(price) : null}
           savedMethod={method ? { id: method.id, label: method.label, capLabel: formatDollars(method.capCents / 100), withinCap: price !== null && toCentsSafe(price) <= method.capCents } : null}
           watch={watch ? { target: formatDollars(watch.targetPrice) } : null}
-          wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? formatDay(wait.on) : undefined, reminderOn } : null}
+          wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? countedDay(wait.on) : undefined, reminderOn } : null}
           sellerLabel={SELLER_OF_RECORD}
           targetLabel={target !== null ? formatDollars(target) : null}
           shelfItemId={e.shelf?.itemId ?? null}

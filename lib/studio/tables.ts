@@ -4,6 +4,7 @@ import { RULE_TEXT, returnsLine } from "../app/explain";
 import { activeMethod, dueStaples, openDecline } from "../app/payments";
 import { waitAction, watchBudgetHold } from "../app/reminders";
 import { CATEGORY_LABELS } from "../app/shelf-ui";
+import { atTheTime, boughtReceipt, eventTime, restockedLabel } from "../app/when";
 import type { CheckRecord, PurchaseSource, SessionState } from "../app/types";
 import type { Verdict } from "../verdict/types";
 import { VERDICT_WORDS, WAITING_FOR, waitCounts, type Row, type SkipFigure, type StudioPayload } from "./schema";
@@ -49,13 +50,14 @@ export function verdictRows(state: SessionState, today: string): Row[] {
     const watch = c.watchId ? state.watch.find((w) => w.id === c.watchId && !w.closedAt) : undefined;
     const wait = waitingFor(c, today);
     const bought = Boolean(c.purchasedReceiptId);
+    const receipt = boughtReceipt(state, c);
     const payable = d.verdict === "buy" && !bought && price !== null;
     return {
       id: c.id,
       product: productName(c.facts.brand, c.facts.name),
       verdict: VERDICT_WORDS[d.verdict],
       rank: VERDICT_RANK[d.verdict],
-      reason: c.reason.text,
+      reason: bought ? atTheTime(c.reason.text) : c.reason.text,
       rule: RULE_TEXT[d.rule],
       store,
       price,
@@ -66,6 +68,7 @@ export function verdictRows(state: SessionState, today: string): Row[] {
       buyAt: wait.buyAt,
       lookAgain: wait.lookAgain,
       status: bought ? "Bought" : watch ? "Watching" : "Open",
+      boughtAt: receipt ? eventTime(receipt.createdAt) : "",
       decidedOn: c.decidedOn,
       payable,
       withinCap: payable && method !== undefined && Math.round(price! * 100) <= method.capCents,
@@ -139,7 +142,8 @@ export function shelfRows(state: SessionState, today: string): Row[] {
     daysLeft: i.runOutDate ? daysBetween(today, i.runOutDate) : null,
     price: i.price ?? null,
     store: storeLabel(i.store),
-    lastRestocked: i.lastRestockedOn ?? null,
+    // The column name says Eastern, so the time fits the grid cell.
+    lastRestocked: restockedLabel(state, i).replace(/ ET$/, ""),
   }));
 }
 
@@ -175,6 +179,7 @@ export function studioPayload(state: SessionState, today: string): StudioPayload
   return {
     today,
     dayOffset: state.dayOffset,
+    sample: state.sample?.kind === "week",
     method: method ? { label: method.label, capCents: method.capCents } : null,
     tables: { verdicts, rebuys: rebuyRows(state, today), shelf: shelfRows(state, today), watchlist: watchRows(state), budgets },
     budget: {

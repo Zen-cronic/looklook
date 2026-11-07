@@ -2,6 +2,7 @@ import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from "
 import { join } from "node:path";
 import { appToday, realToday } from "./dates";
 import { reasonKey, refreshChecks } from "./refresh";
+import { sampleWeekState } from "./sample-week";
 import { seedState } from "./seed";
 import type { EventLogEntry, SessionState } from "./types";
 
@@ -86,6 +87,17 @@ export async function resetSession(id: string): Promise<SessionState> {
     const fresh = seedState(id, realToday());
     writeJson(sessionFile(id), fresh);
     return fresh;
+  });
+}
+
+/** Replace this browser's state with the sample week, keeping its saved payment methods. */
+export async function loadSampleWeek(id: string): Promise<SessionState> {
+  return withLock(`session:${id}`, () => {
+    const previous = readJson<SessionState>(sessionFile(id));
+    const state = sampleWeekState(id, realToday(), previous?.version === 1 ? previous : undefined);
+    refreshChecks(state, appToday(state.dayOffset), cachedReason);
+    writeJson(sessionFile(id), state);
+    return state;
   });
 }
 

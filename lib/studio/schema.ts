@@ -47,7 +47,7 @@ export const TABLES: TableSpec[] = [
       { id: "product", name: "Product", kind: "text" },
       { id: "verdict", name: "Verdict", kind: "text", description: "Skip, Wait, Buy or Check this" },
       { id: "rank", name: "Order", kind: "int", description: "1 for Skip, 2 Wait, 3 Buy, 4 Check this" },
-      { id: "reason", name: "Reason", kind: "text" },
+      { id: "reason", name: "Reason", kind: "text", description: "Why the verdict was given. For a bought check it starts 'At the time:' because it describes the day it was decided." },
       { id: "rule", name: "Rule that fired", kind: "text" },
       { id: "store", name: "Store", kind: "text" },
       { id: "price", name: "Price", kind: "money" },
@@ -58,6 +58,7 @@ export const TABLES: TableSpec[] = [
       { id: "buyAt", name: "Buy at or under", kind: "money", description: "Target price for a price wait" },
       { id: "lookAgain", name: "Look again", kind: "date", description: "When a wait ends: the budget restart or the run-out date" },
       { id: "status", name: "Status", kind: "text", description: "Open, Watching or Bought" },
+      { id: "boughtAt", name: "Bought", kind: "text", description: "When it was paid for (US Eastern time), for bought checks; empty otherwise" },
       { id: "decidedOn", name: "Decided on", kind: "date" },
       { id: "payable", name: "Can buy now", kind: "bool" },
       { id: "withinCap", name: "Within cap", kind: "bool" },
@@ -96,7 +97,7 @@ export const TABLES: TableSpec[] = [
       { id: "daysLeft", name: "Days left", kind: "int" },
       { id: "price", name: "Last price", kind: "money" },
       { id: "store", name: "Store", kind: "text" },
-      { id: "lastRestocked", name: "Restocked", kind: "date" },
+      { id: "lastRestocked", name: "Restocked (Eastern)", kind: "text", description: "When the last restock was paid for, in US Eastern time" },
     ],
   },
   {
@@ -135,9 +136,19 @@ export interface SkipFigure {
   avoided: number;
 }
 
+/**
+ * A field's column name. Dates counted from the shopper's today say so while
+ * the simulated date is on; event times are real and keep their name.
+ */
+export function fieldName(f: Pick<FieldSpec, "name" | "kind">, dayOffset: number): string {
+  return f.kind === "date" && dayOffset > 0 ? `${f.name} (simulated date)` : f.name;
+}
+
 export interface StudioPayload {
   today: string;
   dayOffset: number;
+  /** The sample week is loaded (fictional shopper and checks). */
+  sample: boolean;
   method: { label: string; capCents: number } | null;
   tables: Record<TableId, Row[]>;
   budget: { left: number; limit: number; spent: number };

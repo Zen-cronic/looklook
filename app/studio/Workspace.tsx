@@ -7,7 +7,9 @@ import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { APP_NAME } from "@/lib/brand";
 import type { PurchaseSource } from "@/lib/app/types";
-import { diffRows, TABLES, waitCounts, type FieldKind, type Row, type StudioPayload, type TableId } from "@/lib/studio/schema";
+import { formatDay } from "@/lib/app/dates";
+import { diffRows, fieldName, TABLES, waitCounts, type FieldKind, type Row, type StudioPayload, type TableId } from "@/lib/studio/schema";
+import { SampleWeekControls } from "../components/SampleWeek";
 import { claudeAdapter, type TurnInfo } from "./adapter";
 import { DEFAULT_WAITS_WIDGET, isWaitsWidget, type WaitsWidget } from "./waits";
 import { BudgetWidget, SkipWidget, VerdictWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
@@ -46,7 +48,7 @@ function sources(payload: StudioPayload) {
     data: toCells(t.id, payload.tables[t.id]),
     fields: t.fields.map((f) => ({
       id: f.id,
-      name: f.name,
+      name: fieldName(f, payload.dayOffset),
       description: f.description,
       hide: f.hide,
       blankValue: "",
@@ -84,7 +86,7 @@ const INITIAL_STATE = {
         shelf: {
           type: "grid",
           format: { title: { enabled: true, text: "Shelf" } },
-          dataMapping: { cols: [{ id: "shelf.product" }, { id: "shelf.category" }, { id: "shelf.runOutDate" }, { id: "shelf.daysLeft" }, { id: "shelf.price" }, { id: "shelf.lastRestocked" }] },
+          dataMapping: { cols: [{ id: "shelf.product" }, { id: "shelf.runOutDate" }, { id: "shelf.daysLeft" }, { id: "shelf.price" }, { id: "shelf.lastRestocked" }] },
         },
         watch: {
           type: "grid",
@@ -259,8 +261,8 @@ export default function Workspace({ initial, narrow }: Props) {
   );
 
   const context = useMemo<WorkspaceContext>(
-    () => ({ approve, checkout, skip: payload.skip, hasMethod: payload.method !== null, capLabel: payload.method ? usd.format(payload.method.capCents / 100) : undefined }),
-    [approve, checkout, payload.skip, payload.method],
+    () => ({ approve, checkout, skip: payload.skip, hasMethod: payload.method !== null, capLabel: payload.method ? usd.format(payload.method.capCents / 100) : undefined, simulated: payload.dayOffset > 0 }),
+    [approve, checkout, payload.skip, payload.method, payload.dayOffset],
   );
 
   const data = useMemo(() => ({ sources: sources(initial) }), [initial]);
@@ -426,6 +428,13 @@ export default function Workspace({ initial, narrow }: Props) {
             </div>
           )}
         </div>
+        <SampleWeekControls loaded={payload.sample} />
+        {payload.dayOffset > 0 && (
+          <p className="simdate" data-testid="studio-simdate">
+            <span className="chip sim">Simulated date: {formatDay(payload.today)}</span>{" "}
+            <span className="small muted">Run-out, look-again and decided dates count from it. Restock and payment times are real (ET).</span>
+          </p>
+        )}
         {narrow && (
           <div className="workspace-note">
             <p>Grouping your waits with Studio&apos;s agents and changing the layout need a wider screen.</p>

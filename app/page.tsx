@@ -2,8 +2,10 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { currentSession } from "@/lib/app/session";
 import { SAMPLES } from "@/lib/app/samples";
+import { atTheTime } from "@/lib/app/when";
 import { APP_NAME } from "@/lib/brand";
 import { Intake } from "./components/Intake";
+import { SampleWeekNote } from "./components/SampleWeek";
 import { VerdictChip } from "./components/VerdictChip";
 
 export default function CheckPage() {
@@ -58,15 +60,18 @@ async function LatestCheck() {
   const c = state.checks.at(-1);
   if (!c) return null;
   return (
-    <Link href={`/check/${c.id}`} className={`latest ${c.decision.verdict}`}>
+    <>
+      {state.sample?.kind === "week" && <SampleWeekNote />}
+      <Link href={`/check/${c.id}`} className={`latest ${c.decision.verdict}`}>
       <span>
         <span className="brand-line">Last check: {c.facts.brand}</span>
         <span className="name-line" style={{ display: "block" }}>
           {c.facts.name}
         </span>
-        <p className="muted">{c.reason.text}</p>
+        <p className="muted">{c.purchasedReceiptId ? `Bought. ${atTheTime(c.reason.text)}` : c.reason.text}</p>
       </span>
       <VerdictChip verdict={c.decision.verdict} />
-    </Link>
+      </Link>
+    </>
   );
 }

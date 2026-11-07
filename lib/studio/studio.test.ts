@@ -91,13 +91,13 @@ describe("workspace tables", () => {
     const due = before.tables.rebuys[0];
     const source = { kind: "staple" as const, shelfItemId: String(due.sourceRef), cycle: String(due.cycle) };
     const paid: PaidResult = { outcome: { orderId: "O2", orderStatus: "COMPLETED", captureId: "C2", captureStatus: "COMPLETED", amountCents: Math.round(Number(due.price) * 100), currency: "USD" }, requestId: "rebuy:a", kind: "saved-method", methodLabel: method.label, methodId: method.id };
-    recordPaid(s, source, sourceDetails(s, source), paid, TODAY);
+    recordPaid(s, source, sourceDetails(s, source), paid, TODAY, new Date("2026-11-10T15:00:00Z"));
     const after = studioPayload(s, TODAY);
     const shelf = diffRows(before.tables.shelf, after.tables.shelf);
     expect(shelf.add).toEqual([]);
     expect(shelf.remove).toEqual([]);
     expect(shelf.update.map((r) => r.id)).toContain(due.sourceRef);
-    expect(shelf.update.find((r) => r.id === due.sourceRef)!.lastRestocked).toBe(TODAY);
+    expect(shelf.update.find((r) => r.id === due.sourceRef)!.lastRestocked).toBe("Nov 10, 10:00 AM");
     expect(diffRows(before.tables.rebuys, after.tables.rebuys).remove).toEqual([due.id]);
   });
 

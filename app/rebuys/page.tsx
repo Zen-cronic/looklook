@@ -1,13 +1,14 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { BUDGET_LABELS } from "@/lib/app/budgets";
-import { formatDate, formatDay, formatTime, realToday } from "@/lib/app/dates";
+import { formatDay, formatTime, realToday } from "@/lib/app/dates";
 import { formatCents, formatDollars } from "@/lib/app/money";
 import { activeMethod, chargeKind, dueStaples, openDecline } from "@/lib/app/payments";
 import { dueReminders, upcomingReminders, watchBudgetHold } from "@/lib/app/reminders";
 import { currentSession } from "@/lib/app/session";
 import type { Notice, PurchaseSource, SavedMethod, SessionState } from "@/lib/app/types";
 import { negativeTestingEnabled } from "@/lib/paypal/config";
+import { countedDate, SIMULATED } from "@/lib/app/when";
 import { ApprovalButtons, DateControls, DeclineToggle, ReminderDone, WatchControls } from "../components/RebuyControls";
 
 export const metadata = { title: "Rebuys" };
@@ -60,6 +61,8 @@ function NoticeItem({ n }: { n: Notice }) {
 
 async function Rebuys() {
   const { state, today } = await currentSession();
+  // Days counted from the shopper's today say so while the simulated date is on.
+  const countedDay = (date: string) => (state.dayOffset > 0 ? `${formatDay(date)} (${SIMULATED})` : formatDay(date));
   const method = activeMethod(state);
   const due = dueStaples(state, today);
   const open = state.watch.filter((w) => !w.closedAt);
@@ -106,7 +109,7 @@ async function Rebuys() {
                 <div className="brand-line">{c.facts.brand}</div>
                 <h3>{c.facts.name}</h3>
                 <p className="small muted">
-                  {c.reminder!.kind === "budget" ? `Your budget started again on ${formatDay(c.reminder!.on)}.` : `You asked to look again on ${formatDay(c.reminder!.on)}.`} The verdict now: {c.decision.verdict}.
+                  {c.reminder!.kind === "budget" ? `Your budget started again on ${countedDay(c.reminder!.on)}.` : `You asked to look again on ${countedDay(c.reminder!.on)}.`} The verdict now: {c.decision.verdict}.
                 </p>
               </div>
             </div>
@@ -128,7 +131,7 @@ async function Rebuys() {
                   <div className="brand-line">{d.item.brand}</div>
                   <h3>{d.item.name}</h3>
                   <p className="small muted">
-                    {d.daysLeft < 0 ? `Ran out ${-d.daysLeft} days ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`} ({formatDate(d.item.runOutDate!)}). Last bought at {d.item.store ?? "a store"}.
+                    {d.daysLeft < 0 ? `Ran out ${-d.daysLeft} days ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`} ({countedDate(d.item.runOutDate!, state.dayOffset)}). Last bought at {d.item.store ?? "a store"}.
                   </p>
                 </div>
                 <div className="amount">{formatCents(d.amountCents)}</div>
@@ -156,7 +159,7 @@ async function Rebuys() {
               </div>
               {hold ? (
                 <p className="returns maybe" style={{ margin: "0.85rem 0 0" }}>
-                  Still over budget: {formatDollars(hold.remaining)} left in {BUDGET_LABELS[hold.group].toLowerCase()} this month. We&apos;ll ask again when it starts over on {formatDay(hold.restartsOn)}.
+                  Still over budget: {formatDollars(hold.remaining)} left in {BUDGET_LABELS[hold.group].toLowerCase()} this month. We&apos;ll ask again when it starts over on {countedDay(hold.restartsOn)}.
                 </p>
               ) : (
                 <ApprovalButtons source={source} amountLabel={formatCents(cents)} method={methodFor(method, cents)} declined={declined} verb="buy" />
@@ -198,7 +201,7 @@ async function Rebuys() {
                       {c.facts.name}
                     </span>
                   </Link>
-                  <span className="small muted">{c.reminder!.kind === "budget" ? "Budget starts again" : "Look again"} {formatDay(c.reminder!.on)}</span>
+                  <span className="small muted">{c.reminder!.kind === "budget" ? "Budget starts again" : "Look again"} {countedDay(c.reminder!.on)}</span>
                 </li>
               ))}
             </ul>

@@ -135,6 +135,7 @@
 .decision.buy { border-left-color: var(--buy); background: var(--buy-tint); }
 .decision.ask { border-left-color: var(--ask); background: var(--ask-tint); }
 .decision.rebuy { border-left-color: var(--ink); }
+.decision.bought { border-left-color: var(--line-strong); background: var(--card); }
 .decision.rebuy.declined { border-left-color: var(--skip); }
 
 .decision-top {

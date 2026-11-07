@@ -66,7 +66,10 @@ export function seedState(sessionId: string, today: string, now = new Date()): S
     notices: [],
     demo: { declineNextRebuy: false },
   };
-  state.checks = SEEDED_CHECKS.map((s, i) => seededCheck(s, state, today, new Date(now.getTime() - (SEEDED_CHECKS.length - i) * 60_000)));
+  state.checks = SEEDED_CHECKS.map((s, i) => {
+    const sample = SAMPLES.find((x) => x.id === s.sample)!;
+    return checkFromCase({ ...s, id: `sample-${s.sample}`, imageUrl: `/samples/${sample.file}` }, state, today, new Date(now.getTime() - (SEEDED_CHECKS.length - i) * 60_000));
+  });
   return state;
 }
 
@@ -110,10 +113,29 @@ function readerAttributes(a: Attributes): ReaderAttributes {
   return out;
 }
 
-function seededCheck(seed: (typeof SEEDED_CHECKS)[number], state: SessionState, today: string, at: Date): CheckRecord {
-  const c = (cases.cases as unknown as SkipCase[]).find((x) => x.id === seed.caseId)!;
-  const sample = SAMPLES.find((s) => s.id === seed.sample)!;
-  const band = c.catalogId ? (((bandsFile.bands as Record<string, PriceBand | null>)[c.catalogId] ?? null) as PriceBand | null) : null;
+export interface CaseCheckSeed {
+  /** Check id. */
+  id: string;
+  /** Skip test set case the product, store and attributes come from. */
+  caseId: string;
+  /** Sample id recorded on the check (a bundled post, or a sample-week entry). */
+  sample: string;
+  price: number;
+  storeLabel: string;
+  imageUrl?: string;
+  /** Weekly medians for the price trend, when the sample has them. */
+  weekly?: number[];
+}
+
+/**
+ * A check of one skip-set product, decided by the same engine against this
+ * shopper's shelf and budgets, as if the shopper had sent the post at `at`.
+ */
+export function checkFromCase(seed: CaseCheckSeed, state: SessionState, today: string, at: Date): CheckRecord {
+  const c = (cases.cases as unknown as SkipCase[]).find((x) => x.id === seed.caseId);
+  if (!c) throw new Error(`unknown case ${seed.caseId}`);
+  const frozen = c.catalogId ? (((bandsFile.bands as Record<string, PriceBand | null>)[c.catalogId] ?? null) as PriceBand | null) : null;
+  const band = frozen && seed.weekly ? { ...frozen, weekly: seed.weekly } : frozen;
   const facts = { brand: c.brand, name: c.name, category: c.category, attributes: c.attributes, priceShown: seed.price, identityConfidence: 0.95 };
   const fields: ScreenshotFields = {
     isProduct: true,
@@ -130,13 +152,13 @@ function seededCheck(seed: (typeof SEEDED_CHECKS)[number], state: SessionState, 
   };
   const decision = decide({ product: facts, store: c.store, shelf: state.shelf, budgets: remainingBudgets(state.budgets, today), priceBand: band, today });
   return {
-    id: `sample-${seed.sample}`,
+    id: seed.id,
     createdAt: at.toISOString(),
     decidedOn: today,
     input: { kind: "screenshot", imageHash: "", sample: seed.sample },
     fields,
     candidates: [],
-    product: { id: c.catalogId ?? seed.sample, title: c.name, brand: c.brand, imageUrl: `/samples/${sample.file}`, category: c.category },
+    product: { id: c.catalogId ?? seed.sample, title: c.name, brand: c.brand, ...(seed.imageUrl ? { imageUrl: seed.imageUrl } : {}), category: c.category },
     needsConfirmation: false,
     confirmWhy: [],
     facts,

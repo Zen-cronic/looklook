@@ -1,6 +1,9 @@
 import Link from "next/link";
+import { Suspense } from "react";
+import { currentSession } from "@/lib/app/session";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { ResetButton } from "../components/RebuyControls";
+import { SampleWeekControls } from "../components/SampleWeek";
 
 export const metadata = { title: "Start here" };
 
@@ -12,6 +15,17 @@ export default function JudgePage() {
         <p className="lede">{APP_NAME}, {APP_TAGLINE}. Seven short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
         <p style={{ marginTop: "0.75rem" }}>PayPal&apos;s shopping tools help you buy what you saw. {APP_NAME} asks whether you should, and when it&apos;s a staple, PayPal Vault makes buying it again one yes.</p>
       </div>
+
+      <section className="card stack-sm" data-testid="sample-week">
+        <h2>Sample week</h2>
+        <p className="small">
+          Load a fictional shopper&apos;s week for the Decisions step: two waits for a price drop (with the target and the 90-day trend), two waits for next month&apos;s budget, two skips, a buy and a staple due for a rebuy. The
+          products, stores and prices are real catalogue listings; the shopper and the week are sample data. Your saved payment methods stay. Reset puts back a fresh shelf.
+        </p>
+        <Suspense fallback={<SampleWeekControls loaded={false} />}>
+          <SampleState />
+        </Suspense>
+      </section>
 
       <ol className="steps">
         <li>
@@ -53,7 +67,7 @@ export default function JudgePage() {
         <li>
           <div className="stack-sm">
             <h2>See your decisions in AG Studio</h2>
-            <p>On a laptop, open Decisions: your verdicts (skips first), rebuys, shelf and budgets in one AG Studio workspace. Tap Yes on a rebuy to pay with the saved method; the shelf row updates in place. Tap Group my waits: our agent asks Studio&apos;s agents to build a table of what each wait is waiting for, about 30 seconds. Customize opens the Studio editor.</p>
+            <p>On a laptop, open Decisions: your verdicts (skips first), rebuys, shelf and budgets in one AG Studio workspace. Tap Yes on a rebuy to pay with the saved method; the shelf row updates in place. Tap Group my waits: our agent asks Studio&apos;s agents to build a table of what each wait is waiting for, about 30 seconds. Load the sample week first to see waits of both kinds. Customize opens the Studio editor.</p>
             <Link className="btn small" href="/studio">
               Open Decisions
             </Link>
@@ -91,4 +105,9 @@ export default function JudgePage() {
       </section>
     </main>
   );
+}
+
+async function SampleState() {
+  const { state } = await currentSession();
+  return <SampleWeekControls loaded={state.sample?.kind === "week"} />;
 }

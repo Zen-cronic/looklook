@@ -1,9 +1,10 @@
 import { Suspense } from "react";
 import { BUDGET_GROUPS, BUDGET_LABELS, remainingBudgets, spentIn } from "@/lib/app/budgets";
-import { daysBetween, formatDate } from "@/lib/app/dates";
+import { daysBetween } from "@/lib/app/dates";
 import { formatDollars } from "@/lib/app/money";
 import { currentSession } from "@/lib/app/session";
 import { CATEGORY_LABELS } from "@/lib/app/shelf-ui";
+import { countedDate, restockedLabel } from "@/lib/app/when";
 import { budgetGroupOf } from "@/lib/shelf/categories";
 import type { ShelfItem } from "@/lib/shelf/types";
 import { AddShelfItem, BudgetEditor, ShelfRowControls } from "../components/ShelfControls";
@@ -25,13 +26,13 @@ export default function ShelfPage() {
   );
 }
 
-function daysChip(item: ShelfItem, today: string) {
+function daysChip(item: ShelfItem, today: string, dayOffset: number) {
   if (!item.runOutDate) return <span className="days">No run-out date</span>;
   const left = daysBetween(today, item.runOutDate);
   const cls = left < 0 ? "days out" : left <= 7 ? "days soon" : "days";
   const text = left < 0 ? `Ran out ${-left} ${left === -1 ? "day" : "days"} ago` : left === 0 ? "Runs out today" : `${left} ${left === 1 ? "day" : "days"} left`;
   return (
-    <span className={cls} title={`Runs out ${formatDate(item.runOutDate)}`}>
+    <span className={cls} title={`Runs out ${countedDate(item.runOutDate, dayOffset)}`}>
       {text}
     </span>
   );
@@ -64,10 +65,10 @@ async function Shelf() {
                     <div className="sub">
                       {item.opened ? "Opened" : "Unopened"}
                       {item.price ? `, ${formatDollars(item.price)} last time` : ""}
-                      {item.lastRestockedOn ? `, restocked ${formatDate(item.lastRestockedOn)}` : ""}
+                      {item.lastRestockedOn ? `, restocked ${restockedLabel(state, item)}` : ""}
                     </div>
                   </div>
-                  {daysChip(item, today)}
+                  {daysChip(item, today, state.dayOffset)}
                   <ShelfRowControls id={item.id} opened={item.opened} runOutDate={item.runOutDate} />
                 </li>
               ))}

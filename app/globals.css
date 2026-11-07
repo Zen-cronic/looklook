@@ -1163,6 +1163,23 @@ tr:last-child td {
   }
 }
 
+/* Sample week */
+.sample-controls {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.sample-note {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+  max-width: 60rem;
+}
+
 /* Simulated date note */
 .simdate {
   display: flex;

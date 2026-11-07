@@ -19,6 +19,8 @@ export interface WorkspaceContext {
   skip?: SkipFigure;
   hasMethod: boolean;
   capLabel?: string;
+  /** The date control is ahead of today: dates counted from it say so. */
+  simulated?: boolean;
 }
 
 type Rows = Array<Record<string, Cell | Date>>;
@@ -69,7 +71,12 @@ function useTable(params: AgWidgetParams, table: string): Rows | null {
 }
 
 const money = (n: Cell | Date | undefined) => (typeof n === "number" ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n) : "");
-const day = (d: Cell | Date | undefined) => (d instanceof Date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d) : typeof d === "string" && d ? d : "");
+const plainDay = (d: Cell | Date | undefined) => (d instanceof Date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d) : typeof d === "string" && d ? d : "");
+/** A date counted from the shopper's today, labelled while the simulated date is on. */
+const countedDay = (d: Cell | Date | undefined, simulated?: boolean) => {
+  const text = plainDay(d);
+  return text && simulated ? `${text} (simulated date)` : text;
+};
 const verdictClass: Record<string, string> = { Skip: "skip", Wait: "wait", Buy: "buy", "Check this": "ask" };
 
 function ApproveButton({ ctx, req, label }: { ctx: WorkspaceContext; req: ApproveRequest; label: string }) {
@@ -117,17 +124,40 @@ export function VerdictWidget(params: AgWidgetParams) {
   const verdicts = useTable(params, "verdicts");
   const rebuys = useTable(params, "rebuys");
   if (!verdicts || !rebuys) return <div className="decision-list loading">Loading decisions…</div>;
-  const sorted = [...verdicts].sort((a, b) => Number(a.rank) - Number(b.rank));
-  const counts = ["Skip", "Wait", "Buy"].map((v) => [v, sorted.filter((r) => r.verdict === v).length] as const);
+  // Bought checks go last, under their own state: their reasons describe the day they were decided.
+  const isBought = (r: Record<string, Cell | Date>) => r.status === "Bought";
+  const sorted = [...verdicts].sort((a, b) => Number(isBought(a)) - Number(isBought(b)) || Number(a.rank) - Number(b.rank));
+  const open = sorted.filter((r) => !isBought(r));
+  const bought = sorted.length - open.length;
+  const counts = ["Skip", "Wait", "Buy"].map((v) => `${open.filter((r) => r.verdict === v).length} ${v.toLowerCase()}`);
+  if (bought) counts.push(`${bought} bought`);
   return (
     <div className="decision-list">
       <div className="decision-head">
         <h2>Verdicts</h2>
-        <p className="small muted">{counts.map(([v, n]) => `${n} ${v.toLowerCase()}`).join(", ")}</p>
+        <p className="small muted">{counts.join(", ")}</p>
       </div>
       {sorted.length === 0 && <p className="muted">No checks yet. Check a post on the Check page.</p>}
       {sorted.map((r) => {
         const cls = verdictClass[String(r.verdict)] ?? "ask";
+        if (isBought(r)) {
+          return (
+            <article key={String(r.id)} className="decision bought" data-testid={`verdict-${r.id}`}>
+              <div className="decision-top">
+                <span className="chip">Bought</span>
+                <span className="decision-price num">{money(r.price)}</span>
+              </div>
+              <h3>{String(r.product)}</h3>
+              <p className="small">{r.boughtAt ? `Paid ${String(r.boughtAt)}.` : "Paid."} The verdict was {String(r.verdict).toLowerCase()}.</p>
+              <p className="decision-reason muted">{String(r.reason)}</p>
+              <div className="decision-links">
+                <a className="btn small outline" href={`/check/${r.id}`}>
+                  See why
+                </a>
+              </div>
+            </article>
+          );
+        }
         return (
           <article key={String(r.id)} className={`decision ${cls}`} data-testid={`verdict-${r.id}`}>
             <div className="decision-top">
@@ -140,7 +170,7 @@ export function VerdictWidget(params: AgWidgetParams) {
               <p className="small muted">
                 Waiting for: {String(r.waitingFor).toLowerCase()}
                 {r.buyAt ? `, buy at ${money(r.buyAt)} or less` : ""}
-                {r.lookAgain ? `, look again ${day(r.lookAgain)}` : ""}
+                {r.lookAgain ? `, look again ${countedDay(r.lookAgain, ctx.simulated)}` : ""}
               </p>
             ) : null}
             {r.returns ? <p className="small muted">{String(r.returns)}</p> : null}
@@ -153,7 +183,6 @@ export function VerdictWidget(params: AgWidgetParams) {
                   Store policy
                 </a>
               ) : null}
-              {r.status === "Bought" && <span className="small muted">Bought</span>}
               {r.status === "Watching" && <span className="small muted">Watching the price</span>}
             </div>
             {r.payable ? <ApproveButton ctx={ctx} label="Buy" req={{ source: { kind: "check", checkId: String(r.id) }, withinCap: Boolean(r.withinCap), amount: Number(r.price) }} /> : null}
@@ -177,7 +206,7 @@ export function VerdictWidget(params: AgWidgetParams) {
             </div>
             <h3>{String(r.product)}</h3>
             <p className="small muted">
-              {days === null ? "At or under your target price." : days < 0 ? `Ran out ${-days} days ago.` : days === 0 ? "Runs out today." : `Runs out in ${days} ${days === 1 ? "day" : "days"} (${day(r.runOutDate)}).`}
+              {days === null ? "At or under your target price." : days < 0 ? `Ran out ${-days} days ago.` : days === 0 ? "Runs out today." : `Runs out in ${days} ${days === 1 ? "day" : "days"} (${plainDay(r.runOutDate)}${ctx.simulated ? ", simulated date" : ""}).`}
               {r.store ? ` Last bought at ${String(r.store)}.` : ""}
             </p>
             {r.declined ? <p className="decision-error">{String(r.declined)}. Nothing was charged.</p> : null}

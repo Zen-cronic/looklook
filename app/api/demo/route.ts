@@ -1,10 +1,11 @@
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
-import { resetSession, updateSession } from "@/lib/app/store";
+import { loadSampleWeek, resetSession, updateSession } from "@/lib/app/store";
 import { negativeTestingEnabled } from "@/lib/paypal";
 
 /**
  * Test controls, shown with labels in the app: move the simulated date,
- * make the next rebuy decline in the PayPal sandbox, or start over.
+ * make the next rebuy decline in the PayPal sandbox, load the sample week,
+ * or start over.
  */
 export async function POST(request: Request) {
   return handle(async () => {
@@ -13,6 +14,10 @@ export async function POST(request: Request) {
     if (body.action === "reset") {
       await resetSession(sid);
       return Response.json({ reset: true });
+    }
+    if (body.action === "sample-week") {
+      const s = await loadSampleWeek(sid);
+      return Response.json({ sample: s.sample, checks: s.checks.length });
     }
     if (body.action === "shift-days") {
       const days = Number(body.days);

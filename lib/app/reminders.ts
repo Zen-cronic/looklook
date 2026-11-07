@@ -67,5 +67,7 @@ export function budgetHoldFor(state: SessionState, source: PurchaseSource): stri
   const w = state.watch.find((x) => x.id === source.watchId);
   if (!w) return undefined;
   const hold = watchBudgetHold(state, w, appToday(state.dayOffset));
-  return hold ? `${formatDollars(hold.price)} is still more than the ${formatDollars(hold.remaining)} left in this month's ${hold.group} budget. We'll ask again when it restarts on ${formatDay(hold.restartsOn)}.` : undefined;
+  if (!hold) return undefined;
+  const on = `${formatDay(hold.restartsOn)}${state.dayOffset > 0 ? " (simulated date)" : ""}`;
+  return `${formatDollars(hold.price)} is still more than the ${formatDollars(hold.remaining)} left in this month's ${hold.group} budget. We'll ask again when it restarts on ${on}.`;
 }

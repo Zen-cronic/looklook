@@ -207,6 +207,8 @@ export interface SessionState {
   declines: DeclinedAttempt[];
   notices: Notice[];
   demo: { declineNextRebuy: boolean };
+  /** Set when the shopper loaded the sample week (fictional data, labelled where it shows). */
+  sample?: { kind: "week"; loadedAt: string };
 }
 
 export type EventSource = "paypal" | "channel3";
