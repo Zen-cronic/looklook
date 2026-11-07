@@ -84,7 +84,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 
 - Real: the product catalogue, prices, 90-day price histories and price alerts (Channel3), the screenshot and listing reading (Claude), and the store return policies, each with its source page and the date checked.
 - Sandbox: every PayPal payment. Money goes to a PayPal sandbox merchant account presented as "LookLook Test Store"; no real money moves.
-- Simulated, and labelled in the app: the date control on Rebuys, the test price drop, and the forced decline.
+- Simulated, and labelled in the app: the date control on Rebuys, the test price drop, the forced decline, and the sample week (a fictional shopper's week of checks on real catalogue products, loaded from `/judge` or Decisions; Reset puts back a fresh shelf).
 
 ## What we'll tell you before you find it
 
@@ -93,7 +93,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 - **Waiting saves little on beauty.** In the wait-timing replay (28 purchases, real price histories), waiting by our rule paid $58.56 (1.7%) less than buying on the first price alert, and only $1.07 of that was beauty. For beauty the value is in the skip, not the wait.
 - The skip test set's shopper, shelf, budgets and expected answers are made up by one person. Five of 65 skip decisions disagree with them; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable; 7 of the 35 right skips depend on that default.
 - The first scored run was 55 of 65. Since then the similarity rule changed once (product type, actives, finish and form compared with half credit for neighbouring values; see `eval/skip-set/provenance.json`); the expected answers were not touched. A first version of that change scored 58 of 65 before its actives rule was replaced; both runs are recorded in `eval/skip-set/README.md`.
-- Dates: receipts, notices, refunds and event times are real, in US Eastern time. The Rebuys date control moves only run-out dates and this month's budgets, and every page that uses it says "Simulated date".
+- Dates: receipts, notices, refunds, restocks and event times are real, in US Eastern time. The Rebuys date control moves only run-out dates, look-again dates and this month's budgets; while it is ahead, every page that uses it says "Simulated date" and dates counted from it carry "(simulated date)". A bought verdict keeps the reason it had when it was decided, shown as "At the time: …" under a Bought state.
 - The four sample posts are mock creator posts we drew; the products and prices in them are real.
 - Two sandbox behaviours we design around: two simultaneous order requests with the same `PayPal-Request-Id` created two orders (sequential repeats return the first), so same-key payment calls are merged in the app before they reach PayPal; and a payment token deleted seconds after it was saved came back a few seconds later, so removal repeats the delete until two checks find nothing. Both are handled inside one process: run a single instance.
 - PayPal's sandbox Orders API rejects a `PayPal-Request-Id` of about 70 characters or more with a bare 422, so longer ids are hashed to at most 64.
