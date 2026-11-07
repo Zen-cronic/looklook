@@ -1,0 +1,176 @@
+{
+  "checkedOn": "2026-11-06",
+  "note": "Summaries of each retailer's published return policy, checked on the date shown. Only short phrases are quoted. A rule marked unknown is treated as not returnable once opened.",
+  "retailers": [
+    {
+      "id": "sephora",
+      "name": "Sephora",
+      "domains": ["sephora.com"],
+      "policyUrl": "https://www.sephora.com/beauty/returns-exchanges",
+      "rules": [
+        {
+          "group": "beauty",
+          "returnableOpened": "yes",
+          "windowDays": 30,
+          "conditions": "Refund for items in \"new or gently used\" condition within 30 days of purchase.",
+          "sourceUrl": "https://www.sephora.com/beauty/shop-now-pay-later-faq",
+          "checkedOn": "2026-11-06"
+        }
+      ],
+      "notes": "The main returns page blocked automated reading on the check date; the window and condition come from Sephora's own payment FAQ."
+    },
+    {
+      "id": "ulta",
+      "name": "Ulta Beauty",
+      "domains": ["ulta.com"],
+      "policyUrl": "https://www.ulta.com/guestservices/all",
+      "rules": [
+        {
+          "group": "beauty",
+          "returnableOpened": "yes",
+          "windowDays": 30,
+          "conditions": "Refund for \"new or gently used\" products within 30 days; days 31-60 give merchandise credit only. All original components, proof of purchase and a government ID are required.",
+          "sourceUrl": "https://www.ulta.com/guestservices/all",
+          "checkedOn": "2026-11-06"
+        }
+      ]
+    },
+    {
+      "id": "target",
+      "name": "Target",
+      "domains": ["target.com"],
+      "policyUrl": "https://www.target.com/help/articles/returns-exchanges/returns",
+      "rules": [
+        {
+          "group": "beauty",
+          "returnableOpened": "yes",
+          "windowDays": 90,
+          "conditions": "Most beauty items can be returned \"even if opened\" within 90 days with a receipt (120 with a Target Circle Card).",
+          "sourceUrl": "https://www.target.com/help/articles/returns-exchanges/returns",
+          "checkedOn": "2026-11-06"
+        },
+        {
+          "group": "electronics",
+          "returnableOpened": "conditional",
+          "windowDays": 30,
+          "conditions": "Opened electronics are \"eligible only for exchange\" and must come back within 30 days.",
+          "sourceUrl": "https://www.target.com/help/articles/returns-exchanges/returns",
+          "checkedOn": "2026-11-06"
+        },
+        {
+          "group": "general",
+          "returnableOpened": "no",
+          "windowDays": 90,
+          "conditions": "Refunds cover \"most unopened items\" in new condition within 90 days.",
+          "sourceUrl": "https://www.target.com/help/article/000061980",
+          "checkedOn": "2026-11-06"
+        }
+      ]
+    },
+    {
+      "id": "cvs",
+      "name": "CVS Pharmacy",
+      "domains": ["cvs.com", "es.cvs.com"],
+      "policyUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf",
+      "rules": [
+        {
+          "group": "beauty",
+          "returnableOpened": "no",
+          "windowDays": 60,
+          "conditions": "Most new, unopened items within 60 days; items that are opened \"may be denied a refund or exchange\", and some personal care products cannot be returned at all.",
+          "sourceUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf",
+          "checkedOn": "2026-11-06"
+        },
+        {
+          "group": "general",
+          "returnableOpened": "no",
+          "windowDays": 60,
+          "conditions": "Most new, unopened items within 60 days; opened items may be refused.",
+          "sourceUrl": "https://www.cvs.com/bizcontent/general/help/returns.pdf",
+          "checkedOn": "2026-11-06"
+        }
+      ]
+    },
+    {
+      "id": "walgreens",
+      "name": "Walgreens",
+      "domains": ["walgreens.com"],
+      "policyUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp",
+      "rules": [
+        {
+          "group": "beauty",
+          "returnableOpened": "conditional",
+          "windowDays": 30,
+          "conditions": "Cosmetics returns are \"at the discretion of the store manager\", usually as a Walgreens gift card; eligible items within 30 days with a receipt.",
+          "sourceUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp",
+          "checkedOn": "2026-11-06"
+        },
+        {
+          "group": "electronics",
+          "returnableOpened": "conditional",
+          "windowDays": 30,
+          "conditions": "Electronics returns are at the store manager's discretion, usually as a gift card.",
+          "sourceUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp",
+          "checkedOn": "2026-11-06"
+        },
+        {
+          "group": "general",
+          "returnableOpened": "unknown",
+          "windowDays": 30,
+          "conditions": "Eligible items within 30 days with the receipt or order number; the page does not say whether opened items qualify.",
+          "sourceUrl": "https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp",
+          "checkedOn": "2026-11-06"
+        }
+      ]
+    },
+    {
+      "id": "kohls",
+      "name": "Kohl's",
+      "domains": ["kohls.com"],
+      "policyUrl": "https://www.kohls.com/faq/article/893",
+      "rules": [
+        {
+          "group": "beauty",
+          "returnableOpened": "yes",
+          "windowDays": 30,
+          "conditions": "Sephora at Kohl's items come back in \"new or gently used\" condition within 30 days. A Kohl's holiday post cites 60 days for the same items; the shorter window is used.",
+          "sourceUrl": "https://www.sephora.com/beauty/sephora-at-kohls-faq",
+          "checkedOn": "2026-11-06"
+        },
+        {
+          "group": "electronics",
+          "returnableOpened": "unknown",
+          "windowDays": 30,
+          "conditions": "Premium electronics within 30 days; the pages read do not say whether opened items qualify.",
+          "sourceUrl": "https://corporate.kohls.com/news/holiday-returns-made-convenient-and-hassle-free-at-kohls",
+          "checkedOn": "2026-11-06"
+        },
+        {
+          "group": "general",
+          "returnableOpened": "unknown",
+          "windowDays": 90,
+          "conditions": "Most merchandise within 90 days (120 with a Kohl's Card), with or without a receipt; opened condition is not addressed.",
+          "sourceUrl": "https://www.kohls.com/faq/article/893",
+          "checkedOn": "2026-11-06"
+        }
+      ],
+      "notes": "kohls.com blocked automated reading on the check date; windows come from Kohl's indexed help pages and corporate news posts."
+    },
+    {
+      "id": "brand-site",
+      "name": "Brand site or other store",
+      "domains": [],
+      "policyUrl": null,
+      "rules": [
+        {
+          "group": "general",
+          "returnableOpened": "unknown",
+          "windowDays": null,
+          "conditions": "Policies vary by brand; not checked. Treated as not returnable once opened until the store's page is read.",
+          "sourceUrl": null,
+          "checkedOn": "2026-11-06"
+        }
+      ]
+    }
+  ]
+}
