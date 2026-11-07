@@ -302,6 +302,12 @@ describe("return-policy line", () => {
     expect(returnsLine(decision("yes", "skip"))?.text).not.toContain("low risk");
     expect(returnsLine(decision("no"))?.text).toContain("may refuse");
   });
+
+  it("names what CVS needs for an opened beauty return", () => {
+    const cvs = { verdict: "skip", rule: "owns-similar", flags: [], evidence: { trace: [], policy: { retailerId: "cvs", retailerName: "CVS Pharmacy", group: "beauty", returnableOpened: "yes", windowDays: 60, sourceUrl: "c", checkedOn: "2026-11-07", fallback: false } } } as never;
+    expect(returnsLine(cvs)).toEqual({ tone: "ok", text: "CVS Pharmacy takes opened beauty back with a receipt within 60 days." });
+    expect(returnsLine(decision("unknown"))?.tone).toBe("unknown");
+  });
 });
 
 describe("skip number", () => {
@@ -500,7 +506,7 @@ describe("offers at other stores", () => {
       ["Ulta Beauty", "yes"],
       ["Sephora", "yes"],
     ]);
-    expect(lines[0].returnsText).toBe("takes opened back within 60 days");
+    expect(lines[0].returnsText).toBe("takes opened back with a receipt within 60 days");
     expect(lines[2].returnsText).toMatch(/^takes opened back within \d+ days$/);
   });
 });

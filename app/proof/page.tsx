@@ -243,7 +243,7 @@ function Corrections() {
               </li>
               {h && (
                 <li>
-                  Held out: the headline stays {held.skipCorrect} of {held.n}, read from the scored run in <span className="mono">{held.order.scoredRun.commit.slice(0, 7)}</span>. {h.scoredRunEffect}
+                  Held out: the headline stays {held.skipCorrect} of {held.n}, read from the scored run in <span className="mono">{held.order.scoredRun.commit.slice(0, 7)}</span>. Effect on that run: {h.scoredRunEffect.charAt(0).toLowerCase() + h.scoredRunEffect.slice(1)}
                   {rerun ? ` Re-run after the correction: ${rerun.skipCorrect} of ${rerun.n} (not a held-out number).` : ""}
                 </li>
               )}

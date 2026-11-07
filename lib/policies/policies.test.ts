@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { findRetailer, openedReturnPolicy, parsePolicyTable, policyTable, PolicyTableError } from "./index";
+import { findRetailer, openedNeedsFor, openedReturnPolicy, parsePolicyTable, policyTable, PolicyTableError } from "./index";
 
 describe("return-policy table", () => {
   it("loads the shipped table with the seven stores", () => {
@@ -24,17 +24,24 @@ describe("return-policy table", () => {
     }
   });
 
-  it("takes opened beauty back at CVS, citing the beauty section of its policy page", () => {
+  it("takes opened beauty back at CVS with a receipt, citing the beauty section of its policy page", () => {
     for (const category of ["sunscreen", "serum", "lipstick", "mascara"] as const) {
       const p = openedReturnPolicy("cvs", category);
-      expect(p).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: 60, fallback: false });
+      expect(p).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: 60, openedNeeds: "with a receipt", fallback: false });
       expect(p.sourceUrl).toMatch(/^https:\/\/www\.cvs\.com\/retail\/help\/return_policy#/);
       expect(p.conditions).toMatch(/third-party return authorization/);
     }
+    expect(openedNeedsFor("cvs", "beauty")).toBe("with a receipt");
     // Everything else at CVS still follows the general returns PDF.
     const kettle = openedReturnPolicy("cvs.com", "blender");
     expect(kettle).toMatchObject({ group: "general", returnableOpened: "no", windowDays: 60 });
     expect(kettle.sourceUrl).toMatch(/returns\.pdf$/);
+  });
+
+  it("rejects an empty opened-return condition", () => {
+    const t = JSON.parse(JSON.stringify(policyTable()));
+    t.retailers[0].rules[0].openedNeeds = " ";
+    expect(() => parsePolicyTable(t)).toThrow(PolicyTableError);
   });
 
   it("finds stores by id, name, domain and URL", () => {

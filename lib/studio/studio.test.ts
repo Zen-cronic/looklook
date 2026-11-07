@@ -39,7 +39,7 @@ describe("workspace tables", () => {
     expect(typeof wait.buyAt).toBe("number");
     const cvs = v.find((r) => r.id === "sample-spf-cvs")!;
     expect(cvs.policyUrl).toMatch(/^https:\/\//);
-    expect(cvs.returns).toBe("CVS Pharmacy takes opened beauty back within 60 days.");
+    expect(cvs.returns).toBe("CVS Pharmacy takes opened beauty back with a receipt within 60 days.");
   });
 
   it("lists due staples as rebuys and says whether they fit the saved method's cap", () => {

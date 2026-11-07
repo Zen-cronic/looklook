@@ -11,6 +11,8 @@ export interface PolicyRule {
   conditions: string;
   sourceUrl: string | null;
   checkedOn: string;
+  /** What an opened return needs, as a short phrase ("with a receipt"), where the policy names it. */
+  openedNeeds?: string;
 }
 
 export interface Retailer {
@@ -64,6 +66,7 @@ export function parsePolicyTable(raw: unknown): PolicyTable {
       if (!DATE.test(rule.checkedOn)) throw new PolicyTableError(`${r.id}/${rule.group}: bad checkedOn`);
       if (rule.returnableOpened !== "unknown" && !rule.sourceUrl) throw new PolicyTableError(`${r.id}/${rule.group}: a known answer needs a source URL`);
       if (rule.windowDays !== null && !(Number.isInteger(rule.windowDays) && rule.windowDays > 0)) throw new PolicyTableError(`${r.id}/${rule.group}: bad windowDays`);
+      if (rule.openedNeeds !== undefined && (typeof rule.openedNeeds !== "string" || !rule.openedNeeds.trim())) throw new PolicyTableError(`${r.id}/${rule.group}: bad openedNeeds`);
     }
   }
   if (!ids.has(FALLBACK_RETAILER_ID)) throw new PolicyTableError(`the ${FALLBACK_RETAILER_ID} fallback is required`);
@@ -95,6 +98,11 @@ export function findRetailer(store: string | undefined, t: PolicyTable = policyT
   if (byId) return byId;
   const host = hostOf(store);
   return t.retailers.find((r) => r.domains.some((d) => host === d || host.endsWith(`.${d}`))) ?? fallback;
+}
+
+/** What an opened return needs at this store for this group ("with a receipt"), when the policy names it. */
+export function openedNeedsFor(retailerId: string, group: PolicyGroup, t: PolicyTable = policyTable()): string | undefined {
+  return t.retailers.find((r) => r.id === retailerId)?.rules.find((r) => r.group === group)?.openedNeeds;
 }
 
 /** The opened-item return rule for this category at this store. */

@@ -22,7 +22,7 @@ export function storeOffers(product: Pick<Product, "offers">): StoreOffer[] {
 export interface OfferLine extends StoreOffer {
   store: string;
   returns: OpenedReturn;
-  /** "takes opened back within 30 days", "may refuse opened", ... */
+  /** "takes opened back within 30 days", "takes opened back with a receipt within 60 days", "may refuse opened", ... */
   returnsText: string;
   policyUrl: string | null;
 }
@@ -35,7 +35,7 @@ export function offerLines(offers: StoreOffer[], category: Category | undefined)
     const store = p.fallback ? o.domain : p.retailerName;
     const returnsText =
       p.returnableOpened === "yes"
-        ? `takes opened back${p.windowDays ? ` within ${p.windowDays} days` : ""}`
+        ? `takes opened back${p.openedNeeds ? ` ${p.openedNeeds}` : ""}${p.windowDays ? ` within ${p.windowDays} days` : ""}`
         : p.returnableOpened === "no"
           ? "may refuse opened"
           : p.returnableOpened === "conditional"

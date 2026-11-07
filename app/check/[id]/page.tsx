@@ -6,6 +6,7 @@ import { formatDate, formatDay, formatTime } from "@/lib/app/dates";
 import { RULE_ORDER, RULE_TEXT, relationText, returnsLine } from "@/lib/app/explain";
 import { formatDollars, toCentsSafe } from "@/lib/app/money";
 import { offerLines } from "@/lib/app/offers";
+import { openedNeedsFor } from "@/lib/policies";
 import { activeMethod, SELLER_OF_RECORD } from "@/lib/app/payments";
 import { waitAction } from "@/lib/app/reminders";
 import { cachedOffers } from "@/lib/app/services";
@@ -144,7 +145,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
               <>
                 <dt>Returns</dt>
                 <dd>
-                  {e.policy.fallback ? `${storeLabel(check.store) ?? "This store"} isn't in our policy table.` : `${e.policy.retailerName}: opened ${e.policy.group} returns ${e.policy.returnableOpened === "yes" ? "accepted" : e.policy.returnableOpened === "no" ? "may be refused" : e.policy.returnableOpened === "conditional" ? "only on conditions" : "not stated"}${e.policy.windowDays ? `, ${e.policy.windowDays} days` : ""}.`}{" "}
+                  {e.policy.fallback ? `${storeLabel(check.store) ?? "This store"} isn't in our policy table.` : `${e.policy.retailerName}: opened ${e.policy.group} returns ${e.policy.returnableOpened === "yes" ? `accepted${openedNeedsFor(e.policy.retailerId, e.policy.group) ? ` ${openedNeedsFor(e.policy.retailerId, e.policy.group)}` : ""}` : e.policy.returnableOpened === "no" ? "may be refused" : e.policy.returnableOpened === "conditional" ? "only on conditions" : "not stated"}${e.policy.windowDays ? `, ${e.policy.windowDays} days` : ""}.`}{" "}
                   {e.policy.sourceUrl && (
                     <>
                       <a href={e.policy.sourceUrl} target="_blank" rel="noreferrer">
