@@ -1,0 +1,83 @@
+import { connection } from "next/server";
+import { Suspense } from "react";
+import { formatTime } from "@/lib/app/dates";
+import { listEvents } from "@/lib/app/store";
+import type { EventLogEntry } from "@/lib/app/types";
+
+export const metadata = { title: "Webhook events" };
+
+export default function EventsPage() {
+  return (
+    <main className="page wide">
+      <div style={{ marginBottom: "1.5rem", maxWidth: "44rem" }}>
+        <h1>Webhook events</h1>
+        <p className="lede">What PayPal and Channel3 sent, whether it checked out, and what it changed.</p>
+        <p className="small muted" style={{ marginTop: "0.5rem" }}>
+          PayPal events are checked with PayPal&apos;s verify-webhook-signature call; Channel3 events with their signing secret (HMAC-SHA256). A repeated event ID is acknowledged and handled once.
+        </p>
+      </div>
+      <Suspense fallback={<div className="skeleton" />}>
+        <Events />
+      </Suspense>
+    </main>
+  );
+}
+
+function VerificationChip({ e }: { e: EventLogEntry }) {
+  switch (e.verification) {
+    case "verified":
+      return <span className="chip buy">{e.source === "paypal" ? "Verified with PayPal" : "Signature valid"}</span>;
+    case "simulated":
+      return <span className="chip sim">Test event from this app</span>;
+    case "not-configured":
+      return <span className="chip">Not set up</span>;
+    default:
+      return <span className="chip skip">Rejected{e.failureReason ? `: ${e.failureReason.replace(/-/g, " ")}` : ""}</span>;
+  }
+}
+
+async function Events() {
+  await connection();
+  const events = listEvents(100);
+  if (!events.length) {
+    return (
+      <div className="card">
+        <p>No events yet.</p>
+        <p className="small muted">They appear here when PayPal confirms a payment or a saved method, or Channel3 reports a price change on something you watch.</p>
+      </div>
+    );
+  }
+  return (
+    <div className="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Received</th>
+            <th>From</th>
+            <th>Event</th>
+            <th>Check</th>
+            <th>What it did</th>
+          </tr>
+        </thead>
+        <tbody>
+          {events.map((e) => (
+            <tr key={e.id}>
+              <td className="mono small" style={{ whiteSpace: "nowrap" }}>
+                {formatTime(e.receivedAt)}
+              </td>
+              <td>{e.source === "paypal" ? "PayPal" : "Channel3"}</td>
+              <td>
+                <div className="mono small">{e.type ?? "unknown"}</div>
+                {e.eventId && <div className="mono small muted">{e.eventId}</div>}
+              </td>
+              <td>
+                <VerificationChip e={e} /> {e.duplicate && <span className="chip wait">Repeat, handled once</span>}
+              </td>
+              <td className="small">{e.duplicate ? "Nothing: already handled." : (e.effect ?? "")}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
