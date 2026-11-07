@@ -45,7 +45,7 @@ export interface PayPalOrder {
   links?: Array<{ href: string; rel: string; method?: string }>;
   payment_source?: {
     card?: { last_digits?: string; brand?: string; attributes?: { vault?: VaultResult } };
-    paypal?: { email_address?: string; attributes?: { vault?: VaultResult } };
+    paypal?: { email_address?: string; account_id?: string; attributes?: { vault?: VaultResult } };
   };
   purchase_units?: Array<{
     reference_id?: string;
@@ -103,6 +103,8 @@ export interface CaptureOutcome {
   networkReference?: { id: string; network?: string };
   processorResponseCode?: string;
   vault?: { id: string; status?: string; customerId?: string; type: "card" | "paypal" };
+  /** What paid: card brand and last digits, or the PayPal account email. */
+  payer?: { type: "card"; brand?: string; lastDigits?: string } | { type: "paypal"; email?: string };
 }
 
 /**
@@ -129,6 +131,11 @@ export function readCapture(order: PayPalOrder): CaptureOutcome {
     networkReference: capture?.network_transaction_reference,
     processorResponseCode: capture?.processor_response?.response_code,
     vault,
+    payer: order.payment_source?.card
+      ? { type: "card", brand: order.payment_source.card.brand, lastDigits: order.payment_source.card.last_digits }
+      : order.payment_source?.paypal
+        ? { type: "paypal", email: order.payment_source.paypal.email_address }
+        : undefined,
   };
 }
 

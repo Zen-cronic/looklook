@@ -47,7 +47,8 @@ describe("idempotency keys", () => {
 
   it("hashes ids that would be too long and rejects empty parts", () => {
     const long = buildRequestId("rebuy", "a".repeat(300), "c");
-    expect(long.length).toBeLessThanOrEqual(100);
+    expect(long.length).toBeLessThanOrEqual(64);
+    expect(buildRequestId("rebuy", "s".repeat(24), "staple:sh-ha:2026-11-13", "78a0603885761893t", "live").length).toBeLessThanOrEqual(64);
     expect(long).toBe(buildRequestId("rebuy", "a".repeat(300), "c"));
     expect(() => buildRequestId("rebuy", "!!!")).toThrow();
   });

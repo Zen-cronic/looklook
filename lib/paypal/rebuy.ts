@@ -19,6 +19,11 @@ export interface RebuyInput {
   capCents: number;
   method: SavedMethod;
   mockApplicationCode?: string;
+  /**
+   * Overrides the default item+cycle request id. Use it when one merchant
+   * serves many buyers, so the id also carries the buyer and the saved method.
+   */
+  requestId?: string;
 }
 
 export interface RebuyReceipt extends CaptureOutcome {
@@ -76,7 +81,7 @@ export function rebuyOrderBody(input: RebuyInput) {
 export async function rebuy(client: PayPalClient, input: RebuyInput): Promise<RebuyReceipt> {
   const amount = orderTotalCents({ referenceId: "", currency: input.currency, items: [{ sku: input.itemId, name: input.title, unitCents: input.unitCents }] });
   checkRebuyCap(amount, input.capCents);
-  const requestId = rebuyRequestId(input.itemId, input.cycle);
+  const requestId = input.requestId ?? rebuyRequestId(input.itemId, input.cycle);
   const res = await client.request<PayPalOrder>({
     method: "POST",
     path: "/v2/checkout/orders",

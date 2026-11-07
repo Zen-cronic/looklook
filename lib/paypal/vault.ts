@@ -107,3 +107,56 @@ export async function listPaymentTokens(client: PayPalClient, customerId: string
 export async function deletePaymentToken(client: PayPalClient, id: string): Promise<void> {
   await client.request<unknown>({ method: "DELETE", path: `/v3/vault/payment-tokens/${encodeURIComponent(id)}` });
 }
+
+export interface RevokeResult {
+  /** PayPal answered 404 for the token on every check after the last delete. */
+  confirmed: boolean;
+  deletes: number;
+  checks: number;
+}
+
+/**
+ * Delete a saved method and confirm it stays deleted. In the sandbox a token
+ * deleted seconds after it was created answered 204 to the delete, then came
+ * back (GET 200) a few seconds later, so the delete is repeated until two
+ * checks in a row find nothing.
+ */
+export async function revokePaymentToken(
+  client: PayPalClient,
+  id: string,
+  options: { maxDeletes?: number; waitMs?: number; sleep?: (ms: number) => Promise<void> } = {},
+): Promise<RevokeResult> {
+  const maxDeletes = options.maxDeletes ?? 4;
+  const waitMs = options.waitMs ?? 2500;
+  const sleep = options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+  const path = `/v3/vault/payment-tokens/${encodeURIComponent(id)}`;
+  const present = async (): Promise<boolean | "unclear"> => {
+    try {
+      const res = await client.request<{ id?: string } | undefined>({ method: "GET", path });
+      return res.body?.id ? true : "unclear";
+    } catch (e) {
+      if ((e as { status?: number }).status === 404) return false;
+      throw e;
+    }
+  };
+  let deletes = 0;
+  let checks = 0;
+  while (deletes < maxDeletes) {
+    try {
+      await client.request<unknown>({ method: "DELETE", path });
+    } catch (e) {
+      if ((e as { status?: number }).status !== 404) throw e;
+    }
+    deletes += 1;
+    let gone = 0;
+    for (let i = 0; i < 3; i++) {
+      await sleep(waitMs);
+      checks += 1;
+      const p = await present();
+      if (p === true) break;
+      if (p === false) gone += 1;
+      if (gone >= 2) return { confirmed: true, deletes, checks };
+    }
+  }
+  return { confirmed: false, deletes, checks };
+}

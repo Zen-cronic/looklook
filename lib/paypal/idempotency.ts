@@ -1,7 +1,11 @@
 import { createHash } from "node:crypto";
 
-/** PayPal-Request-Id values are kept short and to a safe character set. */
-export const MAX_REQUEST_ID_LENGTH = 100;
+/**
+ * PayPal-Request-Id values are kept short and to a safe character set. The
+ * sandbox Orders API answered a bare 422 UNPROCESSABLE_ENTITY for ids of 70
+ * characters or more (65 worked), so longer ids are hashed down.
+ */
+export const MAX_REQUEST_ID_LENGTH = 64;
 
 function slug(part: string | number): string {
   return String(part)
