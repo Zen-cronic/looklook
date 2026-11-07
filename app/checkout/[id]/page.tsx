@@ -43,7 +43,7 @@ async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["param
         <div className="meta">
           <div className="brand-line">{intent.brand}</div>
           <div className="name-line">{intent.title.startsWith(`${intent.brand} `) ? intent.title.slice(intent.brand.length + 1) : intent.title}</div>
-          <div className="small muted">Paid to {SELLER_OF_RECORD}. No real money moves.</div>
+          <div className="small muted">Sold by {SELLER_OF_RECORD}.</div>
         </div>
         <div className="price-line">{amount}</div>
       </div>

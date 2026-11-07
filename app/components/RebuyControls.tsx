@@ -130,3 +130,12 @@ export function ResetButton() {
     </button>
   );
 }
+
+export function ReminderDone({ checkId }: { checkId: string }) {
+  const { call, busy } = useApi();
+  return (
+    <button className="btn outline" disabled={!!busy} onClick={() => call("done", `/api/check/${checkId}/remind`, "DELETE")}>
+      {busy ? "Clearing…" : "Clear reminder"}
+    </button>
+  );
+}

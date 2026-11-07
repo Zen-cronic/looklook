@@ -11,6 +11,11 @@ export const metadata = { title: "How often skip is right" };
 
 const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
+/** "Nov 6, 2026, 8:57 PM ET" from an ISO time with its offset. */
+function et(iso: string): string {
+  return `${new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric", hour: "numeric", minute: "2-digit", timeZone: "America/New_York" }).format(new Date(iso))} ET`;
+}
+
 export default function ProofPage() {
   return (
     <main className="page wide stack-lg">
@@ -27,7 +32,7 @@ export default function ProofPage() {
 
 function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
   return (
-    <div className="table-wrap">
+    <div className="table-wrap stacked">
       <table>
         <thead>
           <tr>
@@ -41,15 +46,18 @@ function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
         <tbody>
           {rows.map((r) => (
             <tr key={r.id}>
-              <td>{r.product}</td>
-              <td>{r.store}</td>
+              <td data-label="Product">{r.product}</td>
+              <td data-label="Store">{r.store}</td>
               {showGot && (
-                <td>
+                <td data-label="Engine said">
                   <span className={`chip ${r.got}`}>{VERDICT_WORD[r.got as keyof typeof VERDICT_WORD]}</span>
                 </td>
               )}
-              <td>{r.why}</td>
-              <td className="small">{RULE_TEXT[r.rule as RuleId]}</td>
+              <td data-label="Why">{r.why}</td>
+              <td data-label="Rule that fired" className="small">
+                {RULE_TEXT[r.rule as RuleId]}
+                {r.onDefault ? " (store policy unknown)" : ""}
+              </td>
             </tr>
           ))}
         </tbody>
@@ -62,6 +70,9 @@ async function Proof() {
   await connection();
   const r = runSkipEval();
   const replay = replaySummary();
+  const always = r.baselines.find((b) => b.id === "always-skip")!;
+  const sameCategory = r.baselines.find((b) => b.id === "same-category")!;
+  const p = r.provenance;
   return (
     <>
       <div className="figures">
@@ -73,23 +84,42 @@ async function Proof() {
         </div>
         <div className="figure">
           <div className="big">
-            {r.skipsRight}/{r.skipsMade}
+            {always.skipCorrect} of {r.n}
           </div>
-          <p>times it said skip, it was right.</p>
-          <div className="metric">skip precision {pct(r.precision)}</div>
+          <p>if you said skip to everything.</p>
         </div>
         <div className="figure">
           <div className="big">
-            {r.skipsRight}/{r.skipsExpected}
+            {sameCategory.skipCorrect} of {r.n}
           </div>
-          <p>items that should be skipped were caught.</p>
-          <div className="metric">skip recall {pct(r.recall)}</div>
+          <p>if you skipped anything in a category you already own.</p>
         </div>
         <div className="figure">
-          <div className="big">{r.nearDuplicatesCaught}</div>
-          <p>skips because the shopper already owned the same or a near-identical item.</p>
+          <div className="big">{formatDollars(r.split.dollarsAvoided)}</div>
+          <p>of duplicate or hard-to-return buys not made on the {r.skipsRight} right skips (prices shown).</p>
         </div>
       </div>
+
+      <section className="card stack-sm">
+        <h2>What the skips rest on</h2>
+        <div className="split-bars">
+          <div className="split-row evidence">
+            <strong>{r.split.onEvidence}</strong>
+            <span>
+              right skips decided on evidence: you own the same or a near-identical item, or the store&apos;s cited policy refuses opened returns or takes them only on conditions ({formatDollars(r.split.dollarsOnEvidence)}).
+            </span>
+          </div>
+          <div className="split-row default">
+            <strong>{r.split.onDefault}</strong>
+            <span>
+              right skips that needed our default: a partial overlap at a store whose opened-return policy we couldn&apos;t find, counted as not returnable ({formatDollars(r.split.dollarsOnDefault)}).
+            </span>
+          </div>
+        </div>
+        <p className="small muted">
+          It said skip {r.skipsMade} times and was right {r.skipsRight} times; it caught {r.skipsRight} of the {r.skipsExpected} items that should be skipped. Full agreement on skip, wait, buy or ask: {pct(r.verdictAgreement)}.
+        </p>
+      </section>
 
       <RerunEval />
 
@@ -113,8 +143,8 @@ async function Proof() {
         <Rows rows={r.missedSkips} showGot />
       </section>
 
-      <details className="card">
-        <summary style={{ cursor: "pointer", fontWeight: 700 }}>The {r.catches.length} correct skips</summary>
+      <details className="card disclosure">
+        <summary>The {r.catches.length} correct skips</summary>
         <div style={{ marginTop: "0.85rem" }}>
           <Rows rows={r.catches} />
         </div>
@@ -130,9 +160,15 @@ async function Proof() {
       <section className="card stack-sm">
         <h2>How the test was built</h2>
         <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
-          <li>The products, prices and store policies are real, as of {r.asOf}. The shopper, shelf and budgets are made up.</li>
-          <li>Expected answers were committed to the repository before the engine was written, and neither has been changed since the first run.</li>
-          <li>{r.unknownPolicyCaught} of the correct skips are at stores whose opened-return policy we couldn&apos;t find; the engine treats unknown as not returnable.</li>
+          <li>The products, prices and store policies are real, captured on Nov 6, 2026 (US Eastern). The shopper, shelf and budgets are made up; the shopper&apos;s &quot;today&quot; in the test is Nov 7, 2026.</li>
+          <li>
+            Expected answers: commit <span className="mono">{p.expectations.commit.slice(0, 7)}</span>, {et(p.expectations.at)}. The engine: commit <span className="mono">{p.engine.commit.slice(0, 7)}</span>, {et(p.engine.at)}. First scored run: <span className="mono">{p.firstRun.commit.slice(0, 7)}</span>, {et(p.firstRun.at)}, 55 of 65.
+          </li>
+          {p.changes.map((c) => (
+            <li key={c.what}>
+              Later engine change{c.commit ? <> (<span className="mono">{c.commit.slice(0, 7)}</span>{c.at ? `, ${et(c.at)}` : ""})</> : ""}: {c.what} Result: {c.result}. The expected answers were not touched.
+            </li>
+          ))}
           <li>Full results, case by case: eval/skip-set/RESULTS.md in the repository.</li>
         </ul>
       </section>

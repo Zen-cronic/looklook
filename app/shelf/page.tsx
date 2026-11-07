@@ -7,6 +7,7 @@ import { CATEGORY_LABELS } from "@/lib/app/shelf-ui";
 import { budgetGroupOf } from "@/lib/shelf/categories";
 import type { ShelfItem } from "@/lib/shelf/types";
 import { AddShelfItem, BudgetEditor, ShelfRowControls } from "../components/ShelfControls";
+import { SimDate } from "../components/SimDate";
 
 export const metadata = { title: "Shelf" };
 
@@ -44,6 +45,7 @@ async function Shelf() {
   return (
     <div className="shelf-grid">
       <section>
+        <SimDate today={today} dayOffset={state.dayOffset} />
         <p className="small muted" style={{ marginBottom: "0.75rem" }}>
           {state.shelf.length} items: {state.shelf.length - fromOrders} added by you, {fromOrders} from your purchases here. Import from PayPal activity: off.
         </p>

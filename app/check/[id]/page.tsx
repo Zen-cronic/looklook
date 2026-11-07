@@ -2,11 +2,18 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { BUDGET_LABELS } from "@/lib/app/budgets";
-import { formatDate } from "@/lib/app/dates";
+import { formatDate, formatDay, formatTime } from "@/lib/app/dates";
 import { RULE_ORDER, RULE_TEXT, relationText, returnsLine } from "@/lib/app/explain";
 import { formatDollars, toCentsSafe } from "@/lib/app/money";
-import { activeMethod } from "@/lib/app/payments";
+import { offerLines } from "@/lib/app/offers";
+import { activeMethod, SELLER_OF_RECORD } from "@/lib/app/payments";
+import { waitAction } from "@/lib/app/reminders";
+import { cachedOffers } from "@/lib/app/services";
 import { currentSession } from "@/lib/app/session";
+import type { CheckRecord, StoreOffer } from "@/lib/app/types";
+import { targetFor } from "@/lib/app/watch";
+import { PriceHistory } from "../../components/PriceHistory";
+import { SimDate } from "../../components/SimDate";
 import { VerdictActions } from "../../components/VerdictActions";
 import { VERDICT_WORD } from "../../components/VerdictChip";
 
@@ -25,9 +32,17 @@ function storeLabel(store: string | undefined): string | undefined {
   return store.replace(/^https?:\/\//, "").replace(/^www\./, "");
 }
 
+async function offersFor(check: CheckRecord): Promise<StoreOffer[]> {
+  if (check.offers?.length) return check.offers;
+  const live = check.product ? await cachedOffers(check.product.id) : [];
+  if (live.length) return live;
+  const p = check.product;
+  return p?.offerDomain && p.offerPrice ? [{ domain: p.offerDomain, price: p.offerPrice, url: p.offerUrl }] : [];
+}
+
 async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }) {
   const { id } = await params;
-  const { state } = await currentSession();
+  const { state, today } = await currentSession();
   const check = state.checks.find((c) => c.id === id);
   if (!check) notFound();
   const d = check.decision;
@@ -38,13 +53,18 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
   const watch = check.watchId ? state.watch.find((w) => w.id === check.watchId && !w.closedAt) : undefined;
   const ruleIndex = RULE_ORDER.indexOf(d.rule) + 1;
   const product = check.product;
-  const offerUrl = product?.offerUrl;
+  const wait = waitAction(check, today);
+  const reminderOn = check.reminder && !check.reminder.doneAt ? formatDay(check.reminder.on) : undefined;
+  const target = price !== null && product ? targetFor(check) : null;
+  const offers = d.verdict === "ask" ? [] : offerLines(await offersFor(check), check.facts.category);
+  const shelfItem = e.shelf ? state.shelf.find((i) => i.id === e.shelf!.itemId) : undefined;
 
   return (
     <div className="stack">
       <Link href="/" className="btn outline small" style={{ width: "fit-content" }}>
         Check another
       </Link>
+      <SimDate today={today} dayOffset={state.dayOffset} />
       <article className={`verdict ${d.verdict}`}>
         <div className="verdict-head">
           <div className="verdict-word">{VERDICT_WORD[d.verdict]}</div>
@@ -65,6 +85,21 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
           {price !== null && <div className="price-line">{formatDollars(price)}</div>}
         </div>
         {returns && d.verdict !== "ask" && <p className={`returns ${returns.tone}`}>{returns.text}</p>}
+        {d.verdict === "wait" && wait?.kind === "price" && target !== null && (
+          <div className="price-wait">
+            {check.band?.usable && check.band.weekly ? <PriceHistory weekly={check.band.weekly} target={target} now={price ?? target} /> : null}
+            <p className="small">
+              {check.band?.usable
+                ? `Usually ${formatDollars(check.band.typical)}, lowest ${formatDollars(check.band.low)} in the last 90 days. Worth buying at ${formatDollars(target)} or less.`
+                : `Not enough price history to judge, so we'd wait for ${formatDollars(target)} (10% under) or less.`}
+            </p>
+          </div>
+        )}
+        {d.verdict === "wait" && wait?.kind === "budget" && e.budget && (
+          <p className="returns maybe">
+            {formatDollars(e.budget.remaining)} left in {BUDGET_LABELS[e.budget.group].toLowerCase()} this month. The budget starts again on {formatDay(wait.on)}.
+          </p>
+        )}
         <details className="why">
           <summary>See why</summary>
           <dl className="evidence">
@@ -78,8 +113,8 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 <dd>
                   {e.shelf.brand} {e.shelf.name}: {relationText(e.shelf.relation)}
                   {e.shelf.relation !== "same-product" && <> (match {Math.round(e.shelf.score * 100)}%)</>}
-                  {e.shelf.matched.length > 0 && <>, same {e.shelf.matched.join(", ")}</>}. {e.shelf.opened ? "Opened" : "Unopened"}
-                  {e.shelf.runOutDate ? `, runs out ${formatDate(e.shelf.runOutDate)}` : ""}.
+                  {e.shelf.matched.length > 0 && <>, same {e.shelf.matched.map(attributeWord).join(", ")}</>}. {(shelfItem?.opened ?? e.shelf.opened) ? "Opened" : "Unopened"}
+                  {shelfItem?.runOutDate ? `, runs out ${formatDate(shelfItem.runOutDate)}` : ""}.
                 </dd>
               </>
             )}
@@ -87,7 +122,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
               <>
                 <dt>Replaces</dt>
                 <dd>
-                  {e.replaces.brand} {e.replaces.name}, runs out in {e.replaces.daysLeft} days.
+                  {e.replaces.brand} {e.replaces.name}, {daysText(e.replaces.daysLeft)} ({formatDate(e.replaces.runOutDate!)}).
                 </dd>
               </>
             )}
@@ -112,8 +147,8 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 <dt>Price</dt>
                 <dd>
                   {e.price.usable && e.price.typical !== undefined
-                    ? `${formatDollars(e.price.shown)} now. Usually ${formatDollars(e.price.typical)}, lowest ${formatDollars(e.price.low!)} in the last 90 days; good price is ${formatDollars(e.price.target!)} or less.`
-                    : `${formatDollars(e.price.shown)} now. Not enough clean price history to judge.`}
+                    ? `${formatDollars(e.price.shown)} now. Usually ${formatDollars(e.price.typical)}, lowest ${formatDollars(e.price.low!)} in the last 90 days; a good price is ${formatDollars(e.price.target!)} or less.`
+                    : `${formatDollars(e.price.shown)} now. Not enough price history to judge.`}
                 </dd>
               </>
             )}
@@ -133,7 +168,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
             )}
             <dt>Read from</dt>
             <dd>
-              {check.input.kind === "link" ? "The store link" : "Your screenshot"}: {[check.fields.brand, check.fields.productName, check.fields.variant, check.fields.price ? formatDollars(check.fields.price.amount) : null, check.fields.store].filter(Boolean).join(", ") || "nothing legible"}.
+              {check.input.kind === "link" ? "The store link" : check.input.sample ? "The sample post" : "Your screenshot"}: {[check.fields.brand, check.fields.productName, check.fields.variant, check.fields.price ? formatDollars(check.fields.price.amount) : null, check.fields.store].filter(Boolean).join(", ") || "nothing legible"}.
             </dd>
             {product && (
               <>
@@ -144,15 +179,32 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 </dd>
               </>
             )}
+            <dt>Checked</dt>
+            <dd>{formatTime(check.createdAt)} ET</dd>
           </dl>
         </details>
-        {offerUrl && (
-          <div style={{ padding: "0 1.2rem" }} className="stack-sm">
-            <a className="btn outline small" href={offerUrl} target="_blank" rel="noreferrer sponsored" style={{ width: "fit-content" }}>
-              View at {product?.offerDomain}
-            </a>
-            <p className="commission">We may earn a commission when you buy through links on this page.</p>
-          </div>
+        {offers.length > 0 && (
+          <section className="offers">
+            <h3>Same product at other stores</h3>
+            <ul>
+              {offers.map((o) => (
+                <li key={o.domain} className={`offer ${o.returns}`}>
+                  <span>
+                    {o.url ? (
+                      <a href={o.url} target="_blank" rel="noreferrer sponsored">
+                        {o.store}
+                      </a>
+                    ) : (
+                      o.store
+                    )}
+                    <span className="small muted">, {o.returnsText}</span>
+                  </span>
+                  <span className="price-line small-price">{formatDollars(o.price)}</span>
+                </li>
+              ))}
+            </ul>
+            <p className="commission">Store names are links to the retailers. We may earn a commission when you buy through them.</p>
+          </section>
         )}
         <VerdictActions
           checkId={check.id}
@@ -162,7 +214,9 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
           priceLabel={price !== null ? formatDollars(price) : null}
           savedMethod={method ? { id: method.id, label: method.label, capLabel: formatDollars(method.capCents / 100), withinCap: price !== null && toCentsSafe(price) <= method.capCents } : null}
           watch={watch ? { target: formatDollars(watch.targetPrice) } : null}
-          targetLabel={e.price?.target && price !== null && e.price.target < price ? formatDollars(e.price.target) : price !== null ? formatDollars(Math.round(price * 90) / 100) : null}
+          wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? formatDay(wait.on) : undefined, reminderOn } : null}
+          sellerLabel={SELLER_OF_RECORD}
+          targetLabel={target !== null ? formatDollars(target) : null}
           shelfItemId={e.shelf?.itemId ?? null}
           purchasedReceiptId={check.purchasedReceiptId ?? null}
           candidates={check.candidates}
@@ -171,4 +225,22 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
       </article>
     </div>
   );
+}
+
+function daysText(n: number): string {
+  if (n < 0) return `ran out ${-n} ${n === -1 ? "day" : "days"} ago`;
+  if (n === 0) return "runs out today";
+  return `runs out in ${n} ${n === 1 ? "day" : "days"}`;
+}
+
+const ATTRIBUTE_WORDS: Record<string, string> = {
+  primaryActive: "main active",
+  actives: "actives",
+  shadeFamily: "shade family",
+  spfBand: "SPF range",
+  noiseCancelling: "noise cancelling",
+};
+
+function attributeWord(key: string): string {
+  return ATTRIBUTE_WORDS[key] ?? key.replace(/([A-Z])/g, " $1").toLowerCase();
 }

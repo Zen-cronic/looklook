@@ -48,7 +48,7 @@ async function Events() {
     );
   }
   return (
-    <div className="table-wrap">
+    <div className="table-wrap stacked">
       <table>
         <thead>
           <tr>
@@ -62,18 +62,18 @@ async function Events() {
         <tbody>
           {events.map((e) => (
             <tr key={e.id}>
-              <td className="mono small" style={{ whiteSpace: "nowrap" }}>
-                {formatTime(e.receivedAt)}
+              <td data-label="Received" className="mono small" style={{ whiteSpace: "nowrap" }}>
+                {formatTime(e.receivedAt)} ET
               </td>
-              <td>{e.source === "paypal" ? "PayPal" : "Channel3"}</td>
-              <td>
+              <td data-label="From">{e.source === "paypal" ? "PayPal" : "Channel3"}</td>
+              <td data-label="Event">
                 <div className="mono small">{e.type ?? "unknown"}</div>
                 {e.eventId && <div className="mono small muted">{e.eventId}</div>}
               </td>
-              <td>
+              <td data-label="Check">
                 <VerificationChip e={e} /> {e.duplicate && <span className="chip wait">Repeat, handled once</span>}
               </td>
-              <td className="small">{e.duplicate ? "Nothing: already handled." : (e.effect ?? "")}</td>
+              <td data-label="What it did" className="small">{e.duplicate ? "Nothing: already handled." : (e.effect ?? "")}</td>
             </tr>
           ))}
         </tbody>

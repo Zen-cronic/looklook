@@ -14,6 +14,10 @@ interface Props {
   priceLabel: string | null;
   savedMethod: { id: string; label: string; capLabel: string; withinCap: boolean } | null;
   watch: { target: string } | null;
+  /** What a wait offers, from the rule that fired. */
+  wait: { kind: "budget" | "price" | "run-out" | "set-run-out"; onLabel?: string; reminderOn?: string } | null;
+  /** Who sells it when you buy here. */
+  sellerLabel: string;
   targetLabel: string | null;
   shelfItemId: string | null;
   purchasedReceiptId: string | null;
@@ -110,10 +114,34 @@ export function VerdictActions(p: Props) {
     );
   }
 
+  const remind = () => call("remind", `/api/check/${p.checkId}/remind`, "POST");
+
   return (
     <div className="verdict-actions">
       {errorBox}
+      {p.verdict === "wait" && p.wait?.kind === "budget" &&
+        (p.wait.reminderOn ? (
+          <p className="notice">We&apos;ll remind you on {p.wait.reminderOn}, when next month&apos;s budget starts. Until then there&apos;s no buy button for this one.</p>
+        ) : (
+          <button className="btn" disabled={!!busy} onClick={remind}>
+            {busy === "remind" ? "Saving…" : `Remind me when next month's budget starts (${p.wait.onLabel})`}
+          </button>
+        ))}
+      {p.verdict === "wait" && p.wait?.kind === "run-out" &&
+        (p.wait.reminderOn ? (
+          <p className="notice">We&apos;ll remind you on {p.wait.reminderOn}.</p>
+        ) : (
+          <button className="btn" disabled={!!busy} onClick={remind}>
+            {busy === "remind" ? "Saving…" : `Remind me on ${p.wait.onLabel}`}
+          </button>
+        ))}
+      {p.verdict === "wait" && (p.wait?.kind === "run-out" || p.wait?.kind === "set-run-out") && p.shelfItemId && (
+        <Link className={p.wait.kind === "set-run-out" ? "btn" : "btn outline"} href={`/shelf#${p.shelfItemId}`}>
+          {p.wait.kind === "set-run-out" ? "Set when yours runs out" : "See yours on your shelf"}
+        </Link>
+      )}
       {p.verdict === "wait" &&
+        p.wait?.kind === "price" &&
         (p.watch ? (
           <Link className="btn" href="/rebuys">
             Watching for {p.watch.target} or less
@@ -150,11 +178,12 @@ export function VerdictActions(p: Props) {
           </button>
         </>
       )}
-      {(p.verdict === "wait" || p.verdict === "buy") && p.verdict === "wait" && (
+      {p.verdict === "wait" && p.wait?.kind === "price" && (
         <button className="btn outline" disabled={!!busy || p.price === null} onClick={startCheckout}>
           Buy now anyway
         </button>
       )}
+      {(p.verdict === "buy" || p.verdict === "skip" || (p.verdict === "wait" && p.wait?.kind === "price")) && p.price !== null && <p className="small muted">Buying here: sold by {p.sellerLabel}.</p>}
     </div>
   );
 }

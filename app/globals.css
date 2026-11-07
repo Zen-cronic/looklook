@@ -161,6 +161,10 @@ img {
 }
 
 @media (max-width: 640px) {
+  .footer {
+    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+  }
+
   .mainnav {
     position: fixed;
     left: 0;
@@ -183,7 +187,7 @@ img {
   }
 
   body {
-    padding-bottom: 4.5rem;
+    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
   }
 }
 
@@ -652,7 +656,9 @@ select:focus {
   border-top: 1px solid var(--line);
 }
 
-.why summary {
+.why summary,
+.disclosure > summary,
+.ids > summary {
   cursor: pointer;
   font-weight: 700;
   padding: 0.85rem 0;
@@ -660,25 +666,45 @@ select:focus {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 0.75rem;
 }
 
-.why summary::-webkit-details-marker {
+.why summary::-webkit-details-marker,
+.disclosure > summary::-webkit-details-marker,
+.ids > summary::-webkit-details-marker {
   display: none;
 }
 
-.why summary::after {
+/* Disclosure chevron: one drawn shape, flipped when open (no in-between frames). */
+.why summary::after,
+.disclosure > summary::after,
+.ids > summary::after {
   content: "";
-  width: 0.55rem;
+  flex: none;
+  width: 0.8rem;
   height: 0.55rem;
-  border-right: 2px solid var(--ink-2);
-  border-bottom: 2px solid var(--ink-2);
-  transform: rotate(45deg);
-  transition: transform 0.15s;
-  margin-right: 0.3rem;
+  background: var(--ink-2);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
 }
 
-.why[open] summary::after {
-  transform: rotate(225deg);
+.why[open] summary::after,
+.disclosure[open] > summary::after,
+.ids[open] > summary::after {
+  transform: scaleY(-1);
+}
+
+.ids > summary {
+  font-size: var(--step--1);
+  font-weight: 600;
+  color: var(--ink-2);
+  padding: 0.4rem 0;
+  justify-content: flex-start;
+}
+
+.ids .receipt-lines {
+  padding: 0 0 0.4rem;
+  font-size: var(--step--1);
 }
 
 .evidence {
@@ -1131,4 +1157,195 @@ tr:last-child td {
   .shelf-grid > aside {
     order: -1;
   }
+}
+
+/* Simulated date note */
+.simdate {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.6rem;
+}
+
+/* Price wait: trend and target */
+.price-wait {
+  margin: 0.9rem 1.2rem 0;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--wait-tint);
+  color: var(--wait-deep);
+}
+
+.pricehist {
+  margin: 0 0 0.5rem;
+}
+
+.pricehist svg {
+  display: block;
+  width: 100%;
+  max-width: 22rem;
+  height: auto;
+}
+
+.pricehist .series {
+  fill: none;
+  stroke: var(--wait-deep);
+  stroke-width: 2;
+  stroke-linejoin: round;
+}
+
+.pricehist .series-end {
+  fill: var(--wait-deep);
+}
+
+.pricehist .target {
+  stroke: var(--buy);
+  stroke-width: 1.5;
+  stroke-dasharray: 4 3;
+}
+
+.pricehist figcaption {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.pricehist .key {
+  display: inline-block;
+  width: 1rem;
+  height: 0;
+  border-top: 2px solid var(--wait-deep);
+}
+
+.pricehist .target-key {
+  border-top: 2px dashed var(--buy);
+  margin-left: 0.6rem;
+}
+
+/* Same product at other stores */
+.offers {
+  margin: 0.9rem 1.2rem 0;
+  border-top: 1px solid var(--line);
+  padding-top: 0.85rem;
+}
+
+.offers h3 {
+  font-size: 0.9375rem;
+  margin-bottom: 0.4rem;
+}
+
+.offers ul {
+  list-style: none;
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.offer {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0.75rem;
+  padding: 0.4rem 0.6rem;
+  border-radius: var(--radius-sm);
+  border-left: 3px solid var(--line-strong);
+  background: var(--paper);
+}
+
+.offer.yes { border-left-color: var(--buy); }
+.offer.no { border-left-color: var(--skip); }
+.offer.conditional { border-left-color: var(--wait); }
+
+.offer a {
+  font-weight: 700;
+}
+
+.price-line.small-price {
+  font-size: 1rem;
+}
+
+.approval.held {
+  border-left-color: var(--line-strong);
+}
+
+.approval.reminder {
+  border-left-color: var(--ask);
+}
+
+/* Tables that stack into cards on a phone */
+@media (max-width: 640px) {
+  .table-wrap.stacked {
+    overflow: visible;
+    background: transparent;
+    border: 0;
+  }
+
+  .stacked table,
+  .stacked tbody,
+  .stacked tr,
+  .stacked td {
+    display: block;
+    width: 100%;
+  }
+
+  .stacked thead {
+    display: none;
+  }
+
+  .stacked tr {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: var(--radius-sm);
+    padding: 0.5rem 0.75rem;
+    margin-bottom: 0.5rem;
+  }
+
+  .stacked td {
+    border: 0;
+    padding: 0.2rem 0;
+    overflow-wrap: anywhere;
+  }
+
+  .stacked td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: var(--step--1);
+    color: var(--muted);
+    font-weight: 600;
+  }
+}
+
+/* Proof: what the skips rest on */
+.split-bars {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.split-row {
+  display: grid;
+  grid-template-columns: 3rem 1fr;
+  gap: 0.75rem;
+  align-items: baseline;
+  padding: 0.6rem 0.8rem;
+  border-radius: var(--radius-sm);
+}
+
+.split-row strong {
+  font-family: var(--font-mono);
+  font-size: var(--step-2);
+}
+
+.split-row.evidence {
+  background: var(--buy-tint);
+  color: var(--buy-deep);
+}
+
+.split-row.default {
+  background: var(--shade);
+  color: var(--ink-2);
+}
+
+.disclosure > summary {
+  padding: 0;
 }

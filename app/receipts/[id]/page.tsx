@@ -1,9 +1,11 @@
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
-import { formatDate, formatTime } from "@/lib/app/dates";
-import { formatCents } from "@/lib/app/money";
-import { SELLER_OF_RECORD } from "@/lib/app/payments";
+import { BUDGET_LABELS, remainingBudgets } from "@/lib/app/budgets";
+import { formatDay, formatTime, realToday } from "@/lib/app/dates";
+import { formatCents, formatDollars } from "@/lib/app/money";
+import { chargeKind, repeatsLine, SELLER_OF_RECORD } from "@/lib/app/payments";
 import { currentSession } from "@/lib/app/session";
+import { budgetGroupOf } from "@/lib/shelf/categories";
 import { ReceiptActions } from "../../components/ReceiptActions";
 
 export const metadata = { title: "Receipt" };
@@ -20,28 +22,34 @@ export default function ReceiptPage(props: PageProps<"/receipts/[id]">) {
 
 async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["params"] }) {
   const { id } = await params;
-  const { state } = await currentSession();
+  const { state, today } = await currentSession();
   const r = state.receipts.find((x) => x.id === id);
   if (!r) notFound();
   const method = r.savedMethodId ? state.methods.find((m) => m.id === r.savedMethodId) : undefined;
-  const sent = r.attempts === 1 ? "Sent to PayPal once." : `Sent to PayPal ${r.attempts} times with the same request ID; ${r.sameOrderEveryTime ? "PayPal answered with this one order every time, so you were charged once." : "PayPal answered with different orders. Check your activity."}`;
+  const simulatedOn = r.on !== realToday(new Date(r.createdAt)) ? r.on : undefined;
+  const group = r.category ? budgetGroupOf(r.category) : undefined;
+  const left = group ? remainingBudgets(state.budgets, today)[group] : undefined;
   return (
     <div className="stack">
       <article className="receipt">
         <div className="receipt-head">
-          <div className="small" style={{ opacity: 0.8 }}>
-            {r.status === "refunded" ? "Refunded" : r.captureStatus === "COMPLETED" ? "Paid" : `Payment ${r.captureStatus.toLowerCase()}`}, {formatDate(r.on)}
+          <div className="small" style={{ opacity: 0.85 }}>
+            {r.status === "refunded" ? "Refunded" : r.captureStatus === "COMPLETED" ? "Paid" : `Payment ${r.captureStatus.toLowerCase()}`}, {formatTime(r.createdAt)} ET
           </div>
           <div className="total">{formatCents(r.amountCents, r.currency)}</div>
           <div style={{ marginTop: "0.35rem", fontWeight: 700 }}>{r.title}</div>
+          <div className="small" style={{ opacity: 0.85, marginTop: "0.2rem" }}>
+            {chargeKind(r)}
+            {simulatedOn ? `, counted on the simulated date ${formatDay(simulatedOn)}` : ""}
+          </div>
         </div>
         <dl className="receipt-lines">
-          <dt>Paid to</dt>
+          <dt>Sold by</dt>
           <dd>{SELLER_OF_RECORD}</dd>
           <dt>Paid with</dt>
           <dd>{r.methodLabel}</dd>
           <dt>How</dt>
-          <dd>{r.kind === "first-purchase" ? "Approved in PayPal checkout" : "Your yes on a saved method (customer-initiated)"}</dd>
+          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "Your yes on a saved method (customer-initiated)"}</dd>
           <dt>PayPal order</dt>
           <dd>{r.orderId}</dd>
           <dt>Capture</dt>
@@ -56,17 +64,21 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
             <>
               <dt>Refund</dt>
               <dd>
-                {r.refund.id} ({r.refund.status})
+                {r.refund.id} ({r.refund.status}){r.refund.at ? `, ${formatTime(r.refund.at)} ET` : ""}
               </dd>
             </>
           )}
         </dl>
         <div className="receipt-foot stack-sm">
           <p>
-            <strong>Charged once.</strong> {sent}
+            <strong>Charged once.</strong> {repeatsLine(r)}
           </p>
           {r.shelfNote && <p>{r.shelfNote}</p>}
-          {r.budgetNote && <p>{r.budgetNote}</p>}
+          {group && left !== undefined && (
+            <p>
+              {formatDollars(left)} left in {BUDGET_LABELS[group].toLowerCase()} this month.
+            </p>
+          )}
           {method && (
             <p>
               Saved for rebuys: {method.label}, up to {formatCents(method.capCents, method.currency)} each, only after your yes.

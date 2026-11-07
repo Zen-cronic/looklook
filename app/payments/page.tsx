@@ -48,18 +48,21 @@ async function Methods() {
             <summary>What you agreed to</summary>
             <div className="stack-sm" style={{ paddingBottom: "0.85rem" }}>
               <p>{m.consentText}</p>
-              <dl className="receipt-lines" style={{ padding: 0 }}>
-                <dt>PayPal token</dt>
-                <dd>{m.vaultId}</dd>
-                {m.customerId && (
-                  <>
-                    <dt>PayPal customer</dt>
-                    <dd>{m.customerId}</dd>
-                  </>
-                )}
-                <dt>First order</dt>
-                <dd>{m.firstOrderId}</dd>
-              </dl>
+              <details className="ids">
+                <summary>Details</summary>
+                <dl className="receipt-lines" style={{ padding: 0 }}>
+                  <dt>PayPal token</dt>
+                  <dd>{m.vaultId}</dd>
+                  {m.customerId && (
+                    <>
+                      <dt>PayPal customer</dt>
+                      <dd>{m.customerId}</dd>
+                    </>
+                  )}
+                  <dt>First order</dt>
+                  <dd>{m.firstOrderId}</dd>
+                </dl>
+              </details>
             </div>
           </details>
           {m.status === "active" && <MethodControls id={m.id} label={m.label} capDollars={m.capCents / 100} />}

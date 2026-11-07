@@ -48,7 +48,7 @@ export function RerunEval() {
           <strong>
             {result.skipCorrect} of {result.n}
           </strong>{" "}
-          skip decisions correct; {result.skipsRight} of {result.skipsMade} skips right. Took {result.ms} ms on the server at {new Date(result.ranAt).toLocaleTimeString()}.
+          skip decisions correct; {result.skipsRight} of {result.skipsMade} skips right. Took {result.ms} ms on the server at {new Date(result.ranAt).toLocaleTimeString("en-US", { timeZone: "America/New_York", hour: "numeric", minute: "2-digit", second: "2-digit" })} ET.
         </p>
       )}
     </div>
