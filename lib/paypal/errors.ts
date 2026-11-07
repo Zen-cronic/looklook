@@ -12,7 +12,7 @@ export class PayPalApiError extends Error {
   readonly debugId?: string;
 
   constructor(status: number, errorName: string, message: string, issues: PayPalIssue[], debugId?: string) {
-    super(`${status} ${errorName}: ${message}${issues.length ? ` [${issues.map((i) => i.issue).join(", ")}]` : ""}`);
+    super(`${status} ${errorName}: ${message}${issues.length ? ` [${issues.map((i) => (i.field ? `${i.issue} at ${i.field}` : i.issue)).join(", ")}]` : ""}`);
     this.name = "PayPalApiError";
     this.status = status;
     this.errorName = errorName;

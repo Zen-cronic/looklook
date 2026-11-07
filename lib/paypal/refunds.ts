@@ -23,6 +23,7 @@ export async function refundCapture(
     method: "POST",
     path: `/v2/payments/captures/${encodeURIComponent(captureId)}/refund`,
     requestId: opts.requestId,
+    headers: { Prefer: "return=representation" },
     body,
   });
   return { refundId: res.body.id, status: res.body.status, amountCents: res.body.amount ? toCents(res.body.amount.value) : undefined };
