@@ -1,0 +1,915 @@
+{
+  "createdAt": "2026-11-07T01:30:12.067Z",
+  "rule": "Search results in order, merged by normalised title, USD offers only; kept when the cleaned history covers 90 days and is not a mixed series.",
+  "products": [
+    {
+      "id": "MqaYV6V",
+      "title": "Moisturizing Cream",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream"
+    },
+    {
+      "id": "4w2dW9A",
+      "title": "Anthelios UV Control Sunscreen",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen"
+    },
+    {
+      "id": "RITU5x7",
+      "title": "Balancing & Clarifying Serum",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum"
+    },
+    {
+      "id": "8Z6ZLY7",
+      "title": "Clear Skin Sunscreen SPF 60",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen"
+    },
+    {
+      "id": "rSpXLW2",
+      "title": "Balancing & Clarifying Serum for Oily Skin",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum"
+    },
+    {
+      "id": "R1H6iNX",
+      "title": "Intensive Moisturizing Cream",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream"
+    },
+    {
+      "id": "xx4q7M7",
+      "title": "Anthelios Glow Face Sunscreen",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen"
+    },
+    {
+      "id": "e64tV2u",
+      "title": "Anthelios Mineral Light Fluid Sunscreen",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen"
+    },
+    {
+      "id": "82LYfKS",
+      "title": "Lash Sensational Washable Mascara",
+      "brand": "Maybelline",
+      "category": "beauty-staples",
+      "query": "Maybelline mascara"
+    },
+    {
+      "id": "8QQllRT",
+      "title": "CeraVe Moisturising Cream with Pump 454g",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream"
+    },
+    {
+      "id": "28YhPsc",
+      "title": "La Roche Posay Anthelios Sunscreen Melt-In-Milk Lotion Face and Body Sunscreen - SPF 60 - 5 fl oz",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen"
+    },
+    {
+      "id": "UyKpygl",
+      "title": "Olaplex No.4 Bond Maintenance Clarifying Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo"
+    },
+    {
+      "id": "dIilnfU",
+      "title": "Niacinamide Serum 60ml",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum"
+    },
+    {
+      "id": "yV3l3nw",
+      "title": "Gentle Foaming Cleanser",
+      "brand": "Cetaphil",
+      "category": "beauty-staples",
+      "query": "Cetaphil gentle cleanser"
+    },
+    {
+      "id": "URzHoQb",
+      "title": "Anthelios UV Clear Daily Invisible Sunscreen",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen"
+    },
+    {
+      "id": "Av3BX6v",
+      "title": "Multi-Peptide + Copper Peptides 1% Serum",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum"
+    },
+    {
+      "id": "2d4Pi0L",
+      "title": "MOVA AeroChef FD10 Pro Air Fryer",
+      "brand": "MOVA",
+      "category": "kitchen-appliances",
+      "query": "air fryer"
+    },
+    {
+      "id": "TTMVwMs",
+      "title": "K400 Blender",
+      "brand": "KitchenAid",
+      "category": "kitchen-appliances",
+      "query": "blender"
+    },
+    {
+      "id": "LxnNLye",
+      "title": "PureFlavor Drip Coffee Maker",
+      "brand": "Braun",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker"
+    },
+    {
+      "id": "OfGtQbH",
+      "title": "Blender",
+      "brand": "Vitamix",
+      "category": "kitchen-appliances",
+      "query": "blender"
+    },
+    {
+      "id": "a4ASajG",
+      "title": "KitchenAid 12-Cup Drip Coffee Maker",
+      "brand": "KitchenAid",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker"
+    },
+    {
+      "id": "bG2FT6k",
+      "title": "Blender",
+      "brand": "Breville",
+      "category": "kitchen-appliances",
+      "query": "blender"
+    },
+    {
+      "id": "RvQa7UJ",
+      "title": "Super Q Blender",
+      "brand": "Breville",
+      "category": "kitchen-appliances",
+      "query": "blender"
+    },
+    {
+      "id": "Fn4uWrP",
+      "title": "Wireless Earbuds",
+      "brand": "Audio-Technica",
+      "category": "headphones",
+      "query": "wireless earbuds"
+    },
+    {
+      "id": "4RyHr6R",
+      "title": "Noise Cancelling Headphones",
+      "brand": "Sony",
+      "category": "headphones",
+      "query": "noise cancelling headphones"
+    },
+    {
+      "id": "ph6lmav",
+      "title": "Live 680NC On-Ear Noise Cancelling Headphones",
+      "brand": "HARMAN",
+      "category": "headphones",
+      "query": "noise cancelling headphones"
+    },
+    {
+      "id": "O9hxhlx",
+      "title": "Bang & Olufsen Beoplay Eleven Wireless Earbuds",
+      "brand": "Bang & Olufsen",
+      "category": "headphones",
+      "query": "wireless earbuds"
+    },
+    {
+      "id": "ago7JIz",
+      "title": "JBL Live 780NC Wireless Noise Cancelling Headphones",
+      "brand": "JBL",
+      "category": "headphones",
+      "query": "noise cancelling headphones"
+    }
+  ],
+  "screenedOut": [
+    {
+      "id": "KxvP4Su",
+      "title": "No.4 Intensive Bond Maintenance Strengthening Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo",
+      "reason": "short-history",
+      "days": 49
+    },
+    {
+      "id": "PI62KMC",
+      "title": "Gentle Skin Cleanser",
+      "brand": "Cetaphil",
+      "category": "beauty-staples",
+      "query": "Cetaphil gentle cleanser",
+      "reason": "short-history",
+      "days": 73
+    },
+    {
+      "id": "LzVE50a",
+      "title": "Maybelline Colossal Curl Bounce Waterproof Mascara | ASOS",
+      "brand": "Maybelline",
+      "category": "beauty-staples",
+      "query": "Maybelline mascara",
+      "reason": "short-history",
+      "days": 68
+    },
+    {
+      "id": "KD2qrk4",
+      "title": "Daily Moisturizing Cream",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream",
+      "reason": "short-history",
+      "days": 68
+    },
+    {
+      "id": "iCtmHTs",
+      "title": "No.4 Bond Maintenance Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo",
+      "reason": "short-history",
+      "days": 28
+    },
+    {
+      "id": "fOvzaP5",
+      "title": "Cetaphil 2pk/16oz Each Gentle Facial Cleanser",
+      "brand": "Cetaphil",
+      "category": "beauty-staples",
+      "query": "Cetaphil gentle cleanser",
+      "reason": "short-history",
+      "days": 3
+    },
+    {
+      "id": "6COHIhL",
+      "title": "Great Lash Mascara",
+      "brand": "Maybelline",
+      "category": "beauty-staples",
+      "query": "Maybelline mascara",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "k7bgkFG",
+      "title": "La Roche Posay Anthelios 100 KA+ Sunscreen Cream Face SPF50",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen",
+      "reason": "short-history",
+      "days": 8
+    },
+    {
+      "id": "3rF9uIc",
+      "title": "No.4 Strengthening Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo",
+      "reason": "short-history",
+      "days": 45
+    },
+    {
+      "id": "6QhFzqI",
+      "title": "The Ordinary GF 15% Serum for Visible Skin Repair & Reduction of Wrinkles, 30ml",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum",
+      "reason": "short-history",
+      "days": 88
+    },
+    {
+      "id": "7KPY9QH",
+      "title": "Gentle Skin Cleanser Face Wash",
+      "brand": "Cetaphil",
+      "category": "beauty-staples",
+      "query": "Cetaphil gentle cleanser",
+      "reason": "short-history",
+      "days": 88
+    },
+    {
+      "id": "PuvRqQu",
+      "title": "Lash Sensational Firework Volume and Length Mascara",
+      "brand": "Maybelline",
+      "category": "beauty-staples",
+      "query": "Maybelline mascara",
+      "reason": "short-history",
+      "days": 34
+    },
+    {
+      "id": "j4VjFHh",
+      "title": "CeraVe Moisturizing Cream, 16 OZ",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream",
+      "reason": "short-history",
+      "days": 27
+    },
+    {
+      "id": "esHvKHx",
+      "title": "Bond Maintenance Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo",
+      "reason": "short-history",
+      "days": 78
+    },
+    {
+      "id": "nwLqGa7",
+      "title": "Soothing & Barrier Support Serum",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum",
+      "reason": "short-history",
+      "days": 79
+    },
+    {
+      "id": "4y6HZVv",
+      "title": "Cetaphil Hydrating Gentle Skin Cleanser for Dry to Normal Sensitive Skin, 16 OZ",
+      "brand": "Cetaphil",
+      "category": "beauty-staples",
+      "query": "Cetaphil gentle cleanser",
+      "reason": "short-history",
+      "days": 11
+    },
+    {
+      "id": "2y9vdRB",
+      "title": "Colossal Big Shot Volum' Express Mascara",
+      "brand": "Maybelline",
+      "category": "beauty-staples",
+      "query": "Maybelline mascara",
+      "reason": "short-history",
+      "days": 13
+    },
+    {
+      "id": "nnm5WZN",
+      "title": "Face and Body Moisturizing Cream for Normal to Dry Skin with Hyaluronic Acid",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream",
+      "reason": "short-history",
+      "days": 17
+    },
+    {
+      "id": "3PUK3FR",
+      "title": "Olaplex #4c Bond Maintenance Clarifying Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo",
+      "reason": "short-history",
+      "days": 5
+    },
+    {
+      "id": "0kAsqB9",
+      "title": "The Ordinary Soothing & Barrier Support Serum (30ml)",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum",
+      "reason": "short-history",
+      "days": 48
+    },
+    {
+      "id": "ymC1Hv3",
+      "title": "Cetaphil Gentle Face Wash Cleanser for Normal to Dry Skin - Travel Size - 2 fl oz",
+      "brand": "Cetaphil",
+      "category": "beauty-staples",
+      "query": "Cetaphil gentle cleanser",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "NLT8iZu",
+      "title": "Great Lash Mascara, Dark Brown",
+      "brand": "Maybelline",
+      "category": "beauty-staples",
+      "query": "Maybelline mascara",
+      "reason": "short-history",
+      "days": 43
+    },
+    {
+      "id": "JbQBXFh",
+      "title": "Moisturising Cream",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream",
+      "reason": "short-history",
+      "days": 76
+    },
+    {
+      "id": "zmnD8lI",
+      "title": "No.4C Bond Maintenance Clarifying Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo",
+      "reason": "short-history",
+      "days": 45
+    },
+    {
+      "id": "yQTsM6A",
+      "title": "GF 15% Serum for Visible Skin Repair and Wrinkles",
+      "brand": "The Ordinary",
+      "category": "beauty-staples",
+      "query": "The Ordinary serum",
+      "reason": "short-history",
+      "days": 80
+    },
+    {
+      "id": "uCkHjyu",
+      "title": "Cetaphil Face Wash Hydrating Gentle Skin Cleanser",
+      "brand": "Cetaphil",
+      "category": "beauty-staples",
+      "query": "Cetaphil gentle cleanser",
+      "reason": "short-history",
+      "days": 86
+    },
+    {
+      "id": "ZIJN8z7",
+      "title": "Volum' Express The Colossal Waterproof Mascara",
+      "brand": "Maybelline",
+      "category": "beauty-staples",
+      "query": "Maybelline mascara",
+      "reason": "short-history",
+      "days": 74
+    },
+    {
+      "id": "eYkirUR",
+      "title": "CeraVe Moisturizing Face & Body Cream for Normal to Dry Skin – 1.89 fl oz",
+      "brand": "CeraVe",
+      "category": "beauty-staples",
+      "query": "CeraVe moisturizing cream",
+      "reason": "short-history",
+      "days": 10
+    },
+    {
+      "id": "rXfSfN8",
+      "title": "Anthelios Melt-In Milk Sunscreen",
+      "brand": "La Roche-Posay",
+      "category": "beauty-staples",
+      "query": "La Roche-Posay sunscreen",
+      "reason": "short-history",
+      "days": 87
+    },
+    {
+      "id": "HdTTLXL",
+      "title": "No.4fine Bond Maintenance Shampoo",
+      "brand": "OLAPLEX",
+      "category": "beauty-staples",
+      "query": "Olaplex shampoo",
+      "reason": "short-history",
+      "days": 75
+    },
+    {
+      "id": "gBc22G3",
+      "title": "Braun Brewsense Drip Drip Coffee Maker",
+      "brand": "Braun",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "XEgO05C",
+      "title": "TurboBlaze 6.0-Quart Air Fryer",
+      "brand": "COSORI",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "short-history",
+      "days": 88
+    },
+    {
+      "id": "2Z9Xc5H",
+      "title": "Vitamix C-Series 6500 Professional Blender",
+      "brand": "Vitamix",
+      "category": "kitchen-appliances",
+      "query": "blender",
+      "reason": "short-history",
+      "days": 3
+    },
+    {
+      "id": "sJirh3j",
+      "title": "Drip Coffee Maker",
+      "brand": "ZWILLING",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker",
+      "reason": "short-history",
+      "days": 82
+    },
+    {
+      "id": "f6TOyXo",
+      "title": "Hamilton Beach 3.7 Quart/3.5 Liter Digital Air Fryer",
+      "brand": "Hamilton Beach",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "mixed-series",
+      "days": 90
+    },
+    {
+      "id": "AjEA7zG",
+      "title": "Professional Countertop Blender",
+      "brand": "Mecale",
+      "category": "kitchen-appliances",
+      "query": "blender",
+      "reason": "short-history",
+      "days": 61
+    },
+    {
+      "id": "Y7j74Ec",
+      "title": "5-Liter Air Fryer",
+      "brand": "Hamilton Beach",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "short-history",
+      "days": 14
+    },
+    {
+      "id": "iDvGtdj",
+      "title": "VX1 Blender",
+      "brand": "Vitamix",
+      "category": "kitchen-appliances",
+      "query": "blender",
+      "reason": "mixed-series",
+      "days": 90
+    },
+    {
+      "id": "jEjtGZg",
+      "title": "Brew Drip Coffee Maker",
+      "brand": "Bella",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "ePDg6LG",
+      "title": "TurboBlaze Air Fryer",
+      "brand": "COSORI",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "short-history",
+      "days": 76
+    },
+    {
+      "id": "aLy3Xhd",
+      "title": "Drip Coffee Maker",
+      "brand": "SMEG",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker",
+      "reason": "short-history",
+      "days": 57
+    },
+    {
+      "id": "eRPMUve",
+      "title": "Midea 5.3qt. Digital Air Fryer",
+      "brand": "Midea",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "short-history",
+      "days": 2
+    },
+    {
+      "id": "AZbPPVs",
+      "title": "Countertop Blender",
+      "brand": "Kohl's",
+      "category": "kitchen-appliances",
+      "query": "blender",
+      "reason": "short-history",
+      "days": 65
+    },
+    {
+      "id": "Cj4ZeXF",
+      "title": "MacKenzie-Childs Courtly Check Drip Coffee Maker",
+      "brand": "MacKenzie-Childs",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker",
+      "reason": "short-history",
+      "days": 12
+    },
+    {
+      "id": "SA1dRAL",
+      "title": "Midea 7qt. Digital Air Fryer",
+      "brand": "Midea",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "short-history",
+      "days": 2
+    },
+    {
+      "id": "r8N10ly",
+      "title": "2200W Commercial Countertop Blender with 68oz Jar & 300ml Tumbler",
+      "brand": "GARVEE",
+      "category": "kitchen-appliances",
+      "query": "blender",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "NW4D64F",
+      "title": "Proctor Silex 3.7 Quart Air Fryer",
+      "brand": "Proctor Silex",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "short-history",
+      "days": 29
+    },
+    {
+      "id": "6QKZoWo",
+      "title": "Aiden Precision Drip Coffee Maker",
+      "brand": "Fellow",
+      "category": "kitchen-appliances",
+      "query": "drip coffee maker",
+      "reason": "short-history",
+      "days": 47
+    },
+    {
+      "id": "CsO37U7",
+      "title": "Essential Compact Air Fryer",
+      "brand": "Philips",
+      "category": "kitchen-appliances",
+      "query": "air fryer",
+      "reason": "short-history",
+      "days": 44
+    },
+    {
+      "id": "oUZqBOZ",
+      "title": "Bose QuietComfort Headphones",
+      "brand": "Bose",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "mixed-series",
+      "days": 90
+    },
+    {
+      "id": "ggZVizR",
+      "title": "Soundcore Mini | Portable Bluetooth Speaker",
+      "brand": "Anker",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 37
+    },
+    {
+      "id": "1xETMWC",
+      "title": "P31i Wireless Earbuds",
+      "brand": "Soundcore",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "short-history",
+      "days": 89
+    },
+    {
+      "id": "YST8Lcm",
+      "title": "Soundcore Bluetooth Speaker",
+      "brand": "Soundcore",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "mixed-series",
+      "days": 90
+    },
+    {
+      "id": "hsubN9o",
+      "title": "QuietComfort 45 SE Wireless Over-Ear Noise Cancelling Headphones",
+      "brand": "Bose",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 32
+    },
+    {
+      "id": "RxZVIJu",
+      "title": "Anker P42i Wireless Earbuds with Adaptive ANC",
+      "brand": "Soundcore",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "mixed-series",
+      "days": 90
+    },
+    {
+      "id": "KuwDYi6",
+      "title": "SRS-XB12 Mini Bluetooth Speaker",
+      "brand": "Sony",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "lfFPuEY",
+      "title": "GENTEK NC1 Noise Cancelling Headphones, Black",
+      "brand": "Gentek",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 10
+    },
+    {
+      "id": "0BIwH4g",
+      "title": "Wireless Earbuds",
+      "brand": "Echelon",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "short-history",
+      "days": 80
+    },
+    {
+      "id": "3DiZkED",
+      "title": "xboom Blast Portable Bluetooth Speaker",
+      "brand": "LG",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 55
+    },
+    {
+      "id": "9lLepgM",
+      "title": "Sony WH-1000XM4C Gen2 Wireless Noise Cancelling Headphones with Accessories",
+      "brand": "Sony",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 24
+    },
+    {
+      "id": "dgcSCyh",
+      "title": "WFC510/W Wireless Earbuds",
+      "brand": "Sony",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "short-history",
+      "days": 89
+    },
+    {
+      "id": "AZMmr35",
+      "title": "WS-B1A Portable Bluetooth Speaker",
+      "brand": "Yamaha",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 57
+    },
+    {
+      "id": "rBsxOLk",
+      "title": "Baseus BP1 Pro Wireless Earbuds",
+      "brand": "BASEUS",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "XuTXK8v",
+      "title": "Beolit 20 Bluetooth speaker",
+      "brand": "Bang & Olufsen",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "woOitdz",
+      "title": "soundcore Q20i | Noise Cancelling Headphones",
+      "brand": "Soundcore",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 5
+    },
+    {
+      "id": "oQDEHQt",
+      "title": "Everyday Classic Bluetooth Wireless Earbuds",
+      "brand": "Raycon",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "no-history",
+      "days": 0
+    },
+    {
+      "id": "Bmos6ga",
+      "title": "Portable Bluetooth Speaker",
+      "brand": "JVC",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 29
+    },
+    {
+      "id": "QCoSMJD",
+      "title": "Bang & Olufsen Beoplay H100 Noise‑Cancelling Headphones",
+      "brand": "Bang & Olufsen",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 89
+    },
+    {
+      "id": "RuSGc91",
+      "title": "ATH-TWX7 Truly Wireless Earbuds",
+      "brand": "Audio-Technica",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "short-history",
+      "days": 88
+    },
+    {
+      "id": "Fzwf7Th",
+      "title": "Portable S120 Bluetooth Speaker",
+      "brand": "Nautica",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 8
+    },
+    {
+      "id": "dkxKGsd",
+      "title": "Soundcore by Anker Space Q45 Over-Ear Noise Cancelling Bluetooth Headphones",
+      "brand": "Anker",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 53
+    },
+    {
+      "id": "DxnGHUd",
+      "title": "Wireless Earbuds",
+      "brand": "Acer",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "short-history",
+      "days": 85
+    },
+    {
+      "id": "IPmHpss",
+      "title": "Edifier ES20 Portable Bluetooth Speaker",
+      "brand": "Edifier",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 38
+    },
+    {
+      "id": "AEQVUBb",
+      "title": "Sony WH 1000XM4C Gen2 Wireless Noise Cancelling Headphones",
+      "brand": "Sony",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 3
+    },
+    {
+      "id": "SQ8CKSf",
+      "title": "Portable Bluetooth Speaker",
+      "brand": "Klipsch",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 88
+    },
+    {
+      "id": "aeaokOS",
+      "title": "Silentnx Dynamic Noise Cancelling Headphones",
+      "brand": "Brookstone",
+      "category": "headphones",
+      "query": "noise cancelling headphones",
+      "reason": "short-history",
+      "days": 9
+    },
+    {
+      "id": "iUO1Y68",
+      "title": "Bowie MS1 True Wireless Earbuds",
+      "brand": "BASEUS",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "short-history",
+      "days": 44
+    },
+    {
+      "id": "Vb8j8xn",
+      "title": "Jbl Xtreme 2",
+      "brand": "HARMAN",
+      "category": "headphones",
+      "query": "bluetooth speaker",
+      "reason": "short-history",
+      "days": 88
+    },
+    {
+      "id": "wdJylhr",
+      "title": "Panasonic Ergofit True Wireless Earbuds",
+      "brand": "Panasonic",
+      "category": "headphones",
+      "query": "wireless earbuds",
+      "reason": "short-history",
+      "days": 38
+    }
+  ]
+}
