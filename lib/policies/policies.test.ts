@@ -44,6 +44,13 @@ describe("return-policy table", () => {
     expect(() => parsePolicyTable(t)).toThrow(PolicyTableError);
   });
 
+  it("rejects an opened-return condition on a rule that doesn't take opened items back", () => {
+    const t = JSON.parse(JSON.stringify(policyTable()));
+    const rule = t.retailers.flatMap((r: { rules: Array<{ returnableOpened: string; openedNeeds?: string }> }) => r.rules).find((x: { returnableOpened: string }) => x.returnableOpened !== "yes");
+    rule.openedNeeds = "with a receipt";
+    expect(() => parsePolicyTable(t)).toThrow(PolicyTableError);
+  });
+
   it("finds stores by id, name, domain and URL", () => {
     expect(findRetailer("cvs").id).toBe("cvs");
     expect(findRetailer("Ulta Beauty").id).toBe("ulta");

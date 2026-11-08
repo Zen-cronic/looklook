@@ -67,6 +67,8 @@ export function parsePolicyTable(raw: unknown): PolicyTable {
       if (rule.returnableOpened !== "unknown" && !rule.sourceUrl) throw new PolicyTableError(`${r.id}/${rule.group}: a known answer needs a source URL`);
       if (rule.windowDays !== null && !(Number.isInteger(rule.windowDays) && rule.windowDays > 0)) throw new PolicyTableError(`${r.id}/${rule.group}: bad windowDays`);
       if (rule.openedNeeds !== undefined && (typeof rule.openedNeeds !== "string" || !rule.openedNeeds.trim())) throw new PolicyTableError(`${r.id}/${rule.group}: bad openedNeeds`);
+      // Only shown where opened returns are accepted; anywhere else it would never reach the shopper.
+      if (rule.openedNeeds !== undefined && rule.returnableOpened !== "yes") throw new PolicyTableError(`${r.id}/${rule.group}: openedNeeds on a rule that doesn't accept opened returns`);
     }
   }
   if (!ids.has(FALLBACK_RETAILER_ID)) throw new PolicyTableError(`the ${FALLBACK_RETAILER_ID} fallback is required`);

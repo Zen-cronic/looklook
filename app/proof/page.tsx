@@ -158,7 +158,7 @@ function HeldOut() {
         </ol>
         <p className="small muted">
           The numbers on this page are read from that run&apos;s committed results (eval/holdout/results.json), not re-run, so later engine changes can&apos;t move them. The engine was not changed after seeing the result.{" "}
-          {r.corrections.length ? "One expected answer's reason text was later corrected for a store policy we had misread; see Corrections." : "Nor were the expected answers."}
+          {correctedCases(r.corrections)}
         </p>
       </section>
 
@@ -388,4 +388,11 @@ async function DevelopmentSet() {
       </section>
     </>
   );
+}
+
+/** How many held-out expected answers were corrected, counted from the recorded corrections. */
+function correctedCases(corrections: Array<{ expectations: { cases: string[] } }>): string {
+  const n = new Set(corrections.flatMap((c) => c.expectations.cases)).size;
+  if (!n) return "Nor were the expected answers.";
+  return `${n === 1 ? "One expected answer's" : `${n} expected answers'`} reason text ${n === 1 ? "was" : "were"} later corrected for a store policy we had misread; see Corrections.`;
 }
