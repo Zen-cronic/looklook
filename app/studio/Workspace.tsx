@@ -138,8 +138,9 @@ function themeFromTokens() {
   const css = getComputedStyle(document.documentElement);
   const v = (name: string) => css.getPropertyValue(name).trim();
   const font = `${v("--font-ui")}, sans-serif`;
+  const display = `${v("--font-display")}, sans-serif`;
   return studioTheme.withParams({
-    accentColor: v("--ink"),
+    accentColor: v("--signature"),
     foregroundColor: v("--ink"),
     backgroundColor: v("--card"),
     borderColor: v("--line"),
@@ -148,7 +149,13 @@ function themeFromTokens() {
     studioWidgetBackgroundColor: v("--card"),
     studioWidgetBorderRadius: v("--radius"),
     fontFamily: font,
-    studioWidgetTitleFontFamily: font,
+    studioCanvasFontFamily: font,
+    studioWidgetTitleFontFamily: display,
+    studioWidgetTitleFontWeight: 800,
+    studioWidgetSubtitleFontFamily: font,
+    studioWidgetCaptionFontFamily: font,
+    studioPanelHeaderFontFamily: font,
+    studioPopupTitleBarFontFamily: font,
     studioCanvasRowHeight: "20px",
     studioMinWidth: 0,
   } as Parameters<typeof studioTheme.withParams>[0]);

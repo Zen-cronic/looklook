@@ -27,7 +27,7 @@
 }
 
 .workspace-bar h1 {
-  font-size: var(--step-2);
+  font-size: var(--step-3);
 }
 
 .workspace-actions {
@@ -45,30 +45,36 @@
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  padding: 0.6rem 0.9rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--line-strong);
+  padding: 0.65rem 1rem;
+  border-radius: var(--radius-pill);
+  border: var(--edge);
   background: var(--card);
   font-size: var(--step--1);
+  font-weight: 700;
 }
 
 .workspace-run.running {
-  border-color: var(--ask);
-  background: var(--ask-tint);
-  color: var(--ask-deep);
+  background: var(--skip-tint);
+  color: var(--ink);
 }
 
 .workspace-run.done {
-  border-color: var(--buy);
-  background: var(--buy-tint);
-  color: var(--buy-deep);
+  background: var(--buy);
+  color: var(--buy-ink);
 }
 
 .workspace-canvas {
   flex: 1;
   min-height: 0;
   border-radius: var(--radius);
+  border: var(--edge);
   overflow: hidden;
+}
+
+/* The grid inside Studio uses the product's UI face, not the grid's own default */
+.workspace-canvas .ag-root-wrapper,
+.workspace-canvas .ag-root {
+  font-family: var(--font-ui), sans-serif;
 }
 
 .workspace.narrow .workspace-canvas {
@@ -85,10 +91,10 @@
 }
 
 .workspace-note {
-  padding: 0.75rem 0.9rem;
+  padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
   background: var(--card);
-  border: 1px solid var(--line);
+  border-left: 5px solid var(--ink);
   font-size: var(--step--1);
 }
 
@@ -116,27 +122,30 @@
 }
 
 .decision-head h2 {
+  font-family: var(--font-display);
   font-size: var(--step-1);
+  letter-spacing: -0.035em;
 }
 
 .decision {
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--line-strong);
+  --status: var(--line-strong);
+  border: 1.5px solid var(--line);
+  border-left: 7px solid var(--status);
   border-radius: var(--radius-sm);
-  padding: 0.7rem 0.8rem;
+  padding: 0.75rem 0.9rem;
   background: var(--card);
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
-.decision.skip { border-left-color: var(--skip); background: var(--skip-tint); }
-.decision.wait { border-left-color: var(--wait); background: var(--wait-tint); }
-.decision.buy { border-left-color: var(--buy); background: var(--buy-tint); }
-.decision.ask { border-left-color: var(--ask); background: var(--ask-tint); }
-.decision.rebuy { border-left-color: var(--ink); }
-.decision.bought { border-left-color: var(--line-strong); background: var(--card); }
-.decision.rebuy.declined { border-left-color: var(--skip); }
+.decision.skip { --status: var(--skip); }
+.decision.wait { --status: var(--wait); }
+.decision.buy { --status: var(--buy); }
+.decision.ask { --status: var(--ask); }
+.decision.rebuy { --status: var(--ink); border-color: var(--ink); }
+.decision.bought { --status: var(--line-strong); }
+.decision.rebuy.declined { --status: var(--alert); }
 
 .decision-top {
   display: flex;
@@ -150,7 +159,7 @@
 }
 
 .decision-price {
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .decision-reason {
@@ -171,14 +180,20 @@
 }
 
 .decision-paid {
+  display: inline-block;
   font-size: var(--step--1);
-  font-weight: 600;
-  color: var(--buy-deep);
+  font-weight: 800;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--buy);
+  color: var(--buy-ink);
+  animation: settle var(--dur-3) var(--ease-spring) both;
 }
 
 .decision-error {
   font-size: var(--step--1);
-  color: var(--skip-deep);
+  font-weight: 700;
+  color: var(--alert-deep);
 }
 
 /* Figure widgets */
@@ -205,13 +220,31 @@
 }
 
 .figure-big {
+  font-family: var(--font-display);
   font-size: var(--step-3);
-  font-weight: 700;
-  line-height: 1.1;
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1.05;
 }
 
-.figure-widget.skip .figure-big {
-  color: var(--skip);
+.figure-widget.skip {
+  background: var(--signature);
+  color: var(--signature-ink);
+}
+
+.figure-widget.skip .figure-label,
+.figure-widget.skip .muted {
+  color: var(--signature-ink);
+}
+
+.figure-widget.skip .btn.outline {
+  border-color: var(--signature-ink);
+  color: var(--signature-ink);
+}
+
+.figure-widget.skip .btn.outline:hover {
+  background: var(--signature-ink);
+  color: var(--ink);
 }
 
 .budget-bars {
@@ -224,13 +257,14 @@
 
 .budget-bars li {
   display: grid;
-  grid-template-columns: 6.5rem 1fr 6.5rem;
+  grid-template-columns: 6rem 1fr auto;
   align-items: center;
   gap: 0.5rem;
 }
 
 .budget-bars li .num {
   text-align: right;
+  white-space: nowrap;
 }
 
 .budget-bars .bar {
@@ -242,13 +276,15 @@
   align-items: center;
   gap: 0.6rem;
   flex-wrap: wrap;
-  padding: 0.6rem 0.9rem;
-  border-radius: var(--radius-sm);
-  border: 1px solid var(--buy);
-  border-left-width: 4px;
-  background: var(--buy-tint);
-  color: var(--buy-deep);
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: var(--edge);
+  box-shadow: var(--shadow-hard-sm);
+  background: var(--buy);
+  color: var(--buy-ink);
   font-size: var(--step--1);
+  font-weight: 700;
+  animation: settle var(--dur-3) var(--ease-spring) both;
 }
 
 .workspace-notice span {
@@ -257,7 +293,6 @@
 }
 
 .workspace-run.done.saved {
-  border-color: var(--wait);
-  background: var(--wait-tint);
-  color: var(--wait-deep);
+  background: var(--wait);
+  color: var(--wait-ink);
 }
