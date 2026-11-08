@@ -74,6 +74,32 @@
         "h10"
       ],
       "verdictAgreement": 0.9
+    },
+    {
+      "commit": "250e1c4dc2b043cf8e48d01fd6426ab3d01b0072",
+      "at": "2026-11-08T15:05:49-05:00",
+      "what": "Store return-policy windows and sources corrected on 2026-11-08 (CVS beauty states no time limit; Kohl's beauty is 30 days; Sephora and Kohl's rules cite the stores' returns pages). No verdict rule reads the window; engine and expected answers unchanged.",
+      "skipCorrect": 29,
+      "n": 30,
+      "precision": 1,
+      "recall": 0.9230769230769231,
+      "baselines": [
+        {
+          "id": "always-skip",
+          "label": "Always say skip",
+          "skipCorrect": 13
+        },
+        {
+          "id": "same-category",
+          "label": "Skip whenever you own anything in the same category",
+          "skipCorrect": 18
+        }
+      ],
+      "wrongSkips": [],
+      "missedSkips": [
+        "h10"
+      ],
+      "verdictAgreement": 0.9
     }
   ],
   "corrections": [

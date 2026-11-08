@@ -107,6 +107,7 @@ Re-runs of the same 30 products and expectations on later engine code and correc
 |---|---|---|---|---|---|---|---|
 | c0d3b0d | 2026-11-07 00:34:21 EST | Added conditioner, hair oil or serum, lip balm, kettle and toaster categories; where a sunscreen goes (face, body or both) became its product type, and a replacement must do the whole job of the item it replaces. | 29 of 30 | 13 | 18 | none | h10 |
 | e2c06ee | 2026-11-07 00:42:40 EST | Store return policies corrected (CVS beauty takes opened items back; Target's opened-electronics rule) and h09's expected reasons; engine unchanged. | 29 of 30 | 13 | 18 | none | h10 |
+| 250e1c4 | 2026-11-08 15:05:49 EST | Store return-policy windows and sources corrected on 2026-11-08 (CVS beauty states no time limit; Kohl's beauty is 30 days; Sephora and Kohl's rules cite the stores' returns pages). No verdict rule reads the window; engine and expected answers unchanged. | 29 of 30 | 13 | 18 | none | h10 |
 
 ## Corrections
 
@@ -116,9 +117,9 @@ Inputs found wrong after the scored run. The input was fixed first, then the exp
 |---|---|---|---|---|---|
 | 2026-11-07 | The policy table said CVS may refuse opened beauty; it cited CVS's general returns PDF, and the beauty section of CVS's return policy page takes it back with a receipt. | a37226a at 2026-11-07 00:41:35 EST | e2c06ee at 2026-11-07 00:42:40 EST | h09 | None on the verdict or the 28 of 30: h09 was a near-duplicate skip the engine decided on the shelf (owns-similar). Only its reasons and why text changed. |
 
-### Latest re-run, on e2c06ee at 2026-11-07 00:43:40 EST
+### Latest re-run, on 250e1c4 at 2026-11-08 15:06:16 EST
 
-**29 of 30 skip decisions correct.** Skip precision 100.0%, recall 92.3%. Full verdict agreement 90.0%. Engine commits since the expectations: a37226a, c0d3b0d. Shelf and categories as written; the expectations as corrected on 2026-11-07 (see Corrections).
+**29 of 30 skip decisions correct.** Skip precision 100.0%, recall 92.3%. Full verdict agreement 90.0%. Engine commits since the expectations: 250e1c4, 2aa50fd, 7bdd791, 5c09f47, 1d85326, 0856bfc, a37226a, c0d3b0d. Shelf and categories as written; the expectations as corrected on 2026-11-07 (see Corrections).
 
 #### Wrong skips
 
