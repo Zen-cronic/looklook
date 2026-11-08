@@ -22,7 +22,7 @@ export function storeOffers(product: Pick<Product, "offers">): StoreOffer[] {
 export interface OfferLine extends StoreOffer {
   store: string;
   returns: OpenedReturn;
-  /** "takes opened back within 30 days", "takes opened back with a receipt within 60 days", "may refuse opened", ... */
+  /** "takes opened back within 30 days", "takes opened back with a receipt" (no time limit stated), "may refuse opened", ... */
   returnsText: string;
   policyUrl: string | null;
 }

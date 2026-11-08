@@ -79,7 +79,7 @@ describe("decide: owning it already", () => {
     const d = run({ product: product({ attributes: { primaryActive: "vitamin-c", actives: ["vitamin-c"] } }), store: "cvs" });
     expect(d).toMatchObject({ verdict: "skip", rule: "owns-similar", flags: [] });
     expect(d.evidence.shelf).toMatchObject({ itemId: "vitc", relation: "near-duplicate" });
-    expect(d.evidence.policy).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: 60 });
+    expect(d.evidence.policy).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: null });
     expect(d.evidence.policy?.sourceUrl).toMatch(/^https:\/\/www\.cvs\.com\//);
   });
 

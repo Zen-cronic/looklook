@@ -27,7 +27,7 @@ describe("return-policy table", () => {
   it("takes opened beauty back at CVS with a receipt, citing the beauty section of its policy page", () => {
     for (const category of ["sunscreen", "serum", "lipstick", "mascara"] as const) {
       const p = openedReturnPolicy("cvs", category);
-      expect(p).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: 60, openedNeeds: "with a receipt", fallback: false });
+      expect(p).toMatchObject({ retailerId: "cvs", group: "beauty", returnableOpened: "yes", windowDays: null, openedNeeds: "with a receipt", fallback: false });
       expect(p.sourceUrl).toMatch(/^https:\/\/www\.cvs\.com\/retail\/help\/return_policy#/);
       expect(p.conditions).toMatch(/third-party return authorization/);
     }

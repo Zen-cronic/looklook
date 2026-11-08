@@ -6,6 +6,7 @@ import skipCases from "@/eval/skip-set/cases.json";
 import { recordSpend } from "../app/budgets";
 import { DEV_SET_SIZE, devCorrections, devSetRuns, replaySummary, runSkipEval } from "../app/eval";
 import { RULE_ORDER, RULE_TEXT, returnsLine } from "../app/explain";
+import { offerLines } from "../app/offers";
 import { baselineScore, heldOutHeadline, heldOutResult } from "../app/holdout";
 import { formatDollars } from "../app/money";
 import { dueStaples, REBUY_LEAD_DAYS, SELLER_OF_RECORD } from "../app/payments";
@@ -172,9 +173,10 @@ describe("README numbers match the data and code", () => {
     const sephora = policyTable().retailers.find((r) => r.id === "sephora")!;
     const rule = sephora.rules.find((x) => x.group === "beauty")!;
     expect(rule.conditions).toContain('"new or gently used"');
-    expect(rule.sourceUrl).not.toBe(sephora.policyUrl);
-    expect(sephora.notes).toMatch(/blocked automated reading/);
-    expect(README).toContain(`(opened beauty back in "new or gently used" condition within ${rule.windowDays} days) is taken from Sephora's own FAQ pages`);
+    expect(rule.sourceUrl).toBe(sephora.policyUrl);
+    expect(README).toContain(`(opened beauty back in "new or gently used" condition within ${rule.windowDays} days) is read from Sephora's returns page`);
+    // No store note claims a page could not be read any more.
+    for (const r of policyTable().retailers) expect(r.notes ?? "").not.toMatch(/blocked/);
   });
 });
 
@@ -191,6 +193,21 @@ function skipProvenanceChange(prefix: string) {
 }
 
 describe("evidence and safety", () => {
+  it("never shows a return window a store's page doesn't state", () => {
+    const noWindow = policyTable().retailers.flatMap((r) => r.rules.filter((x) => x.windowDays === null && x.sourceUrl).map((x) => ({ r, x })));
+    expect(noWindow.map(({ r, x }) => `${r.id}/${x.group}`)).toContain("cvs/beauty");
+    for (const { r, x } of noWindow) {
+      const p = openedReturnPolicy(r.domains[0], x.group === "beauty" ? "serum" : x.group === "electronics" ? "headphones" : "blender");
+      for (const verdict of ["buy", "skip"] as const) {
+        const line = returnsLine({ verdict, rule: "owns-similar", flags: [], evidence: { trace: [], policy: p } } as unknown as Decision)?.text ?? "";
+        expect(line).not.toMatch(/\d+ days/);
+      }
+      const offer = offerLines([{ domain: r.domains[0], price: 10 }], x.group === "beauty" ? "serum" : x.group === "electronics" ? "headphones" : "blender")[0];
+      expect(offer.returnsText).not.toMatch(/\d+ days/);
+    }
+    expect(README).not.toMatch(/CVS[^.]*beauty[^.]*within 60 days/);
+  });
+
   it("gives every store return rule a source page and a check date, as FACTS.md lists them", () => {
     const table = policyTable();
     const storeRules = table.retailers.filter((r) => !r.rules.every((x) => x.returnableOpened === "unknown" && x.sourceUrl === null)).flatMap((r) => r.rules);
