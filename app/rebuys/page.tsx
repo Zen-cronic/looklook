@@ -240,7 +240,7 @@ async function Rebuys() {
                       </span>
                       <span className="small muted" style={{ display: "block" }}>
                         {chargeKind(r)}, {r.methodLabel}
-                        {r.status === "refunded" ? ", refunded" : ""}
+                        {r.status === "refunded" ? ", refunded" : r.status === "partly-refunded" ? ", partly refunded" : r.status === "failed" ? ", failed (not charged)" : r.refund?.status === "PENDING" ? ", refund pending" : ""}
                       </span>
                       <span className="small muted" style={{ display: "block" }}>
                         {formatTime(r.createdAt)} ET{r.on !== realToday(new Date(r.createdAt)) ? `, simulated date ${formatDay(r.on)}` : ""}

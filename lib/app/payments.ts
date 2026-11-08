@@ -488,12 +488,78 @@ export function openDecline(state: SessionState, source: PurchaseSource): Declin
   return [...state.declines].reverse().find((d) => !d.resolvedByReceiptId && sameSource(d.source, source));
 }
 
-export function recordRefund(state: SessionState, receipt: Receipt, refund: { refundId: string; status: string; amountCents?: number }, category: Category | undefined, today: string, now = new Date()): void {
-  receipt.refund = { id: refund.refundId, status: refund.status, amountCents: refund.amountCents, at: now.toISOString() };
-  if (refund.status === "COMPLETED") {
-    receipt.status = "refunded";
-    if (category) refundSpend(state.budgets, receipt.on.slice(0, 7) === today.slice(0, 7) ? today : receipt.on, budgetGroupOf(category), (refund.amountCents ?? receipt.amountCents) / 100);
+/**
+ * Record a refund on a receipt, from the app's refund call or PayPal's
+ * webhook. Each refund id is credited back to the month's budget once, for
+ * its own amount, when it completes; a pending refund shows as pending.
+ */
+export function applyRefund(state: SessionState, receipt: Receipt, refund: { refundId: string; status: string; amountCents?: number }, now = new Date()): void {
+  const at = now.toISOString();
+  const list = (receipt.refunds ??= []);
+  const done = () => list.filter((x) => x.status === "COMPLETED").reduce((n, x) => n + x.amountCents, 0);
+  let rec = list.find((x) => x.id === refund.refundId);
+  if (!rec) {
+    rec = { id: refund.refundId, status: refund.status, amountCents: refund.amountCents ?? Math.max(0, receipt.amountCents - done()), at };
+    list.push(rec);
+  } else {
+    rec.status = refund.status;
+    if (refund.amountCents !== undefined) rec.amountCents = refund.amountCents;
   }
+  receipt.refund = { id: rec.id, status: rec.status, amountCents: rec.amountCents, at: rec.at };
+  if (rec.status === "COMPLETED" && !rec.credited) {
+    rec.credited = true;
+    if (receipt.category && !receipt.reversedAt) refundSpend(state.budgets, receipt.on, budgetGroupOf(receipt.category), rec.amountCents / 100);
+  }
+  const refunded = done();
+  if (refunded >= receipt.amountCents) receipt.status = "refunded";
+  else if (refunded > 0) receipt.status = "partly-refunded";
+}
+
+/**
+ * PayPal denied a capture after the receipt was written: no money moved, so
+ * the restock (or the item added to the shelf) and the budget spend are
+ * undone, the watch it closed opens again, and the receipt says it failed.
+ */
+export function reversePayment(state: SessionState, receipt: Receipt, why: string, now = new Date()): boolean {
+  if (receipt.reversedAt) return false;
+  receipt.reversedAt = now.toISOString();
+  receipt.status = "failed";
+  const ch = receipt.shelfChange;
+  if (ch?.kind === "restock") {
+    const item = state.shelf.find((i) => i.id === ch.itemId);
+    if (item && item.runOutDate === ch.after) {
+      item.runOutDate = ch.before.runOutDate;
+      item.lastRestockedOn = ch.before.lastRestockedOn;
+      item.price = ch.before.price;
+    }
+  } else if (ch?.kind === "added") {
+    state.shelf = state.shelf.filter((i) => i.id !== ch.itemId);
+  }
+  const credited = (receipt.refunds ?? []).filter((x) => x.credited).reduce((n, x) => n + x.amountCents, 0) / 100;
+  if (receipt.spent && receipt.category) refundSpend(state.budgets, receipt.on, budgetGroupOf(receipt.category), Math.max(0, receipt.spent - credited));
+  for (const w of state.watch) {
+    if (w.closedBy === receipt.id) {
+      w.closedAt = undefined;
+      w.closedBy = undefined;
+    }
+  }
+  for (const c of state.checks) if (c.purchasedReceiptId === receipt.id) c.purchasedReceiptId = undefined;
+  receipt.shelfNote = `Undone: ${why}. Nothing was charged, so the shelf and budget are back as they were.`;
+  receipt.budgetNote = undefined;
+  state.notices.push({ id: newId("nt"), at: receipt.reversedAt, text: `${why} for ${receipt.title}. Nothing was charged.`, receiptId: receipt.id });
+  return true;
+}
+
+/** The receipt's status in words: paid, pending, failed, or how much was refunded. */
+export function receiptStatusLabel(r: Pick<Receipt, "status" | "captureStatus" | "refund" | "refunds" | "currency">): string {
+  if (r.status === "failed") return "Payment failed, nothing charged";
+  const pending = r.refund?.status === "PENDING" ? "; refund pending at PayPal" : "";
+  if (r.status === "refunded") return "Refunded";
+  if (r.status === "partly-refunded") {
+    const back = (r.refunds ?? []).filter((x) => x.status === "COMPLETED").reduce((n, x) => n + x.amountCents, 0);
+    return `Paid, ${formatCents(back, r.currency)} refunded${pending}`;
+  }
+  return `${r.captureStatus === "COMPLETED" ? "Paid" : `Payment ${r.captureStatus.toLowerCase()}`}${pending}`;
 }
 
 /** What a charge was, in the shopper's words: a first purchase is never called a rebuy. */

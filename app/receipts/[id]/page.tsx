@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { BUDGET_LABELS, remainingBudgets } from "@/lib/app/budgets";
 import { formatDay, formatTime, realToday } from "@/lib/app/dates";
 import { formatCents, formatDollars } from "@/lib/app/money";
-import { chargeKind, repeatsLine, SELLER_OF_RECORD } from "@/lib/app/payments";
+import { chargeKind, receiptStatusLabel, repeatsLine, SELLER_OF_RECORD } from "@/lib/app/payments";
 import { currentSession } from "@/lib/app/session";
 import { budgetGroupOf } from "@/lib/shelf/categories";
 import { ReceiptActions } from "../../components/ReceiptActions";
@@ -34,7 +34,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
       <article className="receipt">
         <div className="receipt-head">
           <div className="small" style={{ opacity: 0.85 }}>
-            {r.status === "refunded" ? "Refunded" : r.captureStatus === "COMPLETED" ? "Paid" : `Payment ${r.captureStatus.toLowerCase()}`}, {formatTime(r.createdAt)} ET
+            {receiptStatusLabel(r)}, {formatTime(r.createdAt)} ET
           </div>
           <div className="total">{formatCents(r.amountCents, r.currency)}</div>
           <div style={{ marginTop: "0.35rem", fontWeight: 700 }}>{r.title}</div>
@@ -70,9 +70,15 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           )}
         </dl>
         <div className="receipt-foot stack-sm">
-          <p>
-            <strong>Charged once.</strong> {repeatsLine(r)}
-          </p>
+          {r.status === "failed" ? (
+            <p>
+              <strong>Not charged.</strong> PayPal didn&apos;t complete this payment.
+            </p>
+          ) : (
+            <p>
+              <strong>Charged once.</strong> {repeatsLine(r)}
+            </p>
+          )}
           {r.shelfNote && <p>{r.shelfNote}</p>}
           {group && left !== undefined && (
             <p>

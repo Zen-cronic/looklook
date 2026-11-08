@@ -1,3 +1,5 @@
+import { toCents } from "../paypal/money";
+import { applyRefund, reversePayment } from "./payments";
 import type { SessionState } from "./types";
 
 /** The parts of a PayPal webhook event the app reads. */
@@ -7,6 +9,7 @@ export interface PayPalEvent {
   resource?: {
     id?: string;
     status?: string;
+    amount?: { currency_code?: string; value?: string };
     supplementary_data?: { related_ids?: { order_id?: string; capture_id?: string } };
     links?: Array<{ rel?: string; href?: string }>;
   };
@@ -45,11 +48,14 @@ export function applyPayPalEvent(state: SessionState, e: PayPalEvent, now = new 
     }
     if (e.event_type === "PAYMENT.CAPTURE.DENIED" || e.event_type === "PAYMENT.CAPTURE.DECLINED") {
       receipt.captureStatus = r.status ?? "DECLINED";
-      return `Receipt for ${receipt.title}: PayPal reports the capture ${receipt.captureStatus.toLowerCase()}.`;
+      const undone = reversePayment(state, receipt, `PayPal ${e.event_type === "PAYMENT.CAPTURE.DENIED" ? "denied" : "declined"} the payment`, now);
+      return `Receipt for ${receipt.title}: PayPal reports the capture ${receipt.captureStatus.toLowerCase()}${undone ? "; the shelf and budget changes were undone" : ""}.`;
     }
-    if (e.event_type === "PAYMENT.CAPTURE.REFUNDED") {
-      receipt.status = "refunded";
-      return `Receipt for ${receipt.title}: PayPal confirmed the refund.`;
+    if (e.event_type === "PAYMENT.CAPTURE.REFUNDED" && r.id) {
+      // The resource is the refund itself: its id, status and amount (a partial refund carries its own amount).
+      const amountCents = r.amount?.value ? toCents(r.amount.value) : undefined;
+      applyRefund(state, receipt, { refundId: r.id, status: r.status ?? "COMPLETED", amountCents }, now);
+      return `Receipt for ${receipt.title}: PayPal confirmed a refund${amountCents !== undefined ? ` of $${(amountCents / 100).toFixed(2)}` : ""}${receipt.status === "refunded" ? " (refunded in full)" : ""}.`;
     }
     return `Receipt for ${receipt.title}: ${e.event_type}.`;
   }
