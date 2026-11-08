@@ -67,7 +67,6 @@
   flex: 1;
   min-height: 0;
   border-radius: var(--radius);
-  border: var(--edge);
   overflow: hidden;
 }
 

@@ -72,8 +72,6 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
       <Link href="/" className="btn outline small" style={{ width: "fit-content" }}>
         Check another
       </Link>
-      <SimDate today={today} dayOffset={state.dayOffset} />
-      {check.input.kind === "screenshot" && isSampleWeekCheck(check.input.sample) && <SampleWeekNote />}
       <article className={`verdict ${d.verdict}`}>
         <div className="verdict-head">
           <div className="verdict-word">{VERDICT_WORD[d.verdict]}</div>
@@ -237,6 +235,10 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
           needsConfirmation={check.needsConfirmation}
         />
       </article>
+      <div className="status-strip">
+        <SimDate today={today} dayOffset={state.dayOffset} />
+        {check.input.kind === "screenshot" && isSampleWeekCheck(check.input.sample) && <SampleWeekNote />}
+      </div>
     </div>
   );
 }

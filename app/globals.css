@@ -276,6 +276,11 @@ img {
   }
 }
 
+/* The Decisions workspace is wider; the header and footer line up with it */
+body:has(.studio-page) :is(.topbar-inner, .footer) {
+  max-width: 96rem;
+}
+
 /* Type */
 h1 {
   font-family: var(--font-display);
@@ -426,7 +431,7 @@ h3 {
 .btn.danger {
   background: transparent;
   color: var(--alert-deep);
-  border-color: var(--alert);
+  border-color: var(--ink);
 }
 
 .btn.danger:hover {
@@ -577,9 +582,33 @@ select:focus-visible {
 .chip.ask { background: var(--ask); color: var(--ask-ink); }
 .chip.alert { background: var(--alert); color: var(--alert-ink); }
 .chip.sim {
-  background: transparent;
-  border: 2px dashed var(--ink);
-  color: var(--ink);
+  background: var(--ink);
+  color: var(--card);
+  font-size: 0.6875rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  padding: 0.25rem 0.6rem;
+}
+
+/* Sample and simulated-date notes: one quiet strip, never ahead of the main answer */
+.status-strip {
+  display: grid;
+  gap: 0.4rem;
+  padding: 0.75rem 0.9rem;
+  border-radius: var(--radius-sm);
+  background: var(--shade);
+  margin-top: 1.75rem;
+}
+
+.status-strip:empty {
+  display: none;
+}
+
+.status-strip .small,
+.sample-note .small,
+.simdate .small {
+  color: var(--ink-2);
+  font-size: 0.75rem;
 }
 
 /* Intake */
@@ -923,6 +952,23 @@ select:focus-visible {
   overflow-wrap: anywhere;
 }
 
+@media (max-width: 520px) {
+  .evidence {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.15rem;
+  }
+
+  .evidence dt {
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+  }
+
+  .evidence dt:not(:first-child) {
+    margin-top: 0.6rem;
+  }
+}
+
 .verdict-actions {
   padding: 1.1rem 1.4rem 1.4rem;
   display: flex;
@@ -933,6 +979,37 @@ select:focus-visible {
 .commission {
   font-size: var(--step--1);
   color: var(--muted);
+}
+
+@media (max-width: 520px) {
+  .product-row {
+    flex-wrap: wrap;
+    padding: 1rem 1.1rem;
+  }
+
+  .product-row .price-line {
+    flex-basis: 100%;
+    padding-left: 4.65rem;
+    margin-top: -0.35rem;
+  }
+
+  .verdict-head,
+  .verdict-actions {
+    padding-left: 1.1rem;
+    padding-right: 1.1rem;
+  }
+
+  .returns,
+  .why,
+  .offers,
+  .price-wait {
+    margin-left: 1.1rem;
+    margin-right: 1.1rem;
+  }
+
+  .receipt ~ .stack-sm .actions > .btn {
+    flex: 1 1 100%;
+  }
 }
 
 /* Candidates */
@@ -1060,7 +1137,7 @@ select:focus-visible {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem 1rem;
-  border: 2px dashed var(--ink);
+  border: 0;
   border-radius: var(--radius);
   padding: 0.9rem 1.1rem;
   background: var(--card);
@@ -1103,11 +1180,12 @@ select:focus-visible {
 }
 
 .approval .amount {
-  font-family: var(--font-display);
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
   font-weight: 800;
-  letter-spacing: -0.04em;
-  font-size: var(--step-3);
-  line-height: 1;
+  letter-spacing: -0.03em;
+  font-size: var(--step-2);
+  line-height: 1.1;
   white-space: nowrap;
 }
 
@@ -1540,7 +1618,7 @@ tr:last-child td {
 .offer {
   display: flex;
   justify-content: space-between;
-  align-items: baseline;
+  align-items: flex-start;
   gap: 0.75rem;
   padding: 0.55rem 0.8rem;
   border-radius: var(--radius-sm);
