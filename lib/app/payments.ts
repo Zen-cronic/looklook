@@ -109,7 +109,7 @@ export interface SourceDetails {
   imageUrl?: string;
   amountCents: number;
   productId?: string;
-  /** The idempotency key part: one charge per item per cycle. */
+  /** The approval this pays for (see approvalKey): one charge per approval. */
   key: string;
 }
 
@@ -117,17 +117,79 @@ export function stapleCycle(item: ShelfItem): string {
   return item.runOutDate ?? "none";
 }
 
+/**
+ * What a yes buys, fixed when the card was shown and never moved by the
+ * payment itself: a staple and its cycle (the run-out date on the card), a
+ * drop on a staple (the cycle when the watch started, so the drop and the
+ * run-out card for that cycle are one purchase), a watch, or a check.
+ */
+export function approvalKey(state: SessionState, source: PurchaseSource): string {
+  if (source.kind === "staple") return `staple:${source.shelfItemId}:${source.cycle}`;
+  if (source.kind === "watch") {
+    const w = state.watch.find((x) => x.id === source.watchId);
+    if (!w) throw new PaymentFlowError("That watched item is gone.");
+    return w.shelfItemId && w.cycle ? `staple:${w.shelfItemId}:${w.cycle}` : `watch:${w.id}`;
+  }
+  return `check:${source.checkId}`;
+}
+
+/** The receipt that already paid for this approval, if any (a denied capture doesn't count). */
+export function boughtFor(state: SessionState, key: string): Receipt | undefined {
+  return state.receipts.find((r) => r.approvalKey === key && r.status !== "failed");
+}
+
+/** How many earlier payments for this approval were denied: a new try needs a new request id. */
+export function failedTries(state: SessionState, key: string): number {
+  return state.receipts.filter((r) => r.approvalKey === key && r.status === "failed").length;
+}
+
+/** The version of the card the shopper saw: a staple's cycle, or when the drop arrived. */
+export function approvalVersion(state: SessionState, source: PurchaseSource): string {
+  if (source.kind === "staple") {
+    const item = state.shelf.find((i) => i.id === source.shelfItemId);
+    return item ? stapleCycle(item) : "";
+  }
+  if (source.kind === "watch") return state.watch.find((x) => x.id === source.watchId)?.droppedAt ?? "";
+  return "";
+}
+
+/**
+ * Is this card still something to say yes to? The staple's cycle is derived
+ * here, never taken from the request: it must be the item's current run-out
+ * date and inside the rebuy lead time. A drop card needs an open watch with
+ * a drop on it.
+ */
+export function checkApproval(state: SessionState, source: PurchaseSource, today: string): void {
+  if (source.kind === "staple") {
+    const item = state.shelf.find((i) => i.id === source.shelfItemId);
+    if (!item) throw new PaymentFlowError("That shelf item is gone.");
+    const cycle = stapleCycle(item);
+    if (source.cycle !== cycle || !item.runOutDate) {
+      throw new StaleApprovalError(`This rebuy card is out of date: ${item.brand} ${item.name} now runs out on ${item.runOutDate ? formatDate(item.runOutDate) : "no set date"}. Nothing was charged.`.replace(/\s+/g, " "));
+    }
+    if (daysBetween(today, item.runOutDate) > REBUY_LEAD_DAYS) {
+      throw new StaleApprovalError(`${item.brand} ${item.name} isn't due yet: it shows up for a rebuy ${REBUY_LEAD_DAYS} days before it runs out. Nothing was charged.`.replace(/\s+/g, " "));
+    }
+    return;
+  }
+  if (source.kind === "watch") {
+    const w = state.watch.find((x) => x.id === source.watchId);
+    if (!w) throw new PaymentFlowError("That watched item is gone.");
+    if (w.closedAt) throw new StaleApprovalError("You're no longer watching this item. Nothing was charged.");
+    if (!w.droppedAt) throw new StaleApprovalError("There's no price drop to approve on this item right now. Nothing was charged.");
+  }
+}
+
 export function sourceDetails(state: SessionState, source: PurchaseSource): SourceDetails {
   if (source.kind === "staple") {
     const item = state.shelf.find((i) => i.id === source.shelfItemId);
     if (!item) throw new PaymentFlowError("That shelf item is gone.");
     if (!item.price) throw new PaymentFlowError("Set a price for this item before a rebuy.");
-    return { title: `${item.brand} ${item.name}`.trim(), brand: item.brand, category: item.category, amountCents: Math.round(item.price * 100), productId: item.productId, key: `staple:${item.id}:${source.cycle}` };
+    return { title: `${item.brand} ${item.name}`.trim(), brand: item.brand, category: item.category, amountCents: Math.round(item.price * 100), productId: item.productId, key: approvalKey(state, source) };
   }
   if (source.kind === "watch") {
     const w = state.watch.find((x) => x.id === source.watchId);
     if (!w) throw new PaymentFlowError("That watched item is gone.");
-    const linked = w.shelfItemId ? state.shelf.find((i) => i.id === w.shelfItemId) : undefined;
     return {
       title: w.product.title.startsWith(w.product.brand) ? w.product.title : `${w.product.brand} ${w.product.title}`.trim(),
       brand: w.product.brand,
@@ -135,8 +197,7 @@ export function sourceDetails(state: SessionState, source: PurchaseSource): Sour
       imageUrl: w.product.imageUrl,
       amountCents: Math.round(w.currentPrice * 100),
       productId: w.product.id,
-      // A drop on a staple and its run-out date share one key: one charge per cycle.
-      key: linked ? `staple:${linked.id}:${stapleCycle(linked)}` : `watch:${w.id}`,
+      key: approvalKey(state, source),
     };
   }
   const c = state.checks.find((x) => x.id === source.checkId);
@@ -149,8 +210,13 @@ export function sourceDetails(state: SessionState, source: PurchaseSource): Sour
     imageUrl: c.product?.imageUrl,
     amountCents: Math.round(c.facts.priceShown * 100),
     productId: c.product?.id,
-    key: `check:${c.id}`,
+    key: approvalKey(state, source),
   };
+}
+
+/** What a paid receipt was for, to answer a repeat of the same yes. */
+export function receiptDetails(r: Receipt): SourceDetails {
+  return { title: r.title, brand: r.brand, category: r.category, amountCents: r.amountCents, productId: r.productId, key: r.approvalKey ?? r.requestId };
 }
 
 export class PaymentFlowError extends Error {
@@ -160,13 +226,23 @@ export class PaymentFlowError extends Error {
   }
 }
 
+/** The card the shopper tapped no longer matches what is due (answered 409). */
+export class StaleApprovalError extends PaymentFlowError {
+  constructor(message: string) {
+    super(message);
+    this.name = "StaleApprovalError";
+  }
+}
+
 /**
- * PayPal-Request-Id for a charge on a saved method. Same shopper, same item
- * and cycle, same method: same id, so a double tap or a drop event plus a
- * run-out date charge once. A simulated decline gets its own id.
+ * PayPal-Request-Id for a charge on a saved method: the shopper, the approval
+ * (item and cycle, watch or check), the amount on the card and the method.
+ * None of these change when the payment goes through, so the same yes sent
+ * again gets the same order back. A simulated decline, or a new try after a
+ * denied capture, gets its own id.
  */
-export function savedMethodRequestId(sessionId: string, key: string, vaultId: string, simulated: boolean): string {
-  return buildRequestId("rebuy", sessionId, key, vaultId, simulated ? "sim" : "live");
+export function savedMethodRequestId(sessionId: string, key: string, amountCents: number, vaultId: string, simulated: boolean, retry = 0): string {
+  return buildRequestId("rebuy", sessionId, key, amountCents, vaultId, simulated ? "sim" : "live", ...(retry ? [`try${retry + 1}`] : []));
 }
 
 // Staples coming due
@@ -212,10 +288,22 @@ function restock(item: ShelfItem, today: string, amount: number, now: Date): str
   return `Restocked: next run-out ${formatDate(next)}${counted}.`;
 }
 
+/** Close the open watches on a shelf item once its cycle is bought, so a later drop card can't buy it again. */
+function closeWatchesOn(state: SessionState, itemId: string, receiptId: string, at: string): void {
+  for (const w of state.watch) {
+    if (w.closedAt || w.shelfItemId !== itemId) continue;
+    w.closedAt = at;
+    w.closedBy = receiptId;
+    w.droppedAt = undefined;
+  }
+}
+
 /**
  * Apply a completed payment once. A repeat of the same request (a double tap,
  * a retried call) only counts the attempt and checks PayPal named the same
- * order; the shelf and budget are not touched again.
+ * order; the shelf and budget are not touched again. The receipt is written
+ * from PayPal's answer first; if a shelf or budget update fails after that,
+ * the receipt stays and says so.
  */
 export function recordPaid(state: SessionState, source: PurchaseSource, details: SourceDetails, paid: PaidResult, today: string, now = new Date()): { receipt: Receipt; repeat: boolean } {
   const existing = state.receipts.find((r) => r.requestId === paid.requestId);
@@ -226,55 +314,18 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
     existing.sameOrderEveryTime = existing.sameOrderEveryTime && existing.orderId === paid.outcome.orderId;
     return { receipt: existing, repeat: true };
   }
-  const amount = (paid.outcome.amountCents ?? details.amountCents) / 100;
-  let shelfNote = "";
-  if (source.kind === "staple") {
-    const item = state.shelf.find((i) => i.id === source.shelfItemId);
-    shelfNote = item ? restock(item, today, amount, now) : "";
-  } else {
-    const w = source.kind === "watch" ? state.watch.find((x) => x.id === source.watchId) : undefined;
-    const linked = w?.shelfItemId ? state.shelf.find((i) => i.id === w.shelfItemId) : undefined;
-    if (linked) shelfNote = restock(linked, today, amount, now);
-    else if (details.category) {
-      const fromCheck = source.kind === "check" ? state.checks.find((c) => c.id === source.checkId) : w?.checkId ? state.checks.find((c) => c.id === w.checkId) : undefined;
-      const added = validateShelfItem({
-        id: newId("sh"),
-        brand: details.brand,
-        name: (fromCheck?.facts.name || details.title.replace(details.brand, "")).trim() || details.title,
-        category: details.category,
-        attributes: fromCheck?.facts.attributes ?? {},
-        opened: false,
-        runOutDate: null,
-        source: "app-order",
-        addedOn: today,
-        price: amount,
-        productId: details.productId,
-        store: fromCheck?.store,
-      });
-      state.shelf.push(added);
-      shelfNote = "Added to your shelf, unopened.";
-    }
-    if (w) w.closedAt = now.toISOString();
-  }
-  let budgetNote: string | undefined;
-  if (details.category) {
-    const group = budgetGroupOf(details.category);
-    recordSpend(state.budgets, today, group, amount);
-    const limit = state.budgets.limits[group];
-    if (limit !== undefined) {
-      const spent = state.budgets.spent[today.slice(0, 7)]?.[group] ?? 0;
-      budgetNote = `${formatCents(Math.round(Math.max(0, limit - spent) * 100))} left in ${group} this month.`;
-    }
-  }
+  const at = now.toISOString();
   const receipt: Receipt = {
     id: newId("rc"),
     kind: paid.kind,
     source,
-    createdAt: now.toISOString(),
+    createdAt: at,
     on: today,
     title: details.title,
     brand: details.brand,
     category: details.category,
+    productId: details.productId,
+    approvalKey: details.key,
     amountCents: paid.outcome.amountCents ?? details.amountCents,
     currency: paid.outcome.currency ?? "USD",
     methodLabel: paid.methodLabel,
@@ -285,11 +336,30 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
     requestId: paid.requestId,
     attempts: 1,
     sameOrderEveryTime: true,
-    shelfNote,
-    budgetNote,
+    shelfNote: "",
     status: paid.outcome.captureStatus === "COMPLETED" ? "completed" : "pending",
   };
   state.receipts.push(receipt);
+  const amount = receipt.amountCents / 100;
+  try {
+    applyToShelf(state, source, details, receipt, today, amount, now);
+  } catch {
+    receipt.shelfNote = "Paid. The shelf couldn't be updated for this item; add it on the Shelf page.";
+  }
+  try {
+    if (details.category) {
+      const group = budgetGroupOf(details.category);
+      recordSpend(state.budgets, today, group, amount);
+      receipt.spent = amount;
+      const limit = state.budgets.limits[group];
+      if (limit !== undefined) {
+        const spent = state.budgets.spent[today.slice(0, 7)]?.[group] ?? 0;
+        receipt.budgetNote = `${formatCents(Math.round(Math.max(0, limit - spent) * 100))} left in ${group} this month.`;
+      }
+    }
+  } catch {
+    receipt.budgetNote = undefined;
+  }
   if (source.kind === "check") {
     const c = state.checks.find((x) => x.id === source.checkId);
     if (c) c.purchasedReceiptId = receipt.id;
@@ -297,7 +367,7 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
   for (const d of state.declines) if (!d.resolvedByReceiptId && sameSource(d.source, source)) d.resolvedByReceiptId = receipt.id;
   state.notices.push({
     id: newId("nt"),
-    at: now.toISOString(),
+    at,
     text: `Charged ${formatCents(receipt.amountCents, receipt.currency)} to ${receipt.methodLabel} for ${receipt.title}.`,
     receiptId: receipt.id,
     ids: [
@@ -306,6 +376,48 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
     ],
   });
   return { receipt, repeat: false };
+}
+
+function applyToShelf(state: SessionState, source: PurchaseSource, details: SourceDetails, receipt: Receipt, today: string, amount: number, now: Date): void {
+  const at = now.toISOString();
+  const restockItem = (item: ShelfItem) => {
+    const before = { runOutDate: item.runOutDate, lastRestockedOn: item.lastRestockedOn, price: item.price };
+    receipt.shelfNote = restock(item, today, amount, now);
+    receipt.shelfChange = { kind: "restock", itemId: item.id, before, after: item.runOutDate! };
+    closeWatchesOn(state, item.id, receipt.id, at);
+  };
+  if (source.kind === "staple") {
+    const item = state.shelf.find((i) => i.id === source.shelfItemId);
+    if (item) restockItem(item);
+    return;
+  }
+  const w = source.kind === "watch" ? state.watch.find((x) => x.id === source.watchId) : undefined;
+  if (w) {
+    w.closedAt = at;
+    w.closedBy = receipt.id;
+    w.droppedAt = undefined;
+  }
+  const linked = w?.shelfItemId ? state.shelf.find((i) => i.id === w.shelfItemId) : undefined;
+  if (linked) return restockItem(linked);
+  if (!details.category) return;
+  const fromCheck = source.kind === "check" ? state.checks.find((c) => c.id === source.checkId) : w?.checkId ? state.checks.find((c) => c.id === w.checkId) : undefined;
+  const added = validateShelfItem({
+    id: newId("sh"),
+    brand: details.brand,
+    name: (fromCheck?.facts.name || details.title.replace(details.brand, "")).trim() || details.title,
+    category: details.category,
+    attributes: fromCheck?.facts.attributes ?? {},
+    opened: false,
+    runOutDate: null,
+    source: "app-order",
+    addedOn: today,
+    price: amount,
+    productId: details.productId,
+    store: fromCheck?.store,
+  });
+  state.shelf.push(added);
+  receipt.shelfChange = { kind: "added", itemId: added.id };
+  receipt.shelfNote = "Added to your shelf, unopened.";
 }
 
 export function sameSource(a: PurchaseSource, b: PurchaseSource): boolean {
@@ -403,4 +515,18 @@ export function repeatsLine(r: Pick<Receipt, "attempts" | "sameOrderEveryTime" |
   if (resent) parts.push(`${resent} later ${resent === 1 ? "repeat was" : "repeats were"} sent with the same PayPal-Request-Id, and PayPal returned this same order`);
   if (!parts.length) parts.push("every repeat used the same PayPal-Request-Id and named this same order");
   return `You said yes ${r.attempts} times: ${parts.join("; ")}. One charge.`;
+}
+
+/** Record a captured PayPal checkout (first purchase or a re-approval) for its intent. */
+export function recordCheckoutCapture(state: SessionState, intent: PurchaseIntent, outcome: CaptureOutcome, requestId: string, today: string, now = new Date()) {
+  const order = intent.order!;
+  const method = order.save ? recordSavedMethod(state, outcome, { funding: order.funding, capCents: order.capCents, currency: intent.currency, replacesMethodId: intent.replacesMethodId }, now) : undefined;
+  // Built from the intent alone: the money has moved, so nothing here may depend on the item still being there.
+  const details: SourceDetails = { title: intent.title, brand: intent.brand, category: intent.category, imageUrl: intent.imageUrl, productId: intent.productId, amountCents: intent.amountCents, key: intent.approvalKey ?? `intent:${intent.id}` };
+  const label = method?.label ?? (outcome.payer?.type === "card" ? `Card ending ${outcome.payer.lastDigits ?? ""}`.trim() : "PayPal");
+  const { receipt } = recordPaid(state, intent.source, details, { outcome, requestId, kind: "first-purchase", methodLabel: label, methodId: method?.id }, today, now);
+  receipt.savedMethodId = method?.id;
+  const i = state.intents.find((x) => x.id === intent.id);
+  if (i) i.receiptId = receipt.id;
+  return { receipt, method, vaultStatus: outcome.vault?.status };
 }

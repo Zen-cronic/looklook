@@ -28,3 +28,29 @@ export function isInflight(key: string): boolean {
 export function inflightCount(): number {
   return inflight.size;
 }
+
+/**
+ * One approval (an item's cycle, a watch, a check) is paid by one request at
+ * a time. A second yes with the same request id joins the first; a yes for
+ * the same approval with a different request (a drop card and the run-out
+ * card for the same cycle) is refused until the first is recorded.
+ * In-process, like singleFlight.
+ */
+const approvals = new Map<string, { requestId: string; holders: number }>();
+
+export class ApprovalBusyError extends Error {}
+
+export function claimApproval(key: string, requestId: string): () => void {
+  const held = approvals.get(key);
+  if (held && held.requestId !== requestId) throw new ApprovalBusyError(key);
+  const entry = held ?? { requestId, holders: 0 };
+  entry.holders += 1;
+  approvals.set(key, entry);
+  let released = false;
+  return () => {
+    if (released) return;
+    released = true;
+    entry.holders -= 1;
+    if (entry.holders <= 0 && approvals.get(key) === entry) approvals.delete(key);
+  };
+}

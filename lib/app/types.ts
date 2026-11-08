@@ -92,10 +92,16 @@ export interface WatchItem {
   shelfItemId?: string;
   subscription: { status: "active"; id: string } | { status: "unavailable"; reason: string } | { status: "cancelled"; id: string };
   createdAt: string;
-  /** Set when a price event brought the price to the target or lower. */
+  /** The linked staple's run-out date when the watch started: a drop buys that cycle. */
+  cycle?: string;
+  /** Set when a price event brought the price to the target or lower; cleared when it rises again or the drop is bought. */
   droppedAt?: string;
   lastEventId?: string;
+  /** Time of the newest price event applied (events older than this are ignored). */
+  lastEventAt?: string;
   closedAt?: string;
+  /** The receipt that ended this watch (its own purchase, or the staple's rebuy). */
+  closedBy?: string;
 }
 
 export type PurchaseSource =
@@ -114,6 +120,9 @@ export interface PurchaseIntent {
   imageUrl?: string;
   amountCents: number;
   currency: string;
+  productId?: string;
+  /** What this purchase buys, for one charge per approval (see approvalKey). */
+  approvalKey?: string;
   /** Re-approval after a decline replaces this saved method. */
   replacesMethodId?: string;
   /** Filled while PayPal checkout runs. */
@@ -121,7 +130,17 @@ export interface PurchaseIntent {
   receiptId?: string;
 }
 
-export type ReceiptStatus = "completed" | "pending" | "refunded";
+export type ReceiptStatus = "completed" | "pending" | "refunded" | "partly-refunded" | "failed";
+
+/** One refund on a capture, from the app or from PayPal's webhook. */
+export interface RefundRecord {
+  id: string;
+  status: string;
+  amountCents: number;
+  at: string;
+  /** The amount went back into the month's budget (once per refund). */
+  credited?: boolean;
+}
 
 /** A completed payment: the shopper's record of it. */
 export interface Receipt {
@@ -134,6 +153,9 @@ export interface Receipt {
   title: string;
   brand: string;
   category?: Category;
+  productId?: string;
+  /** What was bought: item and cycle, watch or check. A second yes for the same approval never charges again. */
+  approvalKey?: string;
   amountCents: number;
   currency: string;
   methodLabel: string;
@@ -153,7 +175,15 @@ export interface Receipt {
   budgetNote?: string;
   savedMethodId?: string;
   webhook?: { eventId: string; type: string; at: string };
+  /** The latest refund, as shown on the receipt. */
   refund?: { id: string; status: string; amountCents?: number; at?: string };
+  refunds?: RefundRecord[];
+  /** What the payment changed on the shelf, so a denied capture can be undone. */
+  shelfChange?: { kind: "restock"; itemId: string; before: { runOutDate: string | null; lastRestockedOn?: string; price?: number }; after: string } | { kind: "added"; itemId: string };
+  /** Budget spend recorded for this payment (dollars, month of `on`). */
+  spent?: number;
+  /** Set when a denied capture's shelf and budget changes were undone. */
+  reversedAt?: string;
   status: ReceiptStatus;
 }
 

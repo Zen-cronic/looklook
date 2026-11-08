@@ -26,7 +26,7 @@ export async function POST(_request: Request, ctx: RouteContext<"/api/check/[id]
     } catch (e) {
       subscription = { status: "unavailable", reason: e instanceof Error ? e.message.slice(0, 160) : "subscription failed" };
     }
-    const watch = newWatch(check, subscription);
+    const watch = newWatch(check, subscription, new Date(), state.shelf);
     await updateSession(sid, (s) => {
       s.watch.push(watch);
       const c = s.checks.find((x) => x.id === id);

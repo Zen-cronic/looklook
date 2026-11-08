@@ -1,6 +1,7 @@
 import type { Channel3Event } from "../channel3/webhooks";
 import { currentPrice } from "../channel3/webhooks";
 import { formatDollars } from "./money";
+import type { ShelfItem } from "../shelf/types";
 import type { CheckRecord, SessionState, WatchItem } from "./types";
 
 /** A target from the verdict's price band, else 10% under the price seen. */
@@ -11,10 +12,13 @@ export function targetFor(check: CheckRecord): number {
   return Math.round(shown * 0.9 * 100) / 100;
 }
 
-export function newWatch(check: CheckRecord, subscription: WatchItem["subscription"], now = new Date()): WatchItem {
+export function newWatch(check: CheckRecord, subscription: WatchItem["subscription"], now = new Date(), shelf: ShelfItem[] = []): WatchItem {
   if (!check.product) throw new Error("Confirm the product before watching it.");
   const start = check.facts.priceShown ?? check.product.offerPrice ?? 0;
   const sameShelf = check.decision.evidence.shelf?.relation === "same-product" ? check.decision.evidence.shelf.itemId : undefined;
+  const shelfItemId = sameShelf ?? check.decision.evidence.replaces?.itemId;
+  // A drop on a staple buys the cycle that was current when the watch started.
+  const linked = shelfItemId ? shelf.find((i) => i.id === shelfItemId) : undefined;
   return {
     id: `wt_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`,
     checkId: check.id,
@@ -23,7 +27,8 @@ export function newWatch(check: CheckRecord, subscription: WatchItem["subscripti
     startPrice: start,
     targetPrice: targetFor(check),
     currentPrice: start,
-    shelfItemId: sameShelf ?? check.decision.evidence.replaces?.itemId,
+    shelfItemId,
+    ...(linked ? { cycle: linked.runOutDate ?? "none" } : {}),
     subscription,
     createdAt: now.toISOString(),
   };

@@ -239,8 +239,8 @@ export default function Workspace({ initial, narrow }: Props) {
   }, [router]);
 
   const approve = useCallback<WorkspaceContext["approve"]>(
-    async ({ source }) => {
-      const res = await fetch("/api/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ source }) });
+    async ({ source, amount }) => {
+      const res = await fetch("/api/pay", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ source, approved: { amountCents: Math.round(amount * 100) } }) });
       const data = (await res.json().catch(() => ({}))) as { receiptId?: string; orderId?: string; captureStatus?: string; repeat?: boolean; error?: string; overCap?: boolean; needsCheckout?: boolean; declined?: boolean };
       if (res.ok && data.receiptId) {
         const receipts = await refresh();

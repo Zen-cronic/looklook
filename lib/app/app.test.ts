@@ -109,13 +109,16 @@ describe("rebuys", () => {
     expect(due[0].daysLeft).toBeLessThanOrEqual(due[1].daysLeft);
   });
 
-  it("builds one short request id per shopper, item and cycle, and method", () => {
-    const a = savedMethodRequestId("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", "78a0603885761893t", false);
-    expect(a).toBe(savedMethodRequestId("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", "78a0603885761893t", false));
+  it("builds one short request id per shopper, approval, amount and method", () => {
+    const id = (sid: string, key: string, cents: number, vault: string, sim: boolean) => savedMethodRequestId(sid, key, cents, vault, sim);
+    const a = id("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", 990, "78a0603885761893t", false);
+    expect(a).toBe(id("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", 990, "78a0603885761893t", false));
     expect(a.length).toBeLessThanOrEqual(64);
-    expect(a).not.toBe(savedMethodRequestId("sessionbbbbbbbbbbbbbbbbb", "staple:sh-ha:2026-11-14", "78a0603885761893t", false));
-    expect(a).not.toBe(savedMethodRequestId("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", "othervault", false));
-    expect(a).not.toBe(savedMethodRequestId("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", "78a0603885761893t", true));
+    expect(a).not.toBe(id("sessionbbbbbbbbbbbbbbbbb", "staple:sh-ha:2026-11-14", 990, "78a0603885761893t", false));
+    expect(a).not.toBe(id("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", 990, "othervault", false));
+    expect(a).not.toBe(id("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", 990, "78a0603885761893t", true));
+    expect(a).not.toBe(id("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", 850, "78a0603885761893t", false));
+    expect(a).not.toBe(savedMethodRequestId("sessionaaaaaaaaaaaaaaaaa", "staple:sh-ha:2026-11-14", 990, "78a0603885761893t", false, 1));
   });
 
   it("applies a payment once; a repeat only counts the attempt", () => {
@@ -143,8 +146,14 @@ describe("rebuys", () => {
   it("gives a price drop on a staple the same key as its run-out rebuy", () => {
     const s = fresh();
     const staple = s.shelf.find((i) => i.id === "sh-ha")!;
-    s.watch.push({ id: "wt_1", product: { id: "P", title: "HA serum", brand: "The Ordinary" }, startPrice: 9.9, targetPrice: 9, currentPrice: 8.9, shelfItemId: "sh-ha", subscription: { status: "active", id: "sub1" }, createdAt: "" });
-    expect(sourceDetails(s, { kind: "watch", watchId: "wt_1" }).key).toBe(sourceDetails(s, { kind: "staple", shelfItemId: "sh-ha", cycle: staple.runOutDate! }).key);
+    s.watch.push({ id: "wt_1", product: { id: "P", title: "HA serum", brand: "The Ordinary" }, startPrice: 9.9, targetPrice: 9, currentPrice: 8.9, shelfItemId: "sh-ha", cycle: staple.runOutDate!, subscription: { status: "active", id: "sub1" }, createdAt: "" });
+    const key = sourceDetails(s, { kind: "watch", watchId: "wt_1" }).key;
+    expect(key).toBe(sourceDetails(s, { kind: "staple", shelfItemId: "sh-ha", cycle: staple.runOutDate! }).key);
+    // The rebuy moves the run-out date; the drop keeps the cycle it was approved for.
+    recordPaid(s, { kind: "staple", shelfItemId: "sh-ha", cycle: staple.runOutDate! }, sourceDetails(s, { kind: "staple", shelfItemId: "sh-ha", cycle: staple.runOutDate! }), paid("O3"), TODAY);
+    expect(staple.runOutDate).not.toBe(key.split(":")[2]);
+    expect(sourceDetails(s, { kind: "watch", watchId: "wt_1" }).key).toBe(key);
+    expect(s.watch[0].closedAt).toBeDefined();
   });
 
   it("records one open decline per item and method", () => {

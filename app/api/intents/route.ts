@@ -1,28 +1,27 @@
+import { appToday } from "@/lib/app/dates";
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
-import { openDecline, PaymentFlowError, sameSource, sourceDetails } from "@/lib/app/payments";
+import { formatCents } from "@/lib/app/money";
+import { parseApproved, resolveApproval } from "@/lib/app/pay";
+import { openDecline, sameSource } from "@/lib/app/payments";
 import { updateSession } from "@/lib/app/store";
 import { parseSource } from "@/lib/app/sources";
-import { budgetHoldFor } from "@/lib/app/reminders";
 import type { PurchaseIntent } from "@/lib/app/types";
 
-
-/** Start a purchase: fixes the item and the amount before PayPal is involved. */
+/**
+ * Start a purchase: fixes the item and the amount before PayPal is involved.
+ * The same checks as a saved-method yes apply: an approval already bought is
+ * refused, and a card whose price changed asks again.
+ */
 export async function POST(request: Request) {
   return handle(async () => {
     const sid = await sessionIdOrThrow();
-    const body = await readJsonBody<{ source?: unknown }>(request);
+    const body = await readJsonBody<{ source?: unknown; approved?: unknown }>(request);
     const source = parseSource(body.source);
+    const approved = parseApproved(body.approved);
     const intent = await updateSession(sid, (s) => {
-      const hold = budgetHoldFor(s, source);
-      if (hold) throw new HttpError(409, hold, { overBudget: true });
-      let details;
-      try {
-        details = sourceDetails(s, source);
-      } catch (e) {
-        if (e instanceof PaymentFlowError) throw new HttpError(400, e.message);
-        throw e;
-      }
-      const open = s.intents.find((i) => !i.receiptId && sameSource(i.source, source) && i.amountCents === details.amountCents);
+      const { key, bought, details } = resolveApproval(s, source, approved, appToday(s.dayOffset), { requireAmount: false });
+      if (bought) throw new HttpError(409, `Already bought: ${bought.title}, ${formatCents(bought.amountCents, bought.currency)} with ${bought.methodLabel}. Nothing more was charged.`, { alreadyBought: true, receiptId: bought.id });
+      const open = s.intents.find((i) => !i.receiptId && sameSource(i.source, source) && i.amountCents === details.amountCents && i.approvalKey === key);
       if (open) return open;
       const decline = openDecline(s, source);
       const created: PurchaseIntent = {
@@ -33,6 +32,8 @@ export async function POST(request: Request) {
         brand: details.brand,
         category: details.category,
         imageUrl: details.imageUrl,
+        productId: details.productId,
+        approvalKey: key,
         amountCents: details.amountCents,
         currency: "USD",
         ...(decline ? { replacesMethodId: decline.methodId } : {}),

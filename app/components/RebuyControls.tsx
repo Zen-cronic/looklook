@@ -37,22 +37,25 @@ export function DeclineToggle({ on }: { on: boolean }) {
 
 interface ApprovalProps {
   source: PurchaseSource;
+  /** What the card shows: the amount charged, and the card's version (a staple's cycle, or when the drop arrived). */
+  amountCents: number;
+  version: string;
   amountLabel: string;
   method: { label: string; withinCap: boolean; capLabel: string } | null;
   declined: { methodLabel: string; issue: string; simulated: boolean } | null;
   verb: string;
 }
 
-export function ApprovalButtons({ source, amountLabel, method, declined, verb }: ApprovalProps) {
+export function ApprovalButtons({ source, amountCents, version, amountLabel, method, declined, verb }: ApprovalProps) {
   const { call, busy, error, router } = useApi();
 
   async function checkout() {
-    const r = await call<{ id: string }>("checkout", "/api/intents", "POST", { source }, { refresh: false });
+    const r = await call<{ id: string }>("checkout", "/api/intents", "POST", { source, approved: { amountCents, version } }, { refresh: false });
     if (r) router.push(`/checkout/${r.id}`);
   }
 
   async function yes() {
-    const r = await call<{ receiptId: string }>("yes", "/api/pay", "POST", { source });
+    const r = await call<{ receiptId: string }>("yes", "/api/pay", "POST", { source, approved: { amountCents, version } });
     if (r) router.push(`/receipts/${r.receiptId}`);
   }
 
@@ -66,7 +69,17 @@ export function ApprovalButtons({ source, amountLabel, method, declined, verb }:
           </p>
         </div>
       )}
-      {error && !error.declined && <p className="error">{error.error}</p>}
+      {error && !error.declined && (
+        <p className="error">
+          {error.error}
+          {error.alreadyBought && typeof error.receiptId === "string" ? (
+            <>
+              {" "}
+              <a href={`/receipts/${error.receiptId}`}>See the receipt</a>
+            </>
+          ) : null}
+        </p>
+      )}
       <div className="actions">
         {declined ? (
           <button className="btn" disabled={!!busy} onClick={checkout}>
@@ -123,7 +136,7 @@ export function ResetButton() {
       className="btn outline"
       disabled={!!busy}
       onClick={() => {
-        if (window.confirm("Start over with the sample shelf? Your checks, saved methods and receipts in this browser are cleared.")) void call("reset", "/api/demo", "POST", { action: "reset" });
+        if (window.confirm("Start over with the sample shelf? Your checks and receipts in this browser are cleared, and saved payment methods are deleted at PayPal.")) void call("reset", "/api/demo", "POST", { action: "reset" });
       }}
     >
       {busy ? "Starting over…" : "Start over"}

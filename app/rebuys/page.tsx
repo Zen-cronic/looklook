@@ -136,7 +136,7 @@ async function Rebuys() {
                 </div>
                 <div className="amount">{formatCents(d.amountCents)}</div>
               </div>
-              <ApprovalButtons source={source} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="rebuy" />
+              <ApprovalButtons source={source} amountCents={d.amountCents} version={d.cycle} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="rebuy" />
             </article>
           );
         })}
@@ -162,7 +162,7 @@ async function Rebuys() {
                   Still over budget: {formatDollars(hold.remaining)} left in {BUDGET_LABELS[hold.group].toLowerCase()} this month. We&apos;ll ask again when it starts over on {countedDay(hold.restartsOn)}.
                 </p>
               ) : (
-                <ApprovalButtons source={source} amountLabel={formatCents(cents)} method={methodFor(method, cents)} declined={declined} verb="buy" />
+                <ApprovalButtons source={source} amountCents={cents} version={w.droppedAt ?? ""} amountLabel={formatCents(cents)} method={methodFor(method, cents)} declined={declined} verb="buy" />
               )}
             </article>
           );

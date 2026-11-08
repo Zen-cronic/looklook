@@ -7,11 +7,12 @@ import { useApi } from "./useApi";
 interface Props {
   receiptId: string;
   source: PurchaseSource;
+  amountCents: number;
   canRepeat: boolean;
   canRefund: boolean;
 }
 
-export function ReceiptActions({ receiptId, source, canRepeat, canRefund }: Props) {
+export function ReceiptActions({ receiptId, source, amountCents, canRepeat, canRefund }: Props) {
   const { call, busy, error } = useApi();
   return (
     <div className="stack-sm">
@@ -21,7 +22,7 @@ export function ReceiptActions({ receiptId, source, canRepeat, canRefund }: Prop
           Back to rebuys
         </Link>
         {canRepeat && (
-          <button className="btn outline" disabled={!!busy} onClick={() => call("repeat", "/api/pay", "POST", { source })}>
+          <button className="btn outline" disabled={!!busy} onClick={() => call("repeat", "/api/pay", "POST", { source, approved: { amountCents } })}>
             {busy === "repeat" ? "Sending…" : "Send the same yes again"}
           </button>
         )}

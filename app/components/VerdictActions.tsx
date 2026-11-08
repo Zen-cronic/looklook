@@ -30,12 +30,12 @@ export function VerdictActions(p: Props) {
   const [price, setPrice] = useState("");
 
   async function startCheckout() {
-    const r = await call<{ id: string }>("checkout", "/api/intents", "POST", { source: { kind: "check", checkId: p.checkId } }, { refresh: false });
+    const r = await call<{ id: string }>("checkout", "/api/intents", "POST", { source: { kind: "check", checkId: p.checkId }, ...(p.price !== null ? { approved: { amountCents: Math.round(p.price * 100) } } : {}) }, { refresh: false });
     if (r) router.push(`/checkout/${r.id}`);
   }
 
   async function paySaved() {
-    const r = await call<{ receiptId: string }>("pay", "/api/pay", "POST", { source: { kind: "check", checkId: p.checkId } }, { refresh: false });
+    const r = await call<{ receiptId: string }>("pay", "/api/pay", "POST", { source: { kind: "check", checkId: p.checkId }, approved: { amountCents: Math.round((p.price ?? 0) * 100) } }, { refresh: false });
     if (r) router.push(`/receipts/${r.receiptId}`);
   }
 

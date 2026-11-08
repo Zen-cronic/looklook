@@ -1,6 +1,6 @@
 import { appToday } from "@/lib/app/dates";
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
-import { recordPaid, recordSavedMethod, sourceDetails } from "@/lib/app/payments";
+import { recordCheckoutCapture } from "@/lib/app/payments";
 import { singleFlight } from "@/lib/app/single-flight";
 import { indexAdd, loadSession, updateSession } from "@/lib/app/store";
 import { buildRequestId, captureOrder, getPayPalClient, InstrumentDeclinedError, isPaid } from "@/lib/paypal";
@@ -32,17 +32,7 @@ export async function POST(request: Request) {
       throw new HttpError(402, `The payment was ${outcome.captureStatus.toLowerCase()}. Nothing was charged. Try another card or PayPal.`, { captureStatus: outcome.captureStatus, orderId });
     }
     const order = intent.order;
-    const result = await updateSession(sid, (s) => {
-      const today = appToday(s.dayOffset);
-      const method = order.save ? recordSavedMethod(s, outcome, { funding: order.funding, capCents: order.capCents, currency: intent.currency, replacesMethodId: intent.replacesMethodId }) : undefined;
-      const details = { ...sourceDetails(s, intent.source), amountCents: intent.amountCents };
-      const label = method?.label ?? (outcome.payer?.type === "card" ? `Card ending ${outcome.payer.lastDigits ?? ""}`.trim() : "PayPal");
-      const { receipt } = recordPaid(s, intent.source, details, { outcome, requestId, kind: "first-purchase", methodLabel: label, methodId: method?.id }, today);
-      receipt.savedMethodId = method?.id;
-      const i = s.intents.find((x) => x.id === intent.id);
-      if (i) i.receiptId = receipt.id;
-      return { receipt, method, vaultStatus: outcome.vault?.status };
-    });
+    const result = await updateSession(sid, (s) => recordCheckoutCapture(s, { ...intent, order }, outcome, requestId, appToday(s.dayOffset)));
     if (outcome.captureId) await indexAdd("capture", outcome.captureId, sid);
     if (result.method) await indexAdd("token", result.method.vaultId, sid);
     return Response.json({ receiptId: result.receipt.id, savedMethod: result.method?.label ?? null, vaultStatus: result.vaultStatus ?? null, saveRequested: order.save });

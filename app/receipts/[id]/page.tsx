@@ -88,7 +88,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <p className="muted small">{r.webhook ? `PayPal confirmed it by webhook (${r.webhook.type}) at ${formatTime(r.webhook.at)} ET.` : "PayPal's webhook for this payment hasn't arrived here yet."}</p>
         </div>
       </article>
-      <ReceiptActions receiptId={r.id} source={r.source} canRepeat={r.kind === "saved-method" && r.status !== "refunded"} canRefund={!!r.captureId && r.status === "completed"} />
+      <ReceiptActions receiptId={r.id} source={r.source} amountCents={r.amountCents} canRepeat={r.kind === "saved-method" && (r.status === "completed" || r.status === "pending")} canRefund={!!r.captureId && (r.status === "completed" || r.status === "partly-refunded") && r.refund?.status !== "PENDING"} />
     </div>
   );
 }
