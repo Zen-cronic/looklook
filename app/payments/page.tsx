@@ -42,7 +42,7 @@ async function Methods() {
                 Saved {formatTime(m.consentedAt)} ET. {m.status === "removed" ? `Removed ${formatTime(m.removedAt!)} ET; no rebuy can use it. ${m.revokeConfirmed ? "PayPal confirmed it no longer has it." : "Removal pending at PayPal: the delete isn't confirmed yet."}` : `Up to ${formatCents(m.capCents, m.currency)} per rebuy.`}
               </p>
             </div>
-            <span className={`chip ${m.status === "removed" ? "" : m.declinedAt ? "skip" : "buy"}`}>{m.status === "removed" ? "Removed" : m.declinedAt ? "Declined last time" : "Active"}</span>
+            <span className={`chip ${m.status === "removed" ? "" : m.declinedAt ? "alert" : "buy"}`}>{m.status === "removed" ? "Removed" : m.declinedAt ? "Declined last time" : "Active"}</span>
           </div>
           <details className="why" style={{ margin: 0 }}>
             <summary>What you agreed to</summary>

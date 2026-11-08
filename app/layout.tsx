@@ -1,13 +1,15 @@
 import type { Metadata, Viewport } from "next";
-import { Schibsted_Grotesk, Spline_Sans_Mono } from "next/font/google";
+import { Albert_Sans, Martian_Mono, Unbounded } from "next/font/google";
 import Link from "next/link";
-import { Suspense } from "react";
+import { Suspense, ViewTransition } from "react";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { NavLinks } from "./components/NavLinks";
+import { MOTION_SCRIPT, stillAtBuild } from "./components/motion";
 import "./globals.css";
 
-const ui = Schibsted_Grotesk({ subsets: ["latin"], variable: "--font-ui", display: "swap" });
-const mono = Spline_Sans_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap", weight: ["400", "500", "600", "700"] });
+const display = Unbounded({ subsets: ["latin"], variable: "--font-display", display: "swap" });
+const ui = Albert_Sans({ subsets: ["latin"], variable: "--font-ui", display: "swap" });
+const mono = Martian_Mono({ subsets: ["latin"], variable: "--font-mono", display: "swap", axes: ["wdth"] });
 
 export const metadata: Metadata = {
   title: { default: `${APP_NAME}: ${APP_TAGLINE}`, template: `%s | ${APP_NAME}` },
@@ -17,12 +19,15 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
-  themeColor: "#f3f1ec",
+  themeColor: "#f4f4f2",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en" className={`${ui.variable} ${mono.variable}`}>
+    <html lang="en" className={`${display.variable} ${ui.variable} ${mono.variable}`} data-still={stillAtBuild() ? "" : undefined} suppressHydrationWarning>
+      <head>
+        <script dangerouslySetInnerHTML={{ __html: MOTION_SCRIPT }} />
+      </head>
       <body>
         <header className="topbar">
           <div className="topbar-inner">
@@ -35,7 +40,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </Suspense>
           </div>
         </header>
-        {children}
+        <ViewTransition default="page-swap">{children}</ViewTransition>
         <footer className="footer">
           <Link href="/judge">Start here</Link>
           <Link href="/proof">How often skip is right</Link>

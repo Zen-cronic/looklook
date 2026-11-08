@@ -30,9 +30,9 @@ export default function JudgePage() {
         </p>
       </div>
 
-      <section className="card stack-sm" data-testid="headline">
+      <section className="card signature stack-sm" data-testid="headline">
         <h2>The number</h2>
-        <p>{heldOutHeadline(heldOut)}</p>
+        <p className="headline-text">{heldOutHeadline(heldOut)}</p>
         <p className="small muted">
           Precision {pct(heldOut.precision)}, recall {pct(heldOut.recall)}. {heldOut.split.onEvidence} of the {heldOut.skipsRight} right skips rest on evidence; {heldOut.split.onDefault} on our default for a store whose opened-return policy we couldn&apos;t find. Expected answers committed in{" "}
           <span className="mono">{heldOut.order.expectations.commit.slice(0, 7)}</span> after the engine&apos;s last change (<span className="mono">{heldOut.order.engine.commit.slice(0, 7)}</span>), then scored once (<span className="mono">{heldOut.order.scoredRun.commit.slice(0, 7)}</span>).

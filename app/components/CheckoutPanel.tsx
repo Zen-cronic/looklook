@@ -46,8 +46,8 @@ function loadSdk(clientId: string): Promise<PayPalNamespace> {
 }
 
 const FIELD_STYLE = {
-  input: { "font-size": "16px", "font-family": "Helvetica, Arial, sans-serif", padding: "12px", color: "#1c1a1f" },
-  ".invalid": { color: "#a32640" },
+  input: { "font-size": "16px", "font-family": "Helvetica, Arial, sans-serif", padding: "12px", color: "#0a0a0a" },
+  ".invalid": { color: "#a3001b" },
 };
 
 interface Props {

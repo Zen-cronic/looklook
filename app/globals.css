@@ -1,35 +1,73 @@
 /* Tokens */
 :root {
-  --paper: #f3f1ec;
+  /* Neutral base */
+  --paper: #f4f4f2;
   --card: #ffffff;
-  --ink: #1c1a1f;
-  --ink-2: #47434c;
-  --muted: #6f6a72;
-  --line: #e0dbd3;
-  --line-strong: #c7c0b6;
-  --shade: #ebe7e0;
+  --ink: #0a0a0a;
+  --ink-2: #3a3a38;
+  --muted: #5c5c58;
+  --line: #e2e2de;
+  --line-strong: #b9b9b4;
+  --shade: #e9e9e5;
 
-  --skip: #a32640;
-  --skip-tint: #f8e2e6;
-  --skip-deep: #6e1328;
-  --wait: #8a5600;
-  --wait-tint: #fbeed4;
-  --wait-deep: #5c3900;
-  --buy: #1a6e4e;
-  --buy-tint: #dcf0e5;
-  --buy-deep: #0f4a33;
-  --ask: #2e4c8a;
-  --ask-tint: #e2e8f5;
-  --ask-deep: #1c3263;
+  /* One loud signature, one sticker accent */
+  --signature: #2b3bff;
+  --signature-ink: #ffffff;
+  --signature-deep: #1b27d6;
+  --accent: #ff8bc7;
+  --accent-ink: #0a0a0a;
 
-  --radius: 14px;
-  --radius-sm: 8px;
+  /* Verdicts: fill, text on the fill, light tint, text on the tint */
+  --skip: #2b3bff;
+  --skip-ink: #ffffff;
+  --skip-tint: #e3e6ff;
+  --skip-deep: #1b27d6;
+  --wait: #ffd23f;
+  --wait-ink: #0a0a0a;
+  --wait-tint: #fff2bf;
+  --wait-deep: #0a0a0a;
+  --buy: #22d36f;
+  --buy-ink: #0a0a0a;
+  --buy-tint: #d3f7e2;
+  --buy-deep: #0a0a0a;
+  --ask: #ff8bc7;
+  --ask-ink: #0a0a0a;
+  --ask-tint: #ffe0f0;
+  --ask-deep: #0a0a0a;
+
+  /* Errors, declines and refused events */
+  --alert: #e0102d;
+  --alert-ink: #ffffff;
+  --alert-tint: #ffe1e5;
+  --alert-deep: #a3001b;
+
+  /* Shape */
+  --radius: 20px;
+  --radius-sm: 12px;
+  --radius-pill: 999px;
+  --edge: 2px solid var(--ink);
+  --shadow-hard: 6px 6px 0 var(--ink);
+  --shadow-hard-sm: 4px 4px 0 var(--ink);
+
+  /* Type */
   --step--1: 0.8125rem;
   --step-0: 1rem;
   --step-1: 1.1875rem;
   --step-2: 1.5rem;
   --step-3: 2.125rem;
   --step-4: 3.25rem;
+  --display-1: clamp(2.125rem, 1.55rem + 2.4vw, 3.5rem);
+  --display-2: clamp(3rem, 1.9rem + 5vw, 6rem);
+  --display-fig: clamp(2.5rem, 1.9rem + 2.6vw, 4.25rem);
+  --track-display: -0.045em;
+
+  /* Motion */
+  --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
+  --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
+  --ease-spring: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --dur-1: 150ms;
+  --dur-2: 250ms;
+  --dur-3: 400ms;
 }
 
 * {
@@ -61,7 +99,15 @@ li a,
 dd a,
 td a {
   text-decoration: underline;
-  text-underline-offset: 2px;
+  text-decoration-thickness: 1.5px;
+  text-underline-offset: 3px;
+}
+
+p a:hover,
+li a:hover,
+dd a:hover,
+td a:hover {
+  color: var(--signature);
 }
 
 img {
@@ -73,18 +119,32 @@ img {
 .num {
   font-family: var(--font-mono);
   font-feature-settings: "tnum";
+  font-size: 0.92em;
+}
+
+/* The mono runs slightly narrow everywhere, and narrowest for long ids */
+.mono,
+.num,
+.price-line,
+.days,
+.cap-input span,
+.figure .metric {
+  font-stretch: 87.5%;
+}
+
+.receipt-lines dd {
+  font-stretch: 75%;
 }
 
 /* Shell */
 .topbar {
-  border-bottom: 1px solid var(--line);
   background: var(--paper);
 }
 
 .topbar-inner {
   max-width: 72rem;
   margin: 0 auto;
-  padding: 0.75rem 1.25rem;
+  padding: 1.1rem 1.25rem;
   display: flex;
   align-items: center;
   gap: 1.5rem;
@@ -98,28 +158,36 @@ img {
 }
 
 .wordmark strong {
-  font-size: 1.25rem;
+  font-family: var(--font-display);
+  font-size: 1.375rem;
   font-weight: 800;
-  letter-spacing: -0.02em;
+  letter-spacing: -0.04em;
 }
 
 .wordmark span {
   font-size: var(--step--1);
+  font-weight: 500;
   color: var(--muted);
+  margin-top: 0.15rem;
 }
 
 .mainnav {
   display: flex;
   gap: 0.25rem;
   margin-left: auto;
+  padding: 0.3rem;
+  background: var(--card);
+  border-radius: var(--radius-pill);
 }
 
 .mainnav a {
   text-decoration: none;
-  font-weight: 600;
-  padding: 0.5rem 0.8rem;
-  border-radius: var(--radius-sm);
+  font-weight: 700;
+  font-size: 0.9375rem;
+  padding: 0.55rem 1rem;
+  border-radius: var(--radius-pill);
   color: var(--ink-2);
+  transition: background-color var(--dur-1) var(--ease-out), color var(--dur-1) var(--ease-out);
 }
 
 .mainnav a:hover {
@@ -129,13 +197,13 @@ img {
 
 .mainnav a[aria-current="page"] {
   background: var(--ink);
-  color: var(--paper);
+  color: var(--card);
 }
 
 .page {
-  max-width: 40rem;
+  max-width: 42rem;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 3rem;
+  padding: 1.75rem 1.25rem 4rem;
 }
 
 .page.wide {
@@ -145,37 +213,46 @@ img {
 .footer {
   max-width: 72rem;
   margin: 0 auto;
-  padding: 1.5rem 1.25rem 2rem;
-  border-top: 1px solid var(--line);
+  padding: 1.75rem 1.25rem 2.5rem;
+  border-top: var(--edge);
   display: flex;
   flex-wrap: wrap;
-  gap: 0.5rem 1.25rem;
+  gap: 0.5rem 1.5rem;
   font-size: var(--step--1);
   color: var(--muted);
 }
 
 .footer a {
   text-decoration: none;
-  font-weight: 600;
-  color: var(--ink-2);
+  font-weight: 700;
+  color: var(--ink);
+}
+
+.footer a:hover {
+  color: var(--signature);
 }
 
 @media (max-width: 640px) {
   .footer {
-    padding-bottom: calc(6rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(6.5rem + env(safe-area-inset-bottom));
+  }
+
+  .topbar-inner {
+    padding: 0.9rem 1rem;
   }
 
   .mainnav {
     position: fixed;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    left: 0.6rem;
+    right: 0.6rem;
+    bottom: calc(0.6rem + env(safe-area-inset-bottom));
     z-index: 20;
     margin: 0;
     background: var(--card);
-    border-top: 1px solid var(--line);
-    padding: 0.35rem 0.5rem calc(0.35rem + env(safe-area-inset-bottom));
-    justify-content: space-around;
+    border: var(--edge);
+    box-shadow: var(--shadow-hard-sm);
+    padding: 0.3rem;
+    justify-content: space-between;
   }
 
   .mainnav a.wide-only {
@@ -186,40 +263,48 @@ img {
     flex: 1;
     text-align: center;
     font-size: 0.78rem;
-    padding: 0.6rem 0.15rem;
+    padding: 0.7rem 0.15rem;
     white-space: nowrap;
   }
 
   body {
-    padding-bottom: calc(4.5rem + env(safe-area-inset-bottom));
+    padding-bottom: calc(5rem + env(safe-area-inset-bottom));
+  }
+
+  .page {
+    padding: 1.25rem 1rem 3rem;
   }
 }
 
 /* Type */
 h1 {
-  font-size: var(--step-3);
-  line-height: 1.08;
-  letter-spacing: -0.025em;
+  font-family: var(--font-display);
+  font-size: var(--display-1);
+  line-height: 1.02;
+  letter-spacing: var(--track-display);
   font-weight: 800;
+  text-wrap: balance;
 }
 
 h2 {
   font-size: var(--step-1);
   line-height: 1.2;
-  letter-spacing: -0.01em;
-  font-weight: 750;
+  letter-spacing: -0.015em;
+  font-weight: 800;
 }
 
 h3 {
   font-size: var(--step-0);
-  font-weight: 700;
+  font-weight: 800;
+  line-height: 1.25;
 }
 
 .lede {
   color: var(--ink-2);
   font-size: var(--step-1);
-  line-height: 1.4;
-  margin-top: 0.5rem;
+  line-height: 1.45;
+  margin-top: 0.85rem;
+  max-width: 38rem;
 }
 
 .muted {
@@ -239,7 +324,7 @@ h3 {
 }
 
 .stack-lg > * + * {
-  margin-top: 2rem;
+  margin-top: 2.25rem;
 }
 
 .section-head {
@@ -250,53 +335,65 @@ h3 {
   margin-bottom: 0.75rem;
 }
 
-/* Surfaces */
+/* Surfaces: plain cards; hero cards (verdict, approval, receipt) get the ink edge and hard shadow */
 .card {
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1.1rem 1.15rem;
+  padding: 1.25rem 1.3rem;
 }
 
 .list {
   list-style: none;
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--radius);
   overflow: hidden;
 }
 
 .list > li {
-  padding: 0.85rem 1.1rem;
+  padding: 1rem 1.2rem;
 }
 
 .list > li + li {
   border-top: 1px solid var(--line);
 }
 
-/* Buttons */
+/* Buttons: chunky pills, solid signature primary, ink outline secondary */
 .btn {
   appearance: none;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 0.4rem;
+  gap: 0.45rem;
   font: inherit;
-  font-weight: 700;
+  font-weight: 800;
   font-size: var(--step-0);
+  letter-spacing: -0.005em;
   line-height: 1.2;
-  padding: 0.75rem 1.1rem;
-  border-radius: 10px;
-  border: 1.5px solid var(--ink);
-  background: var(--ink);
-  color: var(--paper);
+  padding: 0.8rem 1.4rem;
+  border-radius: var(--radius-pill);
+  border: 2px solid var(--signature);
+  background: var(--signature);
+  color: var(--signature-ink);
   text-decoration: none;
+  text-align: center;
   cursor: pointer;
-  min-height: 2.75rem;
+  min-height: 3rem;
+  transition:
+    background-color var(--dur-1) var(--ease-out),
+    border-color var(--dur-1) var(--ease-out),
+    color var(--dur-1) var(--ease-out),
+    transform var(--dur-1) var(--ease-out);
 }
 
 .btn:hover {
-  background: #000;
+  background: var(--signature-deep);
+  border-color: var(--signature-deep);
+}
+
+/* Press: the pill drops 2px and gives a little */
+.btn:active:not(:disabled) {
+  transform: translateY(2px) scale(0.98);
+  transition-duration: 80ms;
 }
 
 .btn:disabled,
@@ -308,17 +405,18 @@ h3 {
 .btn.outline {
   background: transparent;
   color: var(--ink);
+  border-color: var(--ink);
 }
 
 .btn.outline:hover {
-  background: var(--shade);
+  background: var(--ink);
+  color: var(--card);
 }
 
 .btn.small {
   font-size: var(--step--1);
-  padding: 0.45rem 0.75rem;
-  min-height: 2.1rem;
-  border-width: 1.25px;
+  padding: 0.5rem 1rem;
+  min-height: 2.5rem;
 }
 
 .btn.block {
@@ -327,12 +425,32 @@ h3 {
 
 .btn.danger {
   background: transparent;
-  color: var(--skip);
-  border-color: var(--skip);
+  color: var(--alert-deep);
+  border-color: var(--alert);
 }
 
 .btn.danger:hover {
-  background: var(--skip-tint);
+  background: var(--alert);
+  border-color: var(--alert);
+  color: var(--alert-ink);
+}
+
+/* A drawn chevron for "go" affordances, in the same stroke as the disclosure chevron */
+.go {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  stroke: currentColor;
+  stroke-width: 2.25;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  fill: none;
+  transition: transform var(--dur-1) var(--ease-out);
+}
+
+a:hover > .go,
+.btn:hover > .go {
+  transform: translateX(2px);
 }
 
 .actions {
@@ -342,13 +460,23 @@ h3 {
 }
 
 :focus-visible {
-  outline: 3px solid var(--ask);
-  outline-offset: 2px;
+  outline: 3px solid var(--signature);
+  outline-offset: 3px;
+}
+
+.btn:focus-visible {
+  outline-color: var(--ink);
+}
+
+@media (max-width: 640px) {
+  .btn.small {
+    min-height: 2.75rem;
+  }
 }
 
 /* Forms */
 label {
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--step--1);
   color: var(--ink-2);
 }
@@ -360,24 +488,31 @@ input[type="date"],
 select {
   font: inherit;
   width: 100%;
-  padding: 0.65rem 0.75rem;
-  border: 1.5px solid var(--line-strong);
-  border-radius: 10px;
+  padding: 0.7rem 0.9rem;
+  border: var(--edge);
+  border-radius: var(--radius-sm);
   background: var(--card);
   color: var(--ink);
-  min-height: 2.75rem;
+  min-height: 3rem;
 }
 
 input:focus,
 select:focus {
-  border-color: var(--ink);
+  border-color: var(--signature);
   outline: none;
+  box-shadow: 0 0 0 3px var(--skip-tint);
+}
+
+input:focus-visible,
+select:focus-visible {
+  outline: 3px solid var(--signature);
+  outline-offset: 1px;
 }
 
 .field {
   display: flex;
   flex-direction: column;
-  gap: 0.3rem;
+  gap: 0.35rem;
 }
 
 .field-row {
@@ -388,51 +523,63 @@ select:focus {
 
 .check-row {
   display: flex;
-  gap: 0.6rem;
+  gap: 0.65rem;
   align-items: flex-start;
   font-size: var(--step-0);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink);
 }
 
 .check-row input {
-  width: 1.25rem;
-  height: 1.25rem;
-  margin-top: 0.15rem;
-  accent-color: var(--ink);
+  width: 1.3rem;
+  height: 1.3rem;
+  margin-top: 0.1rem;
+  accent-color: var(--signature);
   flex: none;
 }
 
 .error {
-  background: var(--skip-tint);
-  color: var(--skip-deep);
+  background: var(--alert-tint);
+  color: var(--alert-deep);
   border-radius: var(--radius-sm);
-  padding: 0.7rem 0.9rem;
-  font-weight: 600;
+  padding: 0.75rem 1rem;
+  font-weight: 700;
 }
 
-/* Status chips */
+/* Status chips: solid stickers */
 .chip {
   display: inline-flex;
   align-items: center;
   gap: 0.3rem;
   font-size: var(--step--1);
-  font-weight: 700;
-  padding: 0.2rem 0.55rem;
-  border-radius: 6px;
+  font-weight: 800;
+  line-height: 1.2;
+  padding: 0.3rem 0.7rem;
+  border-radius: var(--radius-pill);
   background: var(--shade);
-  color: var(--ink-2);
+  color: var(--ink);
   white-space: nowrap;
 }
 
-.chip.skip { background: var(--skip-tint); color: var(--skip-deep); }
-.chip.wait { background: var(--wait-tint); color: var(--wait-deep); }
-.chip.buy { background: var(--buy-tint); color: var(--buy-deep); }
-.chip.ask { background: var(--ask-tint); color: var(--ask-deep); }
+.chip.skip,
+.chip.wait,
+.chip.buy,
+.chip.ask {
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-size: 0.75rem;
+  padding: 0.35rem 0.75rem;
+}
+
+.chip.skip { background: var(--skip); color: var(--skip-ink); }
+.chip.wait { background: var(--wait); color: var(--wait-ink); }
+.chip.buy { background: var(--buy); color: var(--buy-ink); }
+.chip.ask { background: var(--ask); color: var(--ask-ink); }
+.chip.alert { background: var(--alert); color: var(--alert-ink); }
 .chip.sim {
   background: transparent;
-  border: 1.5px dashed var(--line-strong);
-  color: var(--ink-2);
+  border: 2px dashed var(--ink);
+  color: var(--ink);
 }
 
 /* Intake */
@@ -442,24 +589,33 @@ select:focus {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 0.35rem;
+  gap: 0.5rem;
   text-align: center;
-  border: 2px dashed var(--line-strong);
+  border: 2px dashed var(--ink);
   border-radius: var(--radius);
   background: var(--card);
-  padding: 2rem 1rem;
+  padding: 2.25rem 1.25rem;
   cursor: pointer;
-  min-height: 11rem;
+  min-height: 13rem;
+  transition: background-color var(--dur-2) var(--ease-out), border-color var(--dur-2) var(--ease-out);
 }
 
 .drop:hover,
 .drop.over {
-  border-color: var(--ink);
-  background: #fbfaf8;
+  border-color: var(--signature);
+  border-style: solid;
+  background: var(--skip-tint);
 }
 
 .drop strong {
-  font-size: var(--step-1);
+  font-family: var(--font-display);
+  font-size: var(--step-2);
+  font-weight: 800;
+  letter-spacing: -0.03em;
+}
+
+.drop .btn {
+  margin-top: 0.4rem;
 }
 
 .drop input {
@@ -469,20 +625,25 @@ select:focus {
   opacity: 0;
 }
 
+.drop:focus-within {
+  outline: 3px solid var(--signature);
+  outline-offset: 3px;
+}
+
 .or {
   display: flex;
   align-items: center;
   gap: 0.75rem;
   color: var(--muted);
   font-size: var(--step--1);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .or::before,
 .or::after {
   content: "";
   flex: 1;
-  height: 1px;
+  height: 2px;
   background: var(--line);
 }
 
@@ -494,24 +655,31 @@ select:focus {
 .samples {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 0.6rem;
+  gap: 0.75rem;
 }
 
 .sample {
   appearance: none;
   font: inherit;
   text-align: left;
-  border: 1.5px solid var(--line);
+  border: var(--edge);
   border-radius: var(--radius-sm);
   background: var(--card);
   padding: 0;
   overflow: hidden;
   cursor: pointer;
   color: var(--ink);
+  transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
 }
 
 .sample:hover {
-  border-color: var(--ink);
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.sample:active {
+  transform: none;
+  box-shadow: none;
 }
 
 .sample img {
@@ -519,14 +687,14 @@ select:focus {
   object-fit: cover;
   object-position: top;
   width: 100%;
-  border-bottom: 1px solid var(--line);
+  border-bottom: var(--edge);
 }
 
 .sample span {
   display: block;
   font-size: var(--step--1);
-  font-weight: 600;
-  padding: 0.4rem 0.5rem;
+  font-weight: 700;
+  padding: 0.5rem 0.6rem;
   line-height: 1.25;
 }
 
@@ -540,14 +708,14 @@ select:focus {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .spinner {
-  width: 1.1rem;
-  height: 1.1rem;
-  border: 2.5px solid var(--line-strong);
-  border-top-color: var(--ink);
+  width: 1.15rem;
+  height: 1.15rem;
+  border: 3px solid var(--skip-tint);
+  border-top-color: var(--signature);
   border-radius: 50%;
   animation: spin 0.8s linear infinite;
   flex: none;
@@ -559,58 +727,59 @@ select:focus {
   }
 }
 
-/* Verdict */
+/* Verdict: the hero card. The head is filled in the verdict's colour. */
 .verdict {
   border-radius: var(--radius);
   overflow: hidden;
-  border: 1px solid var(--line);
+  border: var(--edge);
+  box-shadow: var(--shadow-hard);
   background: var(--card);
+  animation: card-rise var(--dur-3) var(--ease-out) both;
 }
 
 .verdict-head {
-  padding: 1.25rem 1.2rem 1.15rem;
-  border-bottom: 1px solid rgba(0, 0, 0, 0.06);
+  padding: 1.5rem 1.4rem 1.4rem;
+  border-bottom: var(--edge);
 }
 
-.verdict.skip .verdict-head { background: var(--skip-tint); }
-.verdict.wait .verdict-head { background: var(--wait-tint); }
-.verdict.buy .verdict-head { background: var(--buy-tint); }
-.verdict.ask .verdict-head { background: var(--ask-tint); }
+.verdict.skip .verdict-head { background: var(--skip); color: var(--skip-ink); }
+.verdict.wait .verdict-head { background: var(--wait); color: var(--wait-ink); }
+.verdict.buy .verdict-head { background: var(--buy); color: var(--buy-ink); }
+.verdict.ask .verdict-head { background: var(--ask); color: var(--ask-ink); }
 
 .verdict-word {
-  font-size: var(--step-4);
-  font-weight: 850;
-  line-height: 0.95;
-  letter-spacing: -0.04em;
+  font-family: var(--font-display);
+  font-size: var(--display-2);
+  font-weight: 900;
+  line-height: 0.9;
+  letter-spacing: -0.055em;
+  transform-origin: 0 80%;
+  animation: verdict-in var(--dur-3) var(--ease-spring) 80ms both;
 }
-
-.verdict.skip .verdict-word { color: var(--skip); }
-.verdict.wait .verdict-word { color: var(--wait); }
-.verdict.buy .verdict-word { color: var(--buy); }
-.verdict.ask .verdict-word { color: var(--ask); }
 
 .verdict-reason {
   font-size: var(--step-1);
-  line-height: 1.35;
-  font-weight: 600;
-  margin-top: 0.6rem;
-  color: var(--ink);
+  line-height: 1.4;
+  font-weight: 700;
+  margin-top: 0.85rem;
+  color: inherit;
+  max-width: 34rem;
 }
 
 .product-row {
   display: flex;
   gap: 0.9rem;
   align-items: center;
-  padding: 0.95rem 1.2rem;
+  padding: 1.1rem 1.4rem;
 }
 
 .thumb {
-  width: 3.5rem;
-  height: 3.5rem;
+  width: 3.75rem;
+  height: 3.75rem;
   border-radius: var(--radius-sm);
-  border: 1px solid var(--line);
+  border: 1.5px solid var(--line);
   object-fit: contain;
-  background: #fff;
+  background: var(--card);
   flex: none;
 }
 
@@ -626,37 +795,55 @@ select:focus {
 .brand-line {
   font-size: var(--step--1);
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .name-line {
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.25;
 }
 
 .price-line {
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: 700;
   font-size: var(--step-1);
+  letter-spacing: -0.02em;
+  white-space: nowrap;
 }
 
 .returns {
-  margin: 0 1.2rem;
-  padding: 0.7rem 0.85rem;
+  margin: 0 1.4rem;
+  padding: 0.75rem 1rem 0.75rem 2.4rem;
   border-radius: var(--radius-sm);
-  font-weight: 600;
+  font-weight: 700;
   font-size: 0.9375rem;
-  line-height: 1.35;
-  border-left: 4px solid;
+  line-height: 1.4;
+  position: relative;
 }
 
-.returns.ok { background: var(--buy-tint); border-color: var(--buy); color: var(--buy-deep); }
-.returns.no { background: var(--skip-tint); border-color: var(--skip); color: var(--skip-deep); }
-.returns.maybe { background: var(--wait-tint); border-color: var(--wait); color: var(--wait-deep); }
-.returns.unknown { background: var(--shade); border-color: var(--line-strong); color: var(--ink-2); }
+/* A solid status dot instead of a tinted edge */
+.returns::before {
+  content: "";
+  position: absolute;
+  left: 1rem;
+  top: 1.05rem;
+  width: 0.7rem;
+  height: 0.7rem;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.returns.ok { background: var(--buy-tint); color: var(--ink); }
+.returns.ok::before { background: var(--buy); box-shadow: 0 0 0 1.5px var(--ink); }
+.returns.no { background: var(--alert-tint); color: var(--alert-deep); }
+.returns.no::before { background: var(--alert); }
+.returns.maybe { background: var(--wait-tint); color: var(--ink); }
+.returns.maybe::before { background: var(--wait); box-shadow: 0 0 0 1.5px var(--ink); }
+.returns.unknown { background: var(--shade); color: var(--ink-2); }
+.returns.unknown::before { background: var(--line-strong); }
 
 .why {
-  margin: 0.9rem 1.2rem 0;
+  margin: 1rem 1.4rem 0;
   border-top: 1px solid var(--line);
 }
 
@@ -664,8 +851,8 @@ select:focus {
 .disclosure > summary,
 .ids > summary {
   cursor: pointer;
-  font-weight: 700;
-  padding: 0.85rem 0;
+  font-weight: 800;
+  padding: 0.95rem 0;
   list-style: none;
   display: flex;
   justify-content: space-between;
@@ -679,17 +866,18 @@ select:focus {
   display: none;
 }
 
-/* Disclosure chevron: one drawn shape, flipped when open (no in-between frames). */
+/* Disclosure chevron: one drawn shape, turned when open. */
 .why summary::after,
 .disclosure > summary::after,
 .ids > summary::after {
   content: "";
   flex: none;
-  width: 0.8rem;
-  height: 0.55rem;
-  background: var(--ink-2);
-  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
-  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  width: 0.85rem;
+  height: 0.6rem;
+  background: var(--ink);
+  -webkit-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 8'%3E%3Cpath d='M1 1.5l5 5 5-5' fill='none' stroke='black' stroke-width='2.25' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / contain no-repeat;
+  transition: transform var(--dur-2) var(--ease-out);
 }
 
 .why[open] summary::after,
@@ -698,9 +886,15 @@ select:focus {
   transform: scaleY(-1);
 }
 
+.why[open] > :not(summary),
+.disclosure[open] > :not(summary),
+.ids[open] > :not(summary) {
+  animation: open-down var(--dur-2) var(--ease-out) both;
+}
+
 .ids > summary {
   font-size: var(--step--1);
-  font-weight: 600;
+  font-weight: 700;
   color: var(--ink-2);
   padding: 0.4rem 0;
   justify-content: flex-start;
@@ -714,14 +908,14 @@ select:focus {
 .evidence {
   display: grid;
   grid-template-columns: 7.5rem 1fr;
-  gap: 0.55rem 0.9rem;
-  padding-bottom: 1rem;
+  gap: 0.6rem 1rem;
+  padding-bottom: 1.1rem;
   font-size: 0.9375rem;
 }
 
 .evidence dt {
   color: var(--muted);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .evidence dd {
@@ -730,10 +924,10 @@ select:focus {
 }
 
 .verdict-actions {
-  padding: 1rem 1.2rem 1.2rem;
+  padding: 1.1rem 1.4rem 1.4rem;
   display: flex;
   flex-direction: column;
-  gap: 0.6rem;
+  gap: 0.65rem;
 }
 
 .commission {
@@ -752,10 +946,10 @@ select:focus {
   display: flex;
   align-items: center;
   gap: 0.75rem;
-  border: 1.5px solid var(--line);
+  border: var(--edge);
   border-radius: var(--radius-sm);
   background: var(--card);
-  padding: 0.6rem 0.7rem;
+  padding: 0.65rem 0.75rem;
 }
 
 .candidate .meta {
@@ -767,7 +961,7 @@ select:focus {
 .shelf-grid {
   display: grid;
   grid-template-columns: 1fr;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 @media (min-width: 960px) {
@@ -785,7 +979,7 @@ select:focus {
 }
 
 .shelf-item .title {
-  font-weight: 700;
+  font-weight: 800;
   line-height: 1.25;
 }
 
@@ -796,7 +990,7 @@ select:focus {
 
 .shelf-item .controls {
   grid-column: 1 / -1;
-  margin-top: 0.15rem;
+  margin-top: 0.2rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -805,44 +999,44 @@ select:focus {
 
 .shelf-item .controls input[type="date"] {
   width: auto;
-  min-height: 2.1rem;
-  padding: 0.3rem 0.5rem;
+  min-height: 2.5rem;
+  padding: 0.3rem 0.6rem;
   font-size: var(--step--1);
 }
 
 .days {
   font-family: var(--font-mono);
-  font-size: var(--step--1);
-  font-weight: 600;
-  padding: 0.15rem 0.45rem;
-  border-radius: 6px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.3rem 0.65rem;
+  border-radius: var(--radius-pill);
   background: var(--shade);
   white-space: nowrap;
 }
 
-.days.soon { background: var(--wait-tint); color: var(--wait-deep); }
-.days.out { background: var(--skip-tint); color: var(--skip-deep); }
+.days.soon { background: var(--wait); color: var(--wait-ink); }
+.days.out { background: var(--alert); color: var(--alert-ink); }
 
 .group-label {
   font-size: var(--step--1);
   text-transform: uppercase;
   letter-spacing: 0.08em;
-  color: var(--muted);
-  font-weight: 700;
-  margin: 1.25rem 0 0.5rem;
+  color: var(--ink);
+  font-weight: 800;
+  margin: 1.75rem 0 0.6rem;
 }
 
 .budget {
   display: grid;
   grid-template-columns: 1fr auto;
-  gap: 0.3rem 0.75rem;
+  gap: 0.35rem 0.75rem;
   align-items: center;
 }
 
 .bar {
   grid-column: 1 / -1;
-  height: 0.5rem;
-  border-radius: 99px;
+  height: 0.75rem;
+  border-radius: var(--radius-pill);
   background: var(--shade);
   overflow: hidden;
 }
@@ -850,11 +1044,14 @@ select:focus {
 .bar > span {
   display: block;
   height: 100%;
-  background: var(--ink);
+  border-radius: var(--radius-pill);
+  background: var(--signature);
+  transform-origin: left center;
+  animation: bar-fill var(--dur-3) var(--ease-out) both;
 }
 
 .bar.over > span {
-  background: var(--skip);
+  background: var(--alert);
 }
 
 /* Rebuys */
@@ -863,38 +1060,54 @@ select:focus {
   flex-wrap: wrap;
   align-items: center;
   gap: 0.6rem 1rem;
-  border: 1.5px dashed var(--line-strong);
+  border: 2px dashed var(--ink);
   border-radius: var(--radius);
-  padding: 0.75rem 1rem;
+  padding: 0.9rem 1.1rem;
   background: var(--card);
 }
 
 .datebar .date {
-  font-family: var(--font-mono);
-  font-weight: 600;
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.03em;
   font-size: var(--step-1);
 }
 
+/* Approval: a hero card; the band on top carries the status colour */
 .approval {
+  --status: var(--buy);
+  position: relative;
   border-radius: var(--radius);
   background: var(--card);
-  border: 1px solid var(--line);
-  border-left: 6px solid var(--buy);
-  padding: 1rem 1.1rem;
+  border: var(--edge);
+  box-shadow: var(--shadow-hard);
+  padding: 1.6rem 1.3rem 1.2rem;
+  overflow: hidden;
+}
+
+.approval::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 0.6rem;
+  background: var(--status);
+  border-bottom: var(--edge);
 }
 
 .approval.declined {
-  border-left-color: var(--skip);
+  --status: var(--alert);
 }
 
 .approval.price-drop {
-  border-left-color: var(--wait);
+  --status: var(--wait);
 }
 
 .approval .amount {
-  font-family: var(--font-mono);
-  font-weight: 600;
-  font-size: var(--step-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-size: var(--step-3);
+  line-height: 1;
   white-space: nowrap;
 }
 
@@ -905,73 +1118,109 @@ select:focus {
   align-items: flex-start;
 }
 
+.approval h3 {
+  font-size: var(--step-1);
+  margin-top: 0.1rem;
+}
+
 .decline-box {
-  background: var(--skip-tint);
-  color: var(--skip-deep);
+  background: var(--alert-tint);
+  color: var(--alert-deep);
   border-radius: var(--radius-sm);
-  padding: 0.75rem 0.85rem;
+  padding: 0.8rem 1rem;
 }
 
 .notice {
   background: var(--card);
-  border: 1px solid var(--line);
-  border-left: 4px solid var(--ink);
   border-radius: var(--radius-sm);
-  padding: 0.7rem 0.9rem;
+  border-left: 5px solid var(--ink);
+  padding: 0.8rem 1rem;
   font-size: 0.9375rem;
 }
 
-/* Receipt */
+/* Receipt: a hero card with an ink head */
 .receipt {
   background: var(--card);
-  border: 1px solid var(--line);
+  border: var(--edge);
+  box-shadow: var(--shadow-hard);
   border-radius: var(--radius);
   overflow: hidden;
+  animation: card-rise var(--dur-3) var(--ease-out) both;
 }
 
 .receipt-head {
-  padding: 1.25rem 1.2rem;
+  padding: 1.5rem 1.4rem;
   background: var(--ink);
   color: var(--paper);
 }
 
 .receipt-head .total {
-  font-family: var(--font-mono);
-  font-size: var(--step-3);
-  font-weight: 600;
-  line-height: 1.1;
-  margin-top: 0.25rem;
+  font-family: var(--font-display);
+  font-size: var(--display-fig);
+  font-weight: 800;
+  letter-spacing: var(--track-display);
+  line-height: 1;
+  margin-top: 0.5rem;
 }
 
 .receipt-lines {
   font-family: var(--font-mono);
-  font-size: 0.875rem;
-  padding: 1rem 1.2rem;
+  font-size: 0.8125rem;
+  padding: 1.1rem 1.4rem;
   display: grid;
   grid-template-columns: 8.5rem 1fr;
-  gap: 0.45rem 0.75rem;
+  gap: 0.5rem 0.75rem;
 }
 
 .receipt-lines dt {
   color: var(--muted);
   font-family: var(--font-ui);
-  font-weight: 600;
+  font-size: var(--step--1);
+  font-weight: 700;
 }
 
 .receipt-lines dd {
   overflow-wrap: anywhere;
 }
 
-.receipt-foot {
-  border-top: 1px dashed var(--line-strong);
-  padding: 1rem 1.2rem;
+@media (max-width: 640px) {
+  .receipt-lines {
+    grid-template-columns: 6.25rem 1fr;
+    padding: 1rem 1.1rem;
+  }
 }
 
-/* Tables */
+.receipt-foot {
+  border-top: 2px dashed var(--ink);
+  padding: 1.1rem 1.4rem 1.3rem;
+}
+
+/* "Charged once." settles into place after the receipt arrives */
+.sticker {
+  display: inline-block;
+  padding: 0.2rem 0.65rem;
+  margin-right: 0.3rem;
+  border-radius: var(--radius-pill);
+  font-weight: 800;
+  border: var(--edge);
+}
+
+.sticker.paid {
+  background: var(--buy);
+  color: var(--buy-ink);
+  animation: settle var(--dur-3) var(--ease-spring) 220ms both;
+}
+
+.sticker.failed {
+  background: var(--alert);
+  color: var(--alert-ink);
+  border-color: var(--alert);
+}
+
+/* Tables: plain and readable */
 .table-wrap {
   overflow-x: auto;
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--radius);
 }
 
@@ -984,73 +1233,92 @@ table {
 th,
 td {
   text-align: left;
-  padding: 0.6rem 0.8rem;
+  padding: 0.7rem 0.9rem;
   border-bottom: 1px solid var(--line);
   vertical-align: top;
 }
 
 th {
-  font-size: var(--step--1);
-  color: var(--muted);
-  font-weight: 700;
-  background: #faf9f6;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+  font-weight: 800;
+  background: var(--card);
+  border-bottom: var(--edge);
 }
 
 tr:last-child td {
   border-bottom: 0;
 }
 
-/* Proof */
+/* Proof: big display figures */
 .figures {
-  display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 0.75rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.85rem;
 }
 
-@media (min-width: 900px) {
-  .figures {
-    grid-template-columns: 2fr 1fr 1fr 1fr;
-  }
+.figures > .figure {
+  flex: 1 1 13rem;
+  min-width: 0;
+}
+
+.figures > .figure.lead {
+  flex-basis: 100%;
 }
 
 .figure {
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1rem 1.1rem;
+  padding: 1.25rem 1.3rem 1.3rem;
 }
 
 .figure.lead {
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
-  grid-column: 1 / -1;
+  background: var(--signature);
+  color: var(--signature-ink);
+  border: var(--edge);
+  box-shadow: var(--shadow-hard);
 }
 
-@media (min-width: 900px) {
+@media (min-width: 700px) {
   .figure.lead {
-    grid-column: auto;
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: end;
+    gap: 0.5rem 2rem;
+    padding: 1.75rem 2rem 1.9rem;
+  }
+
+  .figure.lead p {
+    max-width: 26rem;
+    font-size: var(--step-1);
   }
 }
 
 .figure .big {
-  font-family: var(--font-mono);
-  font-size: var(--step-3);
-  font-weight: 600;
-  line-height: 1.05;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 1.45rem + 1.1vw, 2.5rem);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 1;
+  white-space: nowrap;
 }
 
 .figure.lead .big {
-  font-size: var(--step-4);
+  font-size: clamp(2.75rem, 1.2rem + 6.5vw, 7rem);
+  letter-spacing: -0.06em;
 }
 
 .figure p {
-  margin-top: 0.4rem;
+  margin-top: 0.6rem;
   font-size: 0.9375rem;
+  line-height: 1.4;
 }
 
 .figure.lead p {
-  color: #d8d4dc;
+  color: var(--signature-ink);
+  font-weight: 600;
 }
 
 .figure .metric {
@@ -1065,37 +1333,42 @@ tr:last-child td {
   list-style: none;
   counter-reset: step;
   display: grid;
-  gap: 0.75rem;
+  gap: 0.85rem;
 }
 
 .steps > li {
   counter-increment: step;
   display: grid;
-  grid-template-columns: 2.25rem 1fr;
-  gap: 0.75rem;
+  grid-template-columns: 2.75rem 1fr;
+  gap: 1rem;
   background: var(--card);
-  border: 1px solid var(--line);
   border-radius: var(--radius);
-  padding: 1rem 1.1rem;
+  padding: 1.2rem 1.25rem;
 }
 
 .steps > li::before {
   content: counter(step);
-  font-family: var(--font-mono);
-  font-weight: 700;
+  font-family: var(--font-display);
+  font-weight: 800;
   font-size: var(--step-1);
-  width: 2.25rem;
-  height: 2.25rem;
-  border-radius: 8px;
-  background: var(--ink);
-  color: var(--paper);
+  width: 2.75rem;
+  height: 2.75rem;
+  border-radius: 50%;
+  background: var(--signature);
+  color: var(--signature-ink);
   display: grid;
   place-items: center;
 }
 
+.steps > li:first-child::before {
+  background: var(--accent);
+  color: var(--accent-ink);
+  box-shadow: 0 0 0 2px var(--ink);
+}
+
 .two-col {
   display: grid;
-  gap: 1.5rem;
+  gap: 1.75rem;
 }
 
 @media (min-width: 960px) {
@@ -1121,14 +1394,14 @@ tr:last-child td {
 }
 
 .consent {
-  border: 1.5px solid var(--ink);
+  border: var(--edge);
   border-radius: var(--radius);
   background: var(--card);
-  padding: 1rem 1.1rem;
+  padding: 1.1rem 1.25rem;
 }
 
 .consent ul {
-  margin: 0.6rem 0 0 1.1rem;
+  margin: 0.65rem 0 0 1.1rem;
   display: grid;
   gap: 0.35rem;
   font-size: 0.9375rem;
@@ -1147,7 +1420,7 @@ tr:last-child td {
 
 .cap-input span {
   font-family: var(--font-mono);
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .split {
@@ -1190,11 +1463,11 @@ tr:last-child td {
 
 /* Price wait: trend and target */
 .price-wait {
-  margin: 0.9rem 1.2rem 0;
-  padding: 0.75rem 0.9rem;
+  margin: 1rem 1.4rem 0;
+  padding: 0.9rem 1rem;
   border-radius: var(--radius-sm);
   background: var(--wait-tint);
-  color: var(--wait-deep);
+  color: var(--ink);
 }
 
 .pricehist {
@@ -1210,19 +1483,20 @@ tr:last-child td {
 
 .pricehist .series {
   fill: none;
-  stroke: var(--wait-deep);
-  stroke-width: 2;
+  stroke: var(--ink);
+  stroke-width: 2.5;
   stroke-linejoin: round;
+  stroke-linecap: round;
 }
 
 .pricehist .series-end {
-  fill: var(--wait-deep);
+  fill: var(--ink);
 }
 
 .pricehist .target {
-  stroke: var(--buy);
-  stroke-width: 1.5;
-  stroke-dasharray: 4 3;
+  stroke: var(--signature);
+  stroke-width: 2;
+  stroke-dasharray: 5 4;
 }
 
 .pricehist figcaption {
@@ -1236,30 +1510,30 @@ tr:last-child td {
   display: inline-block;
   width: 1rem;
   height: 0;
-  border-top: 2px solid var(--wait-deep);
+  border-top: 2.5px solid var(--ink);
 }
 
 .pricehist .target-key {
-  border-top: 2px dashed var(--buy);
+  border-top: 2px dashed var(--signature);
   margin-left: 0.6rem;
 }
 
 /* Same product at other stores */
 .offers {
-  margin: 0.9rem 1.2rem 0;
+  margin: 1rem 1.4rem 0;
   border-top: 1px solid var(--line);
-  padding-top: 0.85rem;
+  padding-top: 0.95rem;
 }
 
 .offers h3 {
   font-size: 0.9375rem;
-  margin-bottom: 0.4rem;
+  margin-bottom: 0.5rem;
 }
 
 .offers ul {
   list-style: none;
   display: grid;
-  gap: 0.35rem;
+  gap: 0.4rem;
   margin-bottom: 0.5rem;
 }
 
@@ -1268,18 +1542,18 @@ tr:last-child td {
   justify-content: space-between;
   align-items: baseline;
   gap: 0.75rem;
-  padding: 0.4rem 0.6rem;
+  padding: 0.55rem 0.8rem;
   border-radius: var(--radius-sm);
-  border-left: 3px solid var(--line-strong);
+  border-left: 5px solid var(--line-strong);
   background: var(--paper);
 }
 
 .offer.yes { border-left-color: var(--buy); }
-.offer.no { border-left-color: var(--skip); }
+.offer.no { border-left-color: var(--alert); }
 .offer.conditional { border-left-color: var(--wait); }
 
 .offer a {
-  font-weight: 700;
+  font-weight: 800;
 }
 
 .price-line.small-price {
@@ -1287,11 +1561,11 @@ tr:last-child td {
 }
 
 .approval.held {
-  border-left-color: var(--line-strong);
+  --status: var(--line-strong);
 }
 
 .approval.reminder {
-  border-left-color: var(--ask);
+  --status: var(--ask);
 }
 
 /* Tables that stack into cards on a phone */
@@ -1316,24 +1590,25 @@ tr:last-child td {
 
   .stacked tr {
     background: var(--card);
-    border: 1px solid var(--line);
     border-radius: var(--radius-sm);
-    padding: 0.5rem 0.75rem;
+    padding: 0.65rem 0.9rem;
     margin-bottom: 0.5rem;
   }
 
   .stacked td {
     border: 0;
-    padding: 0.2rem 0;
+    padding: 0.25rem 0;
     overflow-wrap: anywhere;
   }
 
   .stacked td[data-label]::before {
     content: attr(data-label);
     display: block;
-    font-size: var(--step--1);
+    font-size: 0.6875rem;
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
     color: var(--muted);
-    font-weight: 600;
+    font-weight: 800;
   }
 }
 
@@ -1345,26 +1620,29 @@ tr:last-child td {
 
 .split-row {
   display: grid;
-  grid-template-columns: 3rem 1fr;
-  gap: 0.75rem;
+  grid-template-columns: 3.25rem 1fr;
+  gap: 0.85rem;
   align-items: baseline;
-  padding: 0.6rem 0.8rem;
+  padding: 0.75rem 0.95rem;
   border-radius: var(--radius-sm);
 }
 
 .split-row strong {
-  font-family: var(--font-mono);
-  font-size: var(--step-2);
+  font-family: var(--font-display);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  font-size: var(--step-3);
+  line-height: 1;
 }
 
 .split-row.evidence {
-  background: var(--buy-tint);
-  color: var(--buy-deep);
+  background: var(--buy);
+  color: var(--buy-ink);
 }
 
 .split-row.default {
   background: var(--shade);
-  color: var(--ink-2);
+  color: var(--ink);
 }
 
 .disclosure > summary {
@@ -1378,30 +1656,241 @@ tr:last-child td {
 }
 
 @media (max-width: 520px) {
-  .figures {
-    grid-template-columns: minmax(0, 1fr);
+  .figures > .figure {
+    flex-basis: 100%;
   }
 }
 
 /* Latest check, above the intake */
 .latest {
+  --status: var(--line-strong);
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
   text-decoration: none;
-  padding: 0.85rem 1rem;
+  padding: 1rem 1.15rem 1rem 1.4rem;
   border-radius: var(--radius);
-  border: 1px solid var(--line);
-  border-left: 6px solid var(--line-strong);
   background: var(--card);
+  position: relative;
+  overflow: hidden;
+  transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
 }
 
-.latest.skip { border-left-color: var(--skip); }
-.latest.wait { border-left-color: var(--wait); }
-.latest.buy { border-left-color: var(--buy); }
-.latest.ask { border-left-color: var(--ask); }
+.latest::before {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 0.45rem;
+  background: var(--status);
+}
+
+.latest:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.latest.skip { --status: var(--skip); }
+.latest.wait { --status: var(--wait); }
+.latest.buy { --status: var(--buy); }
+.latest.ask { --status: var(--ask); }
 
 .latest p {
   font-size: 0.9375rem;
+}
+
+/* Row ends: a status or price followed by the go chevron */
+.row-end {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex: none;
+}
+
+/* Receipt head lines */
+.receipt-status {
+  font-weight: 700;
+  color: var(--paper);
+}
+
+.receipt-title {
+  margin-top: 0.6rem;
+  font-weight: 800;
+  font-size: var(--step-1);
+  line-height: 1.3;
+}
+
+/* A plain card filled with the signature colour (the headline number on Start here) */
+.card.signature {
+  background: var(--signature);
+  color: var(--signature-ink);
+  border: var(--edge);
+  box-shadow: var(--shadow-hard);
+}
+
+.card.signature .muted {
+  color: var(--signature-ink);
+}
+
+.card.signature .btn.outline {
+  border-color: var(--signature-ink);
+  color: var(--signature-ink);
+}
+
+.card.signature .btn.outline:hover {
+  background: var(--signature-ink);
+  color: var(--ink);
+}
+
+.card.signature :focus-visible {
+  outline-color: var(--signature-ink);
+}
+
+.headline-text {
+  font-family: var(--font-display);
+  font-weight: 700;
+  font-size: var(--step-2);
+  letter-spacing: -0.035em;
+  line-height: 1.2;
+  text-wrap: balance;
+}
+
+/* Motion: keyframes. Every end state is the element's resting style. */
+@keyframes verdict-in {
+  from {
+    opacity: 0;
+    transform: scale(0.55) translateY(0.15em);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes card-rise {
+  from {
+    opacity: 0;
+    transform: translateY(14px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes settle {
+  0% {
+    opacity: 0;
+    transform: translateY(-14px);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes open-down {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes bar-fill {
+  from {
+    transform: scaleX(0);
+  }
+  to {
+    transform: none;
+  }
+}
+
+@keyframes leave-row {
+  to {
+    opacity: 0;
+    transform: translateX(16px);
+  }
+}
+
+/* List insert: items added after the page is ready slide in once */
+html[data-ready] :is(.list > li, .approval, .notice, .candidate, .decision, .stacked tr) {
+  transition:
+    opacity var(--dur-2) var(--ease-out),
+    transform var(--dur-2) var(--ease-out);
+}
+
+@starting-style {
+  html[data-ready] :is(.list > li, .approval, .notice, .candidate, .decision) {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+}
+
+/* List remove: the row slides out before the server drops it */
+.is-leaving {
+  animation: leave-row var(--dur-2) var(--ease-in) both;
+  pointer-events: none;
+}
+
+/* Page transitions (View Transitions API, where supported) */
+::view-transition-old(.page-swap) {
+  animation: var(--dur-1) var(--ease-in) both vt-out;
+}
+
+::view-transition-new(.page-swap) {
+  animation: var(--dur-2) var(--ease-out) 60ms both vt-in;
+}
+
+@keyframes vt-out {
+  to {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+
+@keyframes vt-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+}
+
+/* Reduced motion and capture-safe mode (?still=1): no animation or transition runs.
+   Every keyframe ends on the element's resting style, so turning them off shows the end state at once. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
+
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+html[data-still] *,
+html[data-still] *::before,
+html[data-still] *::after {
+  animation: none !important;
+  transition: none !important;
+  scroll-behavior: auto !important;
+}
+
+html[data-still]::view-transition-group(*),
+html[data-still]::view-transition-old(*),
+html[data-still]::view-transition-new(*) {
+  animation: none !important;
 }

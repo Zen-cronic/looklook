@@ -9,6 +9,7 @@ import { currentSession } from "@/lib/app/session";
 import type { Notice, PurchaseSource, SavedMethod, SessionState } from "@/lib/app/types";
 import { negativeTestingEnabled } from "@/lib/paypal/config";
 import { countedDate, SIMULATED } from "@/lib/app/when";
+import { Chevron } from "../components/Chevron";
 import { ApprovalButtons, DateControls, DeclineToggle, ReminderDone, WatchControls } from "../components/RebuyControls";
 
 export const metadata = { title: "Rebuys" };
@@ -246,7 +247,10 @@ async function Rebuys() {
                         {formatTime(r.createdAt)} ET{r.on !== realToday(new Date(r.createdAt)) ? `, simulated date ${formatDay(r.on)}` : ""}
                       </span>
                     </span>
-                    <span className="price-line">{formatCents(r.amountCents, r.currency)}</span>
+                    <span className="row-end">
+                      <span className="price-line">{formatCents(r.amountCents, r.currency)}</span>
+                      <Chevron />
+                    </span>
                   </Link>
                 </li>
               ))}

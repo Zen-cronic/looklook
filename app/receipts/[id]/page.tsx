@@ -33,12 +33,12 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
     <div className="stack">
       <article className="receipt">
         <div className="receipt-head">
-          <div className="small" style={{ opacity: 0.85 }}>
+          <div className="small receipt-status">
             {receiptStatusLabel(r)}, {formatTime(r.createdAt)} ET
           </div>
           <div className="total">{formatCents(r.amountCents, r.currency)}</div>
-          <div style={{ marginTop: "0.35rem", fontWeight: 700 }}>{r.title}</div>
-          <div className="small" style={{ opacity: 0.85, marginTop: "0.2rem" }}>
+          <div className="receipt-title">{r.title}</div>
+          <div className="small receipt-status">
             {chargeKind(r)}
             {simulatedOn ? `, counted on the simulated date ${formatDay(simulatedOn)}` : ""}
           </div>
@@ -72,11 +72,11 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
         <div className="receipt-foot stack-sm">
           {r.status === "failed" ? (
             <p>
-              <strong>Not charged.</strong> PayPal didn&apos;t complete this payment.
+              <strong className="sticker failed">Not charged.</strong> PayPal didn&apos;t complete this payment.
             </p>
           ) : (
             <p>
-              <strong>Charged once.</strong> {repeatsLine(r)}
+              <strong className="sticker paid">Charged once.</strong> {repeatsLine(r)}
             </p>
           )}
           {r.shelfNote && <p>{r.shelfNote}</p>}

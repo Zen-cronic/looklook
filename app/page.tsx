@@ -6,6 +6,7 @@ import { atTheTime } from "@/lib/app/when";
 import { APP_NAME } from "@/lib/brand";
 import { Intake } from "./components/Intake";
 import { SampleWeekNote } from "./components/SampleWeek";
+import { Chevron } from "./components/Chevron";
 import { VerdictChip } from "./components/VerdictChip";
 
 export default function CheckPage() {
@@ -45,7 +46,10 @@ async function RecentChecks() {
                   {c.facts.name || "Unreadable post"}
                 </span>
               </span>
-              <VerdictChip verdict={c.decision.verdict} />
+              <span className="row-end">
+                <VerdictChip verdict={c.decision.verdict} />
+                <Chevron />
+              </span>
             </Link>
           </li>
         ))}
@@ -70,7 +74,10 @@ async function LatestCheck() {
         </span>
         <p className="muted">{c.purchasedReceiptId ? `Bought. ${atTheTime(c.reason.text)}` : c.reason.text}</p>
       </span>
-      <VerdictChip verdict={c.decision.verdict} />
+      <span className="row-end">
+        <VerdictChip verdict={c.decision.verdict} />
+        <Chevron />
+      </span>
       </Link>
     </>
   );

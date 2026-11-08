@@ -32,7 +32,7 @@ function VerificationChip({ e }: { e: EventLogEntry }) {
     case "not-configured":
       return <span className="chip">Not set up</span>;
     default:
-      return <span className="chip skip">Rejected{e.failureReason ? `: ${e.failureReason.replace(/-/g, " ")}` : ""}</span>;
+      return <span className="chip alert">Rejected{e.failureReason ? `: ${e.failureReason.replace(/-/g, " ")}` : ""}</span>;
   }
 }
 
