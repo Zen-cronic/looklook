@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 269](https://img.shields.io/badge/unit%20tests-269-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 272](https://img.shields.io/badge/unit%20tests-272-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 
@@ -29,7 +29,7 @@ The things you do buy again (a cleanser, a moisturizer) come back as one-tap reb
 
 Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login and test card: see the testing instructions on the project's submission page.
 
-1. **Load the sample week and check a post.** A fictional shopper's week of checks on real catalogue products; the newest, a sunscreen post, is a skip because she owns one that does the same job. Four sample posts (mock posts of real products) are also on the Check page, or upload your own screenshot or paste a store link.
+1. **Load the sample week and check a post.** A fictional shopper's week of checks on real catalogue products; the newest, a sunscreen post, is a skip because she owns one that does the same job. Four sample posts (mock posts of real products) are also on the Check page (`/check`), or upload your own screenshot or paste a store link.
 2. **Wait for a lower price.** The retinol's wait verdict starts a real Channel3 price alert; a labelled test drop runs a price event through the same handler, and the item asks for your yes.
 3. **Buy once and save PayPal for rebuys.** The checkout shows the save-for-later agreement and a per-rebuy cap, then the PayPal buttons and card fields.
 4. **Rebuy with one yes, then a decline.** Staples due within five days ask for your yes, and a repeated yes charges once. A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.

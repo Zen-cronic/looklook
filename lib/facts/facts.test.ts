@@ -9,7 +9,8 @@ import { RULE_ORDER, RULE_TEXT, returnsLine } from "../app/explain";
 import { offerLines } from "../app/offers";
 import { baselineScore, heldOutHeadline, heldOutResult } from "../app/holdout";
 import { formatDollars } from "../app/money";
-import { dueStaples, REBUY_LEAD_DAYS, SELLER_OF_RECORD } from "../app/payments";
+import { CONSENT_TEMPLATE, dueStaples, REBUY_LEAD_DAYS, SELLER_OF_RECORD } from "../app/payments";
+import { LANDING_SKIP_ID, landingSample } from "../app/landing";
 import { refreshChecks } from "../app/refresh";
 import { sampleWeekState } from "../app/sample-week";
 import { SAMPLES } from "../app/samples";
@@ -67,8 +68,8 @@ describe("README numbers match the data and code", () => {
   it("states the held-out headline and its baselines from the scored run", () => {
     expect(README).toContain(heldOutHeadline(held));
     expect([held.skipCorrect, held.n, baselineScore(held, "always-skip"), baselineScore(held, "same-category")]).toEqual([28, 30, 13, 19]);
-    // /proof and /judge read the same function; neither types a score in by hand.
-    for (const page of ["app/proof/page.tsx", "app/judge/page.tsx"]) {
+    // The landing page, /proof and /judge read the same function; none types a score in by hand.
+    for (const page of ["app/page.tsx", "app/proof/page.tsx", "app/judge/page.tsx"]) {
       const src = read(page);
       expect(src).toContain("heldOutHeadline(");
       expect(src).not.toMatch(/>[^<{]*\b\d+ of \d+\b[^<]*</);
@@ -300,6 +301,49 @@ describe("evidence and safety", () => {
     expect(JSON.parse(String(calls[0].init.body))).toEqual({});
     expect((calls[0].init.headers as Record<string, string>)["PayPal-Request-Id"]).toBe("refund:c1");
     expect(README).toContain("A charge can be refunded in full from its receipt.");
+  });
+});
+
+describe("landing page", () => {
+  it("keeps the landing page's promises to the ledger and its numbers computed", () => {
+    const page = read("app/page.tsx");
+    const claims = factRows().filter((r) => r.quoted && r.where.includes("`app/page.tsx`"));
+    expect(claims.map((r) => r.id)).toEqual(["F54", "F55", "F56", "F57"]);
+    // The first promise is the save agreement's own line, word for word.
+    expect(CONSENT_TEMPLATE).toContain(claims[0].claim);
+    // Scores come from the scored run: the headline function and its numbers, never digits typed in.
+    expect(page).toContain("heldOutHeadline(held)");
+    expect(page).toContain('baselineScore(held, "same-category")');
+    expect(page).toContain('baselineScore(held, "always-skip")');
+    expect(page).not.toMatch(/value=\{\d/);
+    // Two ways in: Check a post, or Start here.
+    expect(page).toMatch(/className="btn" href="\/check"/);
+    expect(page).toMatch(/className="btn outline" href="\/judge"/);
+  });
+
+  it("shows the sample shelf's sunscreen skip, decided by the engine, and the shelf item it matched", () => {
+    const x = landingSample();
+    expect(x.check.id).toBe(LANDING_SKIP_ID);
+    expect(x.verdict).toBe("skip");
+    expect(x.check.decision.rule).toBe("owns-similar");
+    expect(x.reason).toContain(`You already own ${x.shelf.brand} ${x.shelf.name}`);
+    expect(x.shelf.matchPercent).toBeGreaterThanOrEqual(90);
+    expect(x.staple.daysLeft).toBeLessThanOrEqual(REBUY_LEAD_DAYS);
+    // The hero slot renders the app's own verdict component, not a picture of one.
+    expect(read("app/components/hero-object/HeroObject.tsx")).toContain("<VerdictSummary");
+    expect(read("app/check/[id]/page.tsx")).toContain("<VerdictSummary");
+  });
+
+  it("puts the intake on /check and sends every Check link there", () => {
+    const intake = read("app/check/page.tsx");
+    expect(intake).toContain("<Intake samples={SAMPLES} />");
+    expect(read("app/components/NavLinks.tsx")).toContain('{ href: "/check", label: "Check" }');
+    for (const file of ["app/check/[id]/page.tsx", "app/checkout/[id]/page.tsx", "app/components/VerdictActions.tsx"]) {
+      expect(read(file), file).not.toMatch(/href="\/"/);
+    }
+    const held = heldOutResult();
+    const steps = startHereSteps({ heldOutRight: held.skipCorrect, heldOutN: held.n, devN: DEV_SET_SIZE, rebuyLeadDays: REBUY_LEAD_DAYS });
+    expect(steps[0].links).toEqual([{ href: "/check", label: "Open Check" }]);
   });
 });
 

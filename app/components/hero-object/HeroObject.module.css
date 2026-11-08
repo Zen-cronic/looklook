@@ -1,0 +1,238 @@
+/* The hero object: a material panel with real product cards floating on it */
+.object {
+  --hairline: color-mix(in srgb, var(--card) 78%, transparent);
+  --veil: color-mix(in srgb, var(--card) 30%, transparent);
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  background: var(--shade);
+  isolation: isolate;
+}
+
+.material,
+.material img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.material img {
+  object-fit: cover;
+  object-position: 50% 40%;
+}
+
+.material {
+  z-index: -1;
+}
+
+.stage {
+  position: relative;
+  padding: clamp(1.25rem, 0.6rem + 2.4vw, 2.5rem);
+  padding-bottom: clamp(1.5rem, 0.8rem + 2.6vw, 2.75rem);
+}
+
+/* Nested hairline frames around the verdict card */
+.frameOuter {
+  padding: 0.6rem;
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--radius) + 1.2rem);
+  background: var(--veil);
+}
+
+.frameInner {
+  padding: 0.6rem;
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--radius) + 0.6rem);
+  background: var(--veil);
+}
+
+.card {
+  animation: none;
+}
+
+.card :global(.verdict-word) {
+  font-size: clamp(2.75rem, 2.1rem + 2.4vw, 4.25rem);
+  animation-delay: 380ms;
+}
+
+.card :global(.verdict-reason) {
+  font-size: var(--step-0);
+}
+
+.card :global(.verdict-head) {
+  padding: 1.15rem 1.2rem 1.1rem;
+}
+
+.card :global(.product-row) {
+  padding: 0.9rem 1.2rem 1rem;
+}
+
+.card :global(.thumb) {
+  width: 3.25rem;
+  height: 3.25rem;
+  object-fit: cover;
+}
+
+.card :global(.price-line) {
+  font-size: var(--step-0);
+}
+
+/* The dotted line from the verdict to the item already owned */
+.shelfRow {
+  --indent: 22%;
+  position: relative;
+  margin-top: 3.25rem;
+  padding-left: var(--indent);
+}
+
+.wire {
+  position: absolute;
+  left: 2.6rem;
+  right: calc(100% - var(--indent) + 0.5rem);
+  top: -3.25rem;
+  bottom: calc(50% - 1.5px);
+  border-left: 3px dotted var(--ink);
+  border-bottom: 3px dotted var(--ink);
+  border-bottom-left-radius: 1.25rem;
+}
+
+.wireLabel {
+  position: absolute;
+  left: 0.85rem;
+  top: 0.55rem;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  color: var(--ink);
+}
+
+.shelfFrame {
+  padding: 0.5rem;
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--radius-sm) + 0.5rem + 4px);
+  background: var(--veil);
+}
+
+.shelfCard {
+  background: var(--card);
+  border: var(--edge);
+  border-radius: calc(var(--radius-sm) + 4px);
+  box-shadow: var(--shadow-hard-sm);
+  padding: 0.85rem 1rem 0.95rem;
+}
+
+.shelfCard :global(.name-line) {
+  font-size: 0.9375rem;
+}
+
+.shelfCard p:last-child {
+  margin-top: 0.3rem;
+}
+
+.shelfTag {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.dot {
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--signature);
+}
+
+/* Motion: the cards float in and settle, then the line draws */
+.verdictFloat {
+  animation: float-in 700ms var(--ease-out) 80ms both;
+}
+
+.verdictFloat > .frameOuter {
+  animation: drift 7s ease-in-out 1.2s infinite alternate;
+}
+
+.shelfFloat {
+  animation: float-in 700ms var(--ease-out) 420ms both;
+}
+
+.shelfFloat > .shelfFrame {
+  animation: drift 6s ease-in-out 1.6s infinite alternate-reverse;
+}
+
+.wire {
+  animation: draw 650ms var(--ease-out) 900ms both;
+}
+
+.wireLabel {
+  animation: label-in 300ms var(--ease-out) 1.4s both;
+}
+
+@keyframes float-in {
+  0% {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+  70% {
+    opacity: 1;
+    transform: translateY(-3px);
+  }
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes drift {
+  from {
+    transform: none;
+  }
+  to {
+    transform: translateY(-5px);
+  }
+}
+
+@keyframes draw {
+  from {
+    clip-path: inset(0 100% 100% 0);
+  }
+  50% {
+    clip-path: inset(0 calc(100% - 4px) 0 0);
+  }
+  to {
+    clip-path: inset(0 -1rem 0 0);
+  }
+}
+
+@keyframes label-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@media (max-width: 640px) {
+  .object {
+    border-radius: 24px;
+  }
+
+  .shelfRow {
+    --indent: 14%;
+  }
+
+  .wire {
+    left: 1.6rem;
+  }
+}

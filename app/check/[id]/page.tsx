@@ -69,7 +69,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
 
   return (
     <div className="stack">
-      <Link href="/" className="btn outline small" style={{ width: "fit-content" }}>
+      <Link href="/check" className="btn outline small" style={{ width: "fit-content" }}>
         Check another
       </Link>
       <article className={`verdict ${d.verdict}`}>

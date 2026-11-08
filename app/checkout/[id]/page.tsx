@@ -52,7 +52,7 @@ async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["param
       ) : (
         <p className="error">Payments are off: PAYPAL_CLIENT_ID is not set on the server.</p>
       )}
-      <Link className="btn outline" href="/">
+      <Link className="btn outline" href="/check">
         Cancel
       </Link>
     </div>

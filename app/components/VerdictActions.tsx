@@ -86,7 +86,7 @@ export function VerdictActions(p: Props) {
         ) : (
           <p className="muted">We couldn&apos;t find it in the catalogue. Try a clearer screenshot or paste the store link.</p>
         )}
-        <Link className="btn outline" href="/">
+        <Link className="btn outline" href="/check">
           None of these, try again
         </Link>
       </div>

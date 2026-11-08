@@ -1,0 +1,498 @@
+/* Landing page. Tokens only (app/globals.css :root). */
+.landing {
+  --gutter: 1.25rem;
+  --wide: 72rem;
+  --hairline: color-mix(in srgb, var(--ink) 14%, transparent);
+  padding: 1rem var(--gutter) 4.5rem;
+}
+
+.landing > section {
+  max-width: var(--wide);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.landing > section + section {
+  margin-top: clamp(4rem, 2.5rem + 5vw, 7rem);
+}
+
+/* Hero */
+.hero {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .hero {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 34rem);
+    gap: 3.5rem;
+    padding-top: 1.5rem;
+  }
+}
+
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.35rem 0.85rem 0.35rem 0.7rem;
+  border-radius: var(--radius-pill);
+  background: var(--card);
+  border: 1px solid var(--hairline);
+  font-size: var(--step--1);
+  font-weight: 700;
+  color: var(--ink-2);
+}
+
+.eyebrowDot {
+  width: 0.6rem;
+  height: 0.6rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--ink);
+  flex: none;
+}
+
+.title {
+  margin-top: 1.25rem;
+  font-size: clamp(2.6rem, 1.4rem + 4.6vw, 5.5rem);
+  line-height: 0.98;
+  letter-spacing: -0.055em;
+  font-weight: 900;
+  max-width: 11ch;
+  animation: rise-in 600ms var(--ease-out) both;
+}
+
+.lede {
+  margin-top: 1.4rem;
+  max-width: 34rem;
+  font-size: var(--step-1);
+  line-height: 1.5;
+  color: var(--ink-2);
+  animation: rise-in 600ms var(--ease-out) 120ms both;
+}
+
+.ctas {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+  margin-top: 2rem;
+  animation: rise-in 600ms var(--ease-out) 220ms both;
+}
+
+.ctas :global(.btn) {
+  min-height: 3.4rem;
+  padding: 0.9rem 1.7rem;
+  font-size: var(--step-1);
+}
+
+.heroSlot {
+  min-width: 0;
+}
+
+/* Proof: the one large cobalt field */
+.proof {
+  display: grid;
+  gap: 2.25rem;
+  padding: clamp(1.75rem, 1rem + 3vw, 3.5rem);
+  border-radius: 32px;
+  background: var(--signature);
+  color: var(--signature-ink);
+}
+
+@media (min-width: 900px) {
+  .proof {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1.05fr);
+    align-items: end;
+    gap: 3.5rem;
+  }
+}
+
+.proofEyebrow {
+  font-size: var(--step--1);
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.proofFigure {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: clamp(5rem, 3rem + 9vw, 10rem);
+  line-height: 0.85;
+  letter-spacing: -0.06em;
+  margin-top: 0.75rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.proofOf {
+  font-size: 0.42em;
+  letter-spacing: -0.04em;
+  margin-left: 0.08em;
+  opacity: 0.8;
+}
+
+.proofText {
+  margin-top: 1.1rem;
+  font-size: var(--step-1);
+  line-height: 1.45;
+  font-weight: 600;
+  max-width: 30rem;
+}
+
+.proof .onField {
+  margin-top: 1.5rem;
+  border-color: var(--signature-ink);
+  color: var(--signature-ink);
+}
+
+.proof .onField:hover {
+  background: var(--signature-ink);
+  color: var(--ink);
+}
+
+.proof :focus-visible {
+  outline-color: var(--signature-ink);
+}
+
+.bars {
+  list-style: none;
+  display: grid;
+  gap: 1.1rem;
+}
+
+.bars li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label value"
+    "track track";
+  gap: 0.4rem 1rem;
+  align-items: end;
+}
+
+.barLabel {
+  grid-area: label;
+  font-weight: 700;
+  font-size: 0.9375rem;
+  line-height: 1.3;
+}
+
+.barValue {
+  grid-area: value;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-2);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.barTrack {
+  grid-area: track;
+  display: block;
+  height: 1.1rem;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--signature-ink) 16%, transparent);
+  overflow: hidden;
+}
+
+.barFill {
+  display: block;
+  height: 100%;
+  border-radius: var(--radius-pill);
+  background: color-mix(in srgb, var(--signature-ink) 55%, transparent);
+  transform-origin: 0 50%;
+  transition: transform 900ms var(--ease-out) 150ms;
+}
+
+.barMine .barLabel {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  letter-spacing: -0.03em;
+}
+
+.barMine .barTrack {
+  height: 1.6rem;
+}
+
+.barMine .barFill {
+  background: var(--signature-ink);
+}
+
+.barMine .barValue {
+  font-size: var(--step-3);
+}
+
+/* How it works */
+.sectionTitle {
+  font-family: var(--font-display);
+  font-size: var(--display-1);
+  line-height: 1;
+  letter-spacing: var(--track-display);
+  font-weight: 800;
+}
+
+.steps {
+  list-style: none;
+  display: grid;
+  gap: 2.5rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 900px) {
+  .steps {
+    grid-template-columns: 0.8fr 1.2fr 1fr;
+    gap: 2rem;
+    align-items: start;
+  }
+}
+
+.step h3 {
+  margin-top: 1.25rem;
+  font-size: var(--step-1);
+}
+
+.step > p {
+  margin-top: 0.4rem;
+  color: var(--ink-2);
+  max-width: 24rem;
+}
+
+/* Each card floats in a hairline frame on the page */
+.stepCard {
+  position: relative;
+  padding: 0.6rem;
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--radius) + 0.6rem);
+  min-height: 15.5rem;
+  display: grid;
+  align-items: center;
+}
+
+/* A dotted link from each card to the next */
+@media (min-width: 900px) {
+  .step:not(:last-child) .stepCard::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    right: calc(-2rem - 1px);
+    width: 2rem;
+    border-top: 3px dotted var(--ink);
+  }
+}
+
+.post {
+  border-radius: var(--radius);
+  border: var(--edge);
+  overflow: hidden;
+  background: var(--card);
+  height: 15.5rem;
+}
+
+.post img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: 50% 30%;
+}
+
+.evidenceCard {
+  border: var(--edge);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.evidenceCard :global(.evidence) {
+  font-size: 0.875rem;
+}
+
+.miniVerdict {
+  margin-top: 0.85rem;
+}
+
+.buyCard {
+  border: var(--edge);
+}
+
+.buyCard .fakeBtn {
+  margin: 0.9rem 0 0.6rem;
+}
+
+.fakeBtn {
+  pointer-events: none;
+}
+
+.studio {
+  margin-top: 2.5rem;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem 2rem;
+  padding: 1.25rem 1.4rem;
+  border-radius: var(--radius);
+  background: var(--card);
+}
+
+.studio p {
+  max-width: 44rem;
+}
+
+/* The yes stays yours */
+.yes {
+  display: grid;
+  gap: 2.5rem;
+  align-items: center;
+}
+
+@media (min-width: 960px) {
+  .yes {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 32rem);
+    gap: 3.5rem;
+  }
+}
+
+.yesLede {
+  margin-top: 1rem;
+  font-size: var(--step-1);
+  line-height: 1.45;
+  color: var(--ink-2);
+  max-width: 36rem;
+}
+
+.points {
+  list-style: none;
+  margin-top: 1.75rem;
+  display: grid;
+  gap: 1.25rem;
+}
+
+.points li {
+  padding-top: 1.1rem;
+  border-top: var(--edge);
+}
+
+.points h3 {
+  font-size: var(--step-1);
+}
+
+.points p {
+  margin-top: 0.3rem;
+  color: var(--ink-2);
+}
+
+.yesPanel {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(1.25rem, 0.5rem + 3vw, 2.75rem);
+  min-height: 26rem;
+  display: grid;
+  align-items: center;
+}
+
+.yesMaterial,
+.yesMaterial img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.yesMaterial {
+  z-index: -1;
+}
+
+.yesMaterial img {
+  object-fit: cover;
+}
+
+.yesFrame {
+  padding: 0.6rem;
+  border: 1px solid color-mix(in srgb, var(--card) 80%, transparent);
+  border-radius: calc(var(--radius) + 0.6rem);
+  background: color-mix(in srgb, var(--card) 30%, transparent);
+}
+
+.approval {
+  --status: var(--signature);
+}
+
+.approvalActions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.6rem;
+  margin: 0.9rem 0 0.7rem;
+}
+
+/* Motion. Reveals run only when LandingMotion set html[data-reveal-on]. */
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+:global(html[data-reveal-on]) [data-reveal] {
+  transition:
+    opacity 600ms var(--ease-out),
+    transform 600ms var(--ease-out);
+}
+
+/* The steps arrive in order, left to right, like the flow they describe */
+:global(html[data-reveal-on]) .step[data-reveal]:not([data-shown]) {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+.step:nth-child(2) {
+  transition-delay: 140ms;
+}
+
+.step:nth-child(3) {
+  transition-delay: 280ms;
+}
+
+:global(html[data-reveal-on]) .points [data-reveal]:not([data-shown]),
+:global(html[data-reveal-on]) .studio:not([data-shown]) {
+  opacity: 0;
+  transform: translateY(12px);
+}
+
+:global(html[data-reveal-on]) .yesPanel:not([data-shown]) {
+  opacity: 0;
+  transform: translateY(28px);
+}
+
+:global(html[data-reveal-on]) .proof:not([data-shown]) .barFill {
+  transform: scaleX(0);
+}
+
+@media (max-width: 640px) {
+  .landing {
+    --gutter: 1rem;
+    padding-top: 0.5rem;
+  }
+
+  .stepCard {
+    min-height: 0;
+  }
+
+  .post {
+    height: 13rem;
+  }
+
+  .yesPanel {
+    min-height: 0;
+    border-radius: 24px;
+  }
+
+  .proof {
+    border-radius: 24px;
+  }
+}

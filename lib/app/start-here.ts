@@ -41,7 +41,7 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
       title: "Load the sample week and check a post",
       body:
         "Load the sample week: a fictional shopper's week of checks on real catalogue products (two skips, four waits, a buy and a cleanser due for a rebuy). On Check, the last check is the sunscreen post. You already own a sunscreen that does the same job, so the answer is skip. Open See why for the rule, the shelf item and the cited store policy, and see the same product at other stores with each store's policy.",
-      links: [{ href: "/", label: "Open Check" }],
+      links: [{ href: "/check", label: "Open Check" }],
       sampleWeek: true,
     },
     {
