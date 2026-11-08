@@ -24,7 +24,7 @@ export default function JudgePage() {
         <p className="lede">
           {APP_NAME}, {APP_TAGLINE}. {stepsWord} short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.
         </p>
-        <p style={{ marginTop: "0.75rem" }}>PayPal&apos;s shopping tools help you buy what you saw. {APP_NAME} asks whether you should, and when it&apos;s a staple, PayPal Vault makes buying it again one yes.</p>
+        <p style={{ marginTop: "0.75rem" }}>Spend guards decide how much an AI may spend; {APP_NAME} decides whether to buy at all. Price timing is the second question; the first is whether you already own one. And money moves only after your yes, every time: when it&apos;s a staple, PayPal Vault makes buying it again one yes.</p>
         <p className="small" style={{ marginTop: "0.75rem" }} data-testid="sandbox-login">
           <strong>Sandbox login and test card:</strong> see the testing instructions on the submission page. Every payment is in the PayPal sandbox; no real money moves.
         </p>

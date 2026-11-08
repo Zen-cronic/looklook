@@ -19,7 +19,7 @@ For anyone who buys skincare and makeup they saw on their feed and ends up with 
 
 The 65 products the matching was developed on come second, because they were used to improve it: 58 of 65 there (saying skip to everything gets 39; same category gets 40). Its first scored run was 55 of 65 and one similarity change later 60 of 65; then a store policy we had misread was corrected, together with the expected answers it affected, and it is 58 of 65 ([`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md); see Corrections below). `GET /api/eval/skip` and `npm run eval:skip` re-run it with no network calls.
 
-PayPal's shopping tools help you buy what you saw. LookLook asks whether you should, and when it's a staple, PayPal Vault makes buying it again one yes.
+Spend guards decide how much an AI may spend; LookLook decides whether to buy at all. Price timing is the second question; the first is whether you already own one. And money moves only after your yes, every time: when it's a staple, PayPal Vault makes buying it again one yes.
 
 Before you buy what you saw on your feed, LookLook checks it, and its most common answer is skip. Send it a screenshot of a creator post or a store link. It reads the product, finds it in the catalogue, and checks it against what you already own, this month's budget, the 90-day price history and whether the store takes it back once opened. Then it says **skip**, **wait**, **buy** or asks you to confirm, with the one-line reason and the evidence behind it, and lists the same product at other stores with what each store does with opened items. A wait says what it is waiting for: next month's budget (with a reminder), a lower price (with a price watch, the 90-day trend and the target), or the one you own running low.
 
