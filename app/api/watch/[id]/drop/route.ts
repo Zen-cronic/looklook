@@ -1,5 +1,5 @@
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
-import { appendEvent, loadSession, setEventEffect, updateSession } from "@/lib/app/store";
+import { handleEvent, loadSession, updateSession } from "@/lib/app/store";
 import { applyPriceEvent, simulatedDropEvent } from "@/lib/app/watch";
 
 /**
@@ -15,9 +15,12 @@ export async function POST(request: Request, ctx: RouteContext<"/api/watch/[id]/
     if (!w) throw new HttpError(404, "No such watched item.");
     const to = typeof price === "number" && price > 0 ? price : Math.round(w.targetPrice * 0.98 * 100) / 100;
     const event = simulatedDropEvent(w, to);
-    const logged = await appendEvent({ source: "channel3", simulated: true, eventId: event.id, type: event.type, verification: "simulated" });
-    const effects = await updateSession(sid, (s) => applyPriceEvent(s, event));
-    await setEventEffect(logged.id, effects.join(" ") || "No open watch matched.");
+    let effects: string[] = [];
+    const handled = await handleEvent({ source: "channel3", simulated: true, eventId: event.id, type: event.type, verification: "simulated" }, async () => {
+      effects = await updateSession(sid, (s) => applyPriceEvent(s, event));
+      return effects.join(" ") || "No open watch matched.";
+    });
+    if (handled.outcome === "failed") throw new HttpError(500, "The test price drop couldn't be applied. Try again.");
     return Response.json({ eventId: event.id, price: to, effects });
   });
 }

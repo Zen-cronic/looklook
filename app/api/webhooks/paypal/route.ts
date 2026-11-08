@@ -1,11 +1,13 @@
 import { applyPayPalEvent, eventRefs, type PayPalEvent } from "@/lib/app/paypal-events";
-import { appendEvent, indexLookup, setEventEffect, updateSession } from "@/lib/app/store";
+import { appendEvent, handleEvent, indexLookup, updateSession } from "@/lib/app/store";
 import { getPayPalClient, verifyWebhookSignature } from "@/lib/paypal";
 
 /**
  * PayPal webhook receiver. Every delivery is verified with PayPal's
- * verify-webhook-signature call before it is trusted, logged with the result,
- * and redeliveries of the same event id are acknowledged but handled once.
+ * verify-webhook-signature call before it is trusted and logged with the
+ * result. An event counts as handled only after its effect is applied: if
+ * applying fails the answer is 500, so PayPal redelivers it, and redeliveries
+ * of an event already applied are acknowledged without applying it again.
  */
 export async function POST(request: Request) {
   const webhookId = process.env.PAYPAL_WEBHOOK_ID;
@@ -25,17 +27,18 @@ export async function POST(request: Request) {
     await appendEvent({ source: "paypal", simulated: false, eventId: result.eventId, verification: "failed", failureReason: result.reason });
     return Response.json({ verified: false, reason: result.reason }, { status: 400 });
   }
-  const logged = await appendEvent({ source: "paypal", simulated: false, eventId: result.eventId, type: result.eventType, verification: "verified" });
-  if (logged.duplicate) {
-    return Response.json({ verified: true, eventId: result.eventId, eventType: result.eventType, duplicate: true });
-  }
-  const event = JSON.parse(rawBody) as PayPalEvent;
-  const sessions = new Set(eventRefs(event).flatMap((ref) => indexLookup(ref.kind, ref.id)));
-  const effects: string[] = [];
-  for (const sid of sessions) {
-    const effect = await updateSession(sid, (s) => applyPayPalEvent(s, event));
-    if (effect) effects.push(effect);
-  }
-  await setEventEffect(logged.id, effects.join(" ") || "Not linked to a purchase in this app.");
-  return Response.json({ verified: true, eventId: result.eventId, eventType: result.eventType, duplicate: false });
+  const { eventId, eventType } = result;
+  const handled = await handleEvent({ source: "paypal", simulated: false, eventId, type: eventType, verification: "verified" }, async () => {
+    const event = JSON.parse(rawBody) as PayPalEvent;
+    const sessions = new Set(eventRefs(event).flatMap((ref) => indexLookup(ref.kind, ref.id)));
+    const effects: string[] = [];
+    for (const sid of sessions) {
+      const effect = await updateSession(sid, (s) => applyPayPalEvent(s, event));
+      if (effect) effects.push(effect);
+    }
+    return effects.join(" ") || "Not linked to a purchase in this app.";
+  });
+  if (handled.outcome === "failed") return Response.json({ verified: true, eventId, error: "not applied; please redeliver" }, { status: 500 });
+  if (handled.outcome === "in-progress") return Response.json({ verified: true, eventId, error: "already being applied; retry later" }, { status: 409 });
+  return Response.json({ verified: true, eventId, eventType, duplicate: handled.outcome === "duplicate" });
 }

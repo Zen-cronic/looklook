@@ -257,5 +257,7 @@ export interface EventLogEntry {
   verification: "verified" | "failed" | "not-configured" | "simulated";
   failureReason?: string;
   duplicate: boolean;
+  /** For a verified or simulated event: being applied, applied, or failed (a redelivery is then applied). */
+  state?: "processing" | "handled" | "failed";
   effect?: string;
 }

@@ -73,7 +73,7 @@ async function Events() {
               <td data-label="Check">
                 <VerificationChip e={e} /> {e.duplicate && <span className="chip wait">Repeat, handled once</span>}
               </td>
-              <td data-label="What it did" className="small">{e.duplicate ? "Nothing: already handled." : (e.effect ?? "")}</td>
+              <td data-label="What it did" className="small">{e.duplicate ? "Nothing: already handled." : e.state === "failed" ? "Not applied yet: waiting for the sender to retry." : e.state === "processing" && !e.effect ? "Being applied." : (e.effect ?? "")}</td>
             </tr>
           ))}
         </tbody>

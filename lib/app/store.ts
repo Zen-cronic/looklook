@@ -137,42 +137,90 @@ export function listEvents(limit = 100): EventLogEntry[] {
   return all.slice(-limit).reverse();
 }
 
+/** An entry still being applied this long after it arrived is treated as abandoned. */
+const PROCESSING_TIMEOUT_MS = 60_000;
+
+/** The handled (or still being applied) original of this event, if one exists. */
+function originalOf(events: EventLogEntry[], source: EventLogEntry["source"], eventId: string, now = Date.now()): EventLogEntry | undefined {
+  return events.find(
+    (e) =>
+      e.source === source &&
+      e.eventId === eventId &&
+      !e.duplicate &&
+      (e.verification === "verified" || e.verification === "simulated") &&
+      // Entries written before states existed count as handled.
+      (e.state === "handled" || (e.state === undefined && e.effect !== undefined) || (e.state === "processing" && now - Date.parse(e.receivedAt) < PROCESSING_TIMEOUT_MS)),
+  );
+}
+
 /** True when an event id from this source was already handled (redelivery). */
 export function eventSeen(source: EventLogEntry["source"], eventId: string): boolean {
   const all = readJson<{ events: EventLogEntry[] }>(eventsFile())?.events ?? [];
-  return all.some((e) => e.source === source && e.eventId === eventId && !e.duplicate && (e.verification === "verified" || e.verification === "simulated"));
+  return originalOf(all, source, eventId) !== undefined;
 }
 
 /**
  * Record a delivery. For a verified or simulated event, the duplicate check
  * and the append happen under one lock, so two copies arriving together are
- * handled once. Returns the stored entry (duplicate set when already seen).
+ * handled once. A new event starts as "processing"; it only counts as handled
+ * once markEvent records its effect, so a delivery whose effect failed is
+ * applied again when the sender retries.
  */
-export async function appendEvent(entry: Omit<EventLogEntry, "id" | "receivedAt" | "duplicate">): Promise<EventLogEntry> {
+export async function appendEvent(entry: Omit<EventLogEntry, "id" | "receivedAt" | "duplicate" | "state">): Promise<EventLogEntry & { inProgress?: boolean }> {
   return withLock("events", () => {
     const file = eventsFile();
     const store = readJson<{ events: EventLogEntry[] }>(file) ?? { events: [] };
     const countable = entry.verification === "verified" || entry.verification === "simulated";
-    const duplicate =
-      countable && !!entry.eventId && store.events.some((e) => e.source === entry.source && e.eventId === entry.eventId && !e.duplicate && (e.verification === "verified" || e.verification === "simulated"));
-    const stored: EventLogEntry = { ...entry, id: crypto.randomUUID(), receivedAt: new Date().toISOString(), duplicate };
+    const original = countable && entry.eventId ? originalOf(store.events, entry.source, entry.eventId) : undefined;
+    const duplicate = original !== undefined;
+    const stored: EventLogEntry = { ...entry, id: crypto.randomUUID(), receivedAt: new Date().toISOString(), duplicate, ...(countable && !duplicate ? { state: "processing" as const } : {}) };
     store.events.push(stored);
     if (store.events.length > EVENT_LIMIT) store.events = store.events.slice(-EVENT_LIMIT);
     writeJson(file, store);
-    return stored;
+    return { ...stored, inProgress: original?.state === "processing" };
   });
 }
 
-/** Fill in what a handled event did, after the session update. */
-export async function setEventEffect(id: string, effect: string): Promise<void> {
+/** Record what a handled event did (or why applying it failed). */
+export async function markEvent(id: string, outcome: { state: "handled"; effect: string } | { state: "failed"; reason: string }): Promise<void> {
   await withLock("events", () => {
     const file = eventsFile();
     const store = readJson<{ events: EventLogEntry[] }>(file);
     const e = store?.events.find((x) => x.id === id);
     if (!store || !e) return;
-    e.effect = effect;
+    e.state = outcome.state;
+    if (outcome.state === "handled") e.effect = outcome.effect;
+    else e.failureReason = outcome.reason;
     writeJson(file, store);
   });
+}
+
+/** Fill in what a handled event did, after the session update. */
+export async function setEventEffect(id: string, effect: string): Promise<void> {
+  await markEvent(id, { state: "handled", effect });
+}
+
+/**
+ * Log a verified delivery and apply it once. Returns "failed" when applying
+ * threw (answer non-2xx so the sender retries), "in-progress" when another
+ * copy is being applied right now (also non-2xx: retry later), "duplicate"
+ * when it was already applied.
+ */
+export async function handleEvent(
+  entry: Omit<EventLogEntry, "id" | "receivedAt" | "duplicate" | "state">,
+  apply: () => Promise<string>,
+): Promise<{ outcome: "handled" | "duplicate" | "in-progress" | "failed"; effect?: string }> {
+  const logged = await appendEvent(entry);
+  if (logged.duplicate) return { outcome: logged.inProgress ? "in-progress" : "duplicate" };
+  try {
+    const effect = await apply();
+    await markEvent(logged.id, { state: "handled", effect });
+    return { outcome: "handled", effect };
+  } catch (e) {
+    console.error(`event ${entry.eventId ?? "?"} failed:`, e instanceof Error ? e.message : e);
+    await markEvent(logged.id, { state: "failed", reason: "applying it failed; waiting for a redelivery" }).catch(() => undefined);
+    return { outcome: "failed" };
+  }
 }
 
 // Cache for model and catalogue work on the same image or link
