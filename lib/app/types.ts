@@ -74,6 +74,8 @@ export interface SavedMethod {
   removedAt?: string;
   /** PayPal answered 404 for the token after the delete (checked twice). */
   revokeConfirmed?: boolean;
+  /** Removed here (no rebuy can use it), but PayPal hasn't confirmed the delete yet: retry. */
+  revokePending?: boolean;
   /** Set when PayPal declined this method on a rebuy; the shopper is asked to approve another. */
   declinedAt?: string;
 }

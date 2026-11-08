@@ -49,3 +49,18 @@ export function MethodControls({ id, label, capDollars }: { id: string; label: s
     </div>
   );
 }
+
+/** A removal PayPal hasn't confirmed: delete again and check. */
+export function RetryRemoval({ id }: { id: string }) {
+  const { call, busy, error } = useApi();
+  return (
+    <div className="stack-sm">
+      {error && <p className="error">{error.error}</p>}
+      <div className="actions">
+        <button className="btn outline small" disabled={!!busy} onClick={() => void call("retry", `/api/methods/${id}`, "DELETE")}>
+          {busy ? "Removing, confirming with PayPal…" : "Retry removal"}
+        </button>
+      </div>
+    </div>
+  );
+}
