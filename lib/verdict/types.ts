@@ -65,7 +65,7 @@ export interface Evidence {
   shelf?: ShelfEvidence;
   /** The shelf item this purchase would replace, when one runs out soon. */
   replaces?: ShelfEvidence & { daysLeft: number };
-  policy?: Pick<OpenedReturnPolicy, "retailerId" | "retailerName" | "group" | "returnableOpened" | "windowDays" | "sourceUrl" | "checkedOn" | "fallback">;
+  policy?: Pick<OpenedReturnPolicy, "retailerId" | "retailerName" | "group" | "returnableOpened" | "windowDays" | "sourceUrl" | "checkedOn" | "fallback" | "openedNeeds">;
   budget?: { group: BudgetGroup; remaining: number; price: number };
   price?: { shown: number; typical?: number; low?: number; target?: number; usable: boolean; asOf?: string };
   /** For wait: the date to look again, and the latest date to buy by when replacing. */

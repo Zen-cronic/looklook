@@ -1,5 +1,4 @@
 import type { Decision, RuleId } from "../verdict/types";
-import { openedNeedsFor } from "../policies";
 
 /** Each rule in plain words, as shown under "See why". */
 export const RULE_TEXT: Record<RuleId, string> = {
@@ -48,7 +47,8 @@ export function returnsLine(d: Decision, storeLabel?: string): { tone: ReturnsTo
   const what = GROUP_WORD[p.group];
   switch (p.returnableOpened) {
     case "yes": {
-      const needs = p.fallback ? undefined : openedNeedsFor(p.retailerId, p.group);
+      // From the saved verdict, so an old verdict keeps the words it was decided with.
+      const needs = p.fallback ? undefined : p.openedNeeds;
       const window = p.windowDays ? ` within ${p.windowDays} days` : "";
       const tail = d.verdict === "skip" ? "" : ", so trying it is low risk";
       return { tone: "ok", text: `${store} takes opened ${what} back${needs ? ` ${needs}` : ""}${window}${tail}.` };

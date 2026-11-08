@@ -1,4 +1,5 @@
 import type Anthropic from "@anthropic-ai/sdk";
+import { withReturnConditions } from "../policies/conditions";
 import type { PriceBand } from "../channel3/band";
 import type { Product } from "../channel3/types";
 import type { BudgetGroup } from "../shelf/categories";
@@ -49,7 +50,7 @@ export async function checkScreenshot(input: CheckInput, deps: CheckDeps): Promi
   const match = pickMatch(fields, products);
   const facts = toProductFacts(fields, match);
   const band = match.best && !match.needsConfirmation ? await deps.priceBand(match.best.product.id) : null;
-  const decision = decide({ product: facts, store: input.store ?? fields.store ?? undefined, shelf: input.shelf, budgets: input.budgets, priceBand: band, today: input.today });
+  const decision = withReturnConditions(decide({ product: facts, store: input.store ?? fields.store ?? undefined, shelf: input.shelf, budgets: input.budgets, priceBand: band, today: input.today }));
   const reason = await writeReason(decision, facts, input.modelReason ? { client: deps.anthropic } : {});
   return { fields, match, facts, decision, reason };
 }

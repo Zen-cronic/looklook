@@ -1,4 +1,5 @@
 import cases from "@/eval/skip-set/cases.json";
+import { withReturnConditions } from "../policies/conditions";
 import bandsFile from "@/eval/skip-set/price-bands.json";
 import shelfFile from "@/eval/skip-set/shelf.json";
 import type { PriceBand } from "../channel3/band";
@@ -151,7 +152,7 @@ export function checkFromCase(seed: CaseCheckSeed, state: SessionState, today: s
     attributes: readerAttributes(c.attributes),
     legibility: 0.95,
   };
-  const decision = decide({ product: facts, store: c.store, shelf: state.shelf, budgets: remainingBudgets(state.budgets, today), priceBand: band, today });
+  const decision = withReturnConditions(decide({ product: facts, store: c.store, shelf: state.shelf, budgets: remainingBudgets(state.budgets, today), priceBand: band, today }));
   return {
     id: seed.id,
     createdAt: at.toISOString(),

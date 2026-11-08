@@ -331,7 +331,7 @@ describe("return-policy line", () => {
   });
 
   it("names what CVS needs for an opened beauty return", () => {
-    const cvs = { verdict: "skip", rule: "owns-similar", flags: [], evidence: { trace: [], policy: { retailerId: "cvs", retailerName: "CVS Pharmacy", group: "beauty", returnableOpened: "yes", windowDays: 60, sourceUrl: "c", checkedOn: "2026-11-07", fallback: false } } } as never;
+    const cvs = { verdict: "skip", rule: "owns-similar", flags: [], evidence: { trace: [], policy: { retailerId: "cvs", retailerName: "CVS Pharmacy", group: "beauty", returnableOpened: "yes", windowDays: 60, sourceUrl: "c", checkedOn: "2026-11-07", fallback: false, openedNeeds: "with a receipt" } } } as never;
     expect(returnsLine(cvs)).toEqual({ tone: "ok", text: "CVS Pharmacy takes opened beauty back with a receipt within 60 days." });
     expect(returnsLine(decision("unknown"))?.tone).toBe("unknown");
   });

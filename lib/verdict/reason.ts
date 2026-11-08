@@ -20,7 +20,7 @@ function returnPhrase(d: Decision): string {
     case "unknown":
       return p.fallback ? "this store's return policy for opened items isn't known" : `${p.retailerName} doesn't say whether opened items come back`;
     default:
-      return `${p.retailerName} takes it back opened`;
+      return `${p.retailerName} takes it back opened${p.openedNeeds ? ` ${p.openedNeeds}` : ""}`;
   }
 }
 
@@ -63,7 +63,7 @@ const REASON_SYSTEM = [
   "The verdict is already decided. Never change it, argue with it, or add advice.",
   "Use only the facts in the JSON. No numbers, dates or stores that are not in it.",
   "One sentence, at most 28 words, plain words, no emoji, addressed to the shopper as you.",
-  "Return policies: returnableOpened yes means the store takes it back opened within windowDays; no means the store may refuse it once opened; conditional means only on conditions; unknown means we couldn't find the policy. Never state a policy more firmly than that.",
+  "Return policies: returnableOpened yes means the store takes it back opened within windowDays (and, when openedNeeds is given, only that way, for example with a receipt: say so); no means the store may refuse it once opened; conditional means only on conditions; unknown means we couldn't find the policy. Never state a policy more firmly than that.",
   "No middle dots, no ids, no rule names.",
 ].join(" ");
 

@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { withReturnConditions } from "../policies/conditions";
 import type Anthropic from "@anthropic-ai/sdk";
 import type { PriceBand } from "../channel3/band";
 import { brandOf } from "../channel3/dedupe";
@@ -155,7 +156,7 @@ export async function verdictFor(
   ctx: ShopperContext,
   services: Pick<CheckServices, "anthropic" | "modelReason" | "cache">,
 ) {
-  const decision = decide({ product: facts, store, shelf: ctx.shelf, budgets: remainingBudgets(ctx.budgets, ctx.today), priceBand: band, today: ctx.today });
+  const decision = withReturnConditions(decide({ product: facts, store, shelf: ctx.shelf, budgets: remainingBudgets(ctx.budgets, ctx.today), priceBand: band, today: ctx.today }));
   const key = reasonKey(decision, facts);
   const cached = services.cache?.get<{ text: string; source: "model" | "template" }>("reason", key);
   if (cached) return { decision, reason: cached };

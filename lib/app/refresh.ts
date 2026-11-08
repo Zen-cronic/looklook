@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { withReturnConditions } from "../policies/conditions";
 import { decide } from "../verdict/engine";
 import { templateReason } from "../verdict/reason";
 import type { Decision, ProductFacts } from "../verdict/types";
@@ -30,7 +31,7 @@ export function refreshChecks(state: SessionState, today: string, reasonFor?: Re
   let changed = 0;
   for (const c of state.checks) {
     if (c.purchasedReceiptId || c.needsConfirmation || !c.facts.category) continue;
-    const decision = decide({ product: c.facts, store: c.store, shelf: state.shelf, budgets, priceBand: c.band, today });
+    const decision = withReturnConditions(decide({ product: c.facts, store: c.store, shelf: state.shelf, budgets, priceBand: c.band, today }));
     if (JSON.stringify(decision) === JSON.stringify(c.decision)) continue;
     c.decision = decision;
     c.reason = reasonFor?.(c, decision) ?? { text: templateReason(decision, c.facts), source: "template" };
