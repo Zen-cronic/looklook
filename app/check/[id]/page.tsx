@@ -18,7 +18,7 @@ import { PriceHistory } from "../../components/PriceHistory";
 import { SampleWeekNote } from "../../components/SampleWeek";
 import { SimDate } from "../../components/SimDate";
 import { VerdictActions } from "../../components/VerdictActions";
-import { VERDICT_WORD } from "../../components/VerdictChip";
+import { VerdictSummary } from "../../components/VerdictSummary";
 
 export default function CheckResultPage(props: PageProps<"/check/[id]">) {
   return (
@@ -73,30 +73,23 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
         Check another
       </Link>
       <article className={`verdict ${d.verdict}`}>
-        <div className="verdict-head">
-          <div className="verdict-word">{VERDICT_WORD[d.verdict]}</div>
-          <p className="verdict-reason">{bought ? atTheTime(check.reason.text) : check.reason.text}</p>
-          {bought && (
-            <p className="small" data-testid="bought-note">
-              Bought{receipt ? ` ${eventTime(receipt.createdAt)}` : ""}. The verdict and its evidence are from when you checked.
-            </p>
-          )}
-        </div>
-        <div className="product-row">
-          {product?.imageUrl ? (
-            // eslint-disable-next-line @next/next/no-img-element
-            <img className="thumb" src={product.imageUrl} alt="" />
-          ) : (
-            <span className="thumb empty" />
-          )}
-          <div className="meta">
-            <div className="brand-line">{check.facts.brand || "Brand not shown"}</div>
-            <div className="name-line">{check.facts.name || "Product not readable"}</div>
-            {storeName && <div className="small muted">at {storeName}</div>}
-          </div>
-          {price !== null && <div className="price-line">{formatDollars(price)}</div>}
-        </div>
-        {returns && d.verdict !== "ask" && <p className={`returns ${returns.tone}`}>{returns.text}</p>}
+        <VerdictSummary
+          verdict={d.verdict}
+          reason={bought ? atTheTime(check.reason.text) : check.reason.text}
+          headNote={
+            bought && (
+              <p className="small" data-testid="bought-note">
+                Bought{receipt ? ` ${eventTime(receipt.createdAt)}` : ""}. The verdict and its evidence are from when you checked.
+              </p>
+            )
+          }
+          brand={check.facts.brand}
+          name={check.facts.name}
+          imageUrl={product?.imageUrl}
+          storeName={storeName}
+          priceLabel={price !== null ? formatDollars(price) : null}
+          returns={d.verdict !== "ask" ? returns : null}
+        />
         {d.verdict === "wait" && wait?.kind === "price" && target !== null && (
           <div className="price-wait">
             {check.band?.usable && check.band.weekly ? <PriceHistory weekly={check.band.weekly} target={target} now={price ?? target} /> : null}
