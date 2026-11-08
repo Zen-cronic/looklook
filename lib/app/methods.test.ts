@@ -76,3 +76,34 @@ describe("removing a saved method", () => {
     expect(s.methods[0].revokePending).toBe(true);
   });
 });
+
+describe("starting over", () => {
+  it("deletes saved methods at PayPal, confirmed by 404, before clearing the session", async () => {
+    const { startOver } = await import("./methods");
+    const { loadSession } = await import("./store");
+    await withCard("resetsession0001");
+    const vault = slowVault();
+    vault.release();
+    const r = await startOver("resetsession0001", { client: () => vault.client as never, sleep: async () => {} });
+    expect(vault.calls.filter((c) => c === `DELETE /v3/vault/payment-tokens/${savedCard.vaultId}`)).toHaveLength(1);
+    expect(vault.calls.filter((c) => c.startsWith("GET"))).toHaveLength(2);
+    expect(r.deleted).toEqual([savedCard.label]);
+    expect(loadSession("resetsession0001").methods).toHaveLength(0);
+  });
+
+  it("keeps a method whose delete PayPal didn't confirm, as removal pending", async () => {
+    const { startOver } = await import("./methods");
+    const { loadSession } = await import("./store");
+    const { activeMethod } = await import("./payments");
+    await withCard("resetsession0002");
+    const vault = slowVault({ failDelete: true });
+    vault.release();
+    const r = await startOver("resetsession0002", { client: () => vault.client as never, sleep: async () => {} });
+    expect(r.pending).toEqual([savedCard.label]);
+    const s = loadSession("resetsession0002");
+    expect(s.methods).toHaveLength(1);
+    expect(s.methods[0].revokePending).toBe(true);
+    expect(activeMethod(s)).toBeUndefined();
+    expect(s.receipts).toHaveLength(0);
+  });
+});

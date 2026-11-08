@@ -82,9 +82,11 @@ export async function updateSession<T>(id: string, fn: (s: SessionState) => T | 
   });
 }
 
-export async function resetSession(id: string): Promise<SessionState> {
+/** A fresh sample-shelf session; `keepMethods` carries over saved methods whose PayPal delete isn't confirmed. */
+export async function resetSession(id: string, keepMethods: SessionState["methods"] = []): Promise<SessionState> {
   return withLock(`session:${id}`, () => {
     const fresh = seedState(id, realToday());
+    fresh.methods = keepMethods;
     writeJson(sessionFile(id), fresh);
     return fresh;
   });

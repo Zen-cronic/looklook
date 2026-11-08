@@ -2,7 +2,7 @@ import type { PayPalClient } from "../paypal/client";
 import { revokePaymentToken } from "../paypal/vault";
 import { HttpError } from "./http";
 import { singleFlight } from "./single-flight";
-import { updateSession } from "./store";
+import { loadSession, resetSession, updateSession } from "./store";
 import type { SavedMethod } from "./types";
 
 const noticeId = () => `nt_${crypto.randomUUID().slice(0, 12)}`;
@@ -44,4 +44,27 @@ export async function removeSavedMethod(sid: string, id: string, deps: { client:
     s.notices.push({ id: noticeId(), at: new Date().toISOString(), text: `Removed ${m.label}. PayPal ${confirmedGone ? "no longer has it" : "was asked to delete it; retry to confirm"}; no rebuy can use it.` });
   });
   return { removed: true, confirmedGone, deletes: result.deletes, checks: result.checks };
+}
+
+/**
+ * Start over: every saved method is deleted at PayPal first (confirmed by
+ * 404, as a removal is), then the session is reset to the sample shelf. A
+ * method whose delete PayPal didn't confirm is kept, removed and marked
+ * pending, so it can't be charged and the shopper can retry.
+ */
+export async function startOver(sid: string, deps: { client: () => PayPalClient; waitMs?: number; sleep?: (ms: number) => Promise<void> }) {
+  const deleted: string[] = [];
+  const pending: string[] = [];
+  for (const m of loadSession(sid).methods) {
+    if (m.status === "removed" && m.revokeConfirmed) continue;
+    try {
+      const r = await removeSavedMethod(sid, m.id, deps);
+      (r.confirmedGone ? deleted : pending).push(m.label);
+    } catch {
+      pending.push(m.label);
+    }
+  }
+  const keep = loadSession(sid).methods.filter((m) => m.status === "removed" && !m.revokeConfirmed);
+  await resetSession(sid, keep);
+  return { reset: true, deleted, pending };
 }

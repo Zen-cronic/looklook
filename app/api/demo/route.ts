@@ -1,19 +1,20 @@
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
-import { loadSampleWeek, resetSession, updateSession } from "@/lib/app/store";
-import { negativeTestingEnabled } from "@/lib/paypal";
+import { startOver } from "@/lib/app/methods";
+import { loadSampleWeek, updateSession } from "@/lib/app/store";
+import { getPayPalClient, negativeTestingEnabled } from "@/lib/paypal";
 
 /**
  * Test controls, shown with labels in the app: move the simulated date,
  * make the next rebuy decline in the PayPal sandbox, load the sample week,
- * or start over.
+ * or start over (saved methods are deleted at PayPal first).
  */
 export async function POST(request: Request) {
   return handle(async () => {
     const sid = await sessionIdOrThrow();
     const body = await readJsonBody<{ action?: string; days?: number; on?: boolean }>(request);
     if (body.action === "reset") {
-      await resetSession(sid);
-      return Response.json({ reset: true });
+      // Saved methods are deleted at PayPal first, as the agreement promises.
+      return Response.json(await startOver(sid, { client: getPayPalClient }));
     }
     if (body.action === "sample-week") {
       const s = await loadSampleWeek(sid);

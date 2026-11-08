@@ -80,7 +80,7 @@ export default function JudgePage() {
 
       <section className="stack-sm">
         <h2>Start over</h2>
-        <p className="muted">Puts the sample shelf back and clears this browser&apos;s checks, saved methods and receipts. Saved methods stay at PayPal until you remove them first.</p>
+        <p className="muted">Puts the sample shelf back and clears this browser&apos;s checks and receipts. Saved payment methods are deleted at PayPal first, and each delete is confirmed.</p>
         <ResetButton />
       </section>
     </main>
