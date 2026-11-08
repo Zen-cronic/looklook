@@ -181,3 +181,65 @@ describe("after PayPal captured a checkout", () => {
     expect(s.intents.find((i) => i.id === "pi_gone")!.receiptId).toBe(receipt.id);
   });
 });
+
+describe("the amount and the card the shopper approved", () => {
+  it("refuses a charge when the price moved after the card was shown, then charges the re-approved price", async () => {
+    const { payWithSavedMethod } = await import("./pay");
+    const { updateSession } = await import("./store");
+    const pp = fakePayPal();
+    const { sid } = await shopper();
+    await updateSession(sid, (s) => {
+      s.watch[0].currentPrice = 8.9;
+    });
+    const stale = await payWithSavedMethod(sid, { source: { kind: "watch", watchId: "wt_ha" }, approved: { amountCents: 850 } }, { client: () => pp.client as never }).catch((e) => e);
+    expect(stale.status).toBe(409);
+    expect(stale.extra).toMatchObject({ priceChanged: true, amountCents: 890 });
+    expect(pp.requests).toHaveLength(0);
+    const ok = await payWithSavedMethod(sid, { source: { kind: "watch", watchId: "wt_ha" }, approved: { amountCents: 890 } }, { client: () => pp.client as never });
+    expect(pp.orders.size).toBe(1);
+    expect([...pp.orders.values()][0].cents).toBe(890);
+    expect(ok.captureId).toBe("CAPTURE-1");
+  });
+
+  it("refuses a yes without the amount shown", async () => {
+    const { payWithSavedMethod } = await import("./pay");
+    const pp = fakePayPal();
+    const { sid, cycle } = await shopper();
+    const r = await payWithSavedMethod(sid, { source: { kind: "staple", shelfItemId: "sh-ha", cycle } }, { client: () => pp.client as never }).catch((e) => e);
+    expect(r.status).toBe(400);
+    expect(pp.requests).toHaveLength(0);
+  });
+
+  it("derives a staple's cycle on the server: a made-up or early cycle never reaches PayPal", async () => {
+    const { payWithSavedMethod } = await import("./pay");
+    const { updateSession } = await import("./store");
+    const pp = fakePayPal();
+    const { sid, stapleCents } = await shopper();
+    for (const cycle of ["a", "b", "2099-01-01"]) {
+      const r = await payWithSavedMethod(sid, { source: { kind: "staple", shelfItemId: "sh-ha", cycle }, approved: { amountCents: stapleCents } }, { client: () => pp.client as never }).catch((e) => e);
+      expect(r.status).toBe(409);
+      expect(r.extra?.stale).toBe(true);
+    }
+    // The right cycle, but not due yet.
+    const cream = await updateSession(sid, (s) => {
+      s.dayOffset = 0;
+      const i = s.shelf.find((x) => x.id === "sh-cream")!;
+      i.runOutDate = "2099-06-01";
+      return { cycle: i.runOutDate, cents: Math.round(i.price! * 100) };
+    });
+    const early = await payWithSavedMethod(sid, { source: { kind: "staple", shelfItemId: "sh-cream", cycle: cream.cycle }, approved: { amountCents: cream.cents } }, { client: () => pp.client as never }).catch((e) => e);
+    expect(early.status).toBe(409);
+    expect(pp.requests).toHaveLength(0);
+  });
+
+  it("clears the drop once it is bought", async () => {
+    const { payWithSavedMethod } = await import("./pay");
+    const { loadSession } = await import("./store");
+    const pp = fakePayPal();
+    const { sid, dropCents } = await shopper();
+    await payWithSavedMethod(sid, { source: { kind: "watch", watchId: "wt_ha" }, approved: { amountCents: dropCents } }, { client: () => pp.client as never });
+    const w = loadSession(sid).watch[0];
+    expect(w.droppedAt).toBeUndefined();
+    expect(w.closedAt).toBeDefined();
+  });
+});

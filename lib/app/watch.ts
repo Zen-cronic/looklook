@@ -51,13 +51,20 @@ export function applyPriceEvent(state: SessionState, event: Channel3Event, now =
     const byProduct = productId && w.product.id === productId;
     if (!bySub && !byProduct) continue;
     if (w.lastEventId === event.id) continue;
+    // Deliveries can arrive out of order: an event older than the newest one applied is ignored.
+    const at = Date.parse(event.timestamp);
+    if (w.lastEventAt && Number.isFinite(at) && at < Date.parse(w.lastEventAt)) continue;
     w.lastEventId = event.id;
+    if (Number.isFinite(at)) w.lastEventAt = new Date(at).toISOString();
     w.currentPrice = price;
     if (price <= w.targetPrice) {
       w.droppedAt ??= now.toISOString();
       effects.push(`${w.product.brand} ${w.product.title}: now ${formatDollars(price)}, at or under the ${formatDollars(w.targetPrice)} target. Asking for a yes.`);
     } else {
-      effects.push(`${w.product.brand} ${w.product.title}: now ${formatDollars(price)}, still above the ${formatDollars(w.targetPrice)} target.`);
+      // Back above the target: the drop card goes away until the next drop.
+      const hadDrop = Boolean(w.droppedAt);
+      w.droppedAt = undefined;
+      effects.push(`${w.product.brand} ${w.product.title}: now ${formatDollars(price)}, ${hadDrop ? "back" : "still"} above the ${formatDollars(w.targetPrice)} target.`);
     }
   }
   return effects;

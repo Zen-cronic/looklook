@@ -229,6 +229,24 @@ describe("price watch", () => {
   });
 });
 
+describe("price events out of order", () => {
+  it("takes the drop back when the price rises above the target again, and ignores older events", () => {
+    const s = fresh();
+    const w = newWatch({ id: "c1", product: { id: "P9", title: "Retinol Serum", brand: "Ole Henriksen", offerPrice: 72 }, facts: { priceShown: 72 }, decision: { evidence: { price: { target: 60 } } } } as never, { status: "active", id: "sub9" });
+    s.watch.push(w);
+    const at = (iso: string, price: number) => ({ ...simulatedDropEvent(w, price), timestamp: iso });
+    applyPriceEvent(s, at("2026-11-10T10:00:00Z", 59));
+    expect(w.droppedAt).toBeDefined();
+    applyPriceEvent(s, at("2026-11-10T11:00:00Z", 66));
+    expect(w.droppedAt).toBeUndefined();
+    expect(w.currentPrice).toBe(66);
+    // A late copy of an older event must not bring the old price back.
+    expect(applyPriceEvent(s, at("2026-11-10T10:30:00Z", 58))).toHaveLength(0);
+    expect(w.currentPrice).toBe(66);
+    expect(w.droppedAt).toBeUndefined();
+  });
+});
+
 describe("Channel3 webhook signatures", () => {
   const secret = `whsec_${Buffer.from("test-secret-0123456789").toString("base64")}`;
   const body = JSON.stringify({ id: "evt_1", type: "offer.price.changed", data: { subscription_id: "s" } });
