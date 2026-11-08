@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { DEV_SET_SIZE } from "@/lib/app/eval";
 import { heldOutHeadline, heldOutResult } from "@/lib/app/holdout";
+import { REBUY_LEAD_DAYS } from "@/lib/app/payments";
+import { numberWord, startHereSteps } from "@/lib/app/start-here";
 import { currentSession } from "@/lib/app/session";
 import { APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { ResetButton } from "../components/RebuyControls";
@@ -13,13 +15,19 @@ const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
 export default function JudgePage() {
   const heldOut = heldOutResult();
-  const devN = DEV_SET_SIZE;
+  const steps = startHereSteps({ heldOutRight: heldOut.skipCorrect, heldOutN: heldOut.n, devN: DEV_SET_SIZE, rebuyLeadDays: REBUY_LEAD_DAYS });
+  const stepsWord = numberWord(steps.length).replace(/^./, (c) => c.toUpperCase());
   return (
     <main className="page stack-lg">
       <div>
         <h1>Start here</h1>
-        <p className="lede">{APP_NAME}, {APP_TAGLINE}. Seven short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.</p>
+        <p className="lede">
+          {APP_NAME}, {APP_TAGLINE}. {stepsWord} short steps through it, about five minutes on a phone or a laptop. Each browser gets its own sample shelf.
+        </p>
         <p style={{ marginTop: "0.75rem" }}>PayPal&apos;s shopping tools help you buy what you saw. {APP_NAME} asks whether you should, and when it&apos;s a staple, PayPal Vault makes buying it again one yes.</p>
+        <p className="small" style={{ marginTop: "0.75rem" }} data-testid="sandbox-login">
+          <strong>Sandbox login and test card:</strong> see the testing instructions on the submission page. Every payment is in the PayPal sandbox; no real money moves.
+        </p>
       </div>
 
       <section className="card stack-sm" data-testid="headline">
@@ -36,77 +44,29 @@ export default function JudgePage() {
         </div>
       </section>
 
-      <section className="card stack-sm" data-testid="sample-week">
-        <h2>Sample week</h2>
-        <p className="small">
-          Load a fictional shopper&apos;s week for the Decisions step: two waits for a price drop (with the target and the 90-day trend), two waits for next month&apos;s budget, two skips, a buy and a staple due for a rebuy. The
-          products, stores and prices are real catalogue listings; the shopper and the week are sample data. Your saved payment methods stay. Reset puts back a fresh shelf.
-        </p>
-        <Suspense fallback={<SampleWeekControls loaded={false} />}>
-          <SampleState />
-        </Suspense>
-      </section>
-
-      <ol className="steps">
-        <li>
-          <div className="stack-sm">
-            <h2>Check a post</h2>
-            <p>On Check, the last check is the sunscreen post (or tap it again). You already own a sunscreen that does the same job, so the answer is skip. Open See why for the rule, the shelf item and the cited policy, and see the same product at other stores with each store&apos;s policy.</p>
-            <Link className="btn small" href="/">
-              Open Check
-            </Link>
-          </div>
-        </li>
-        <li>
-          <div className="stack-sm">
-            <h2>Buy once and save PayPal for rebuys</h2>
-            <p>Tap the peptide serum post (buy). Tick Save this payment method, keep the cap, and pay with PayPal or the card fields. Use the sandbox buyer login or test card from the testing instructions on the project&apos;s submission page.</p>
-          </div>
-        </li>
-        <li>
-          <div className="stack-sm">
-            <h2>Rebuy with one yes</h2>
-            <p>On Rebuys, tap Move a week ahead. Staples due in five days ask for your yes. Tap Yes: a customer-initiated charge on the saved method, with the PayPal order and capture IDs on the receipt. Tap Send the same yes again to see one order, charged once.</p>
-            <Link className="btn small" href="/rebuys">
-              Open Rebuys
-            </Link>
-          </div>
-        </li>
-        <li>
-          <div className="stack-sm">
-            <h2>Watch a decline and recover</h2>
-            <p>Tick Make the next rebuy decline, then tap Yes on another staple. PayPal answers INSTRUMENT_DECLINED, nothing is charged, and the card asks you to approve another card or PayPal account.</p>
-          </div>
-        </li>
-        <li>
-          <div className="stack-sm">
-            <h2>Wait for a lower price</h2>
-            <p>Check the retinol post (wait) and tap Watch for a drop: Channel3 sets a real price alert. On Rebuys, Send a test price drop runs a price event through the same handler, and the item asks for your yes.</p>
-          </div>
-        </li>
-        <li>
-          <div className="stack-sm">
-            <h2>See your decisions in AG Studio</h2>
-            <p>On a laptop, open Decisions: your verdicts (skips first), rebuys, shelf and budgets in one AG Studio workspace. Tap Yes on a rebuy to pay with the saved method; the shelf row updates in place. Tap Group my waits: our agent asks Studio&apos;s agents to build a table of what each wait is waiting for, about 30 seconds. Load the sample week first to see waits of both kinds. Customize opens the Studio editor.</p>
-            <Link className="btn small" href="/studio">
-              Open Decisions
-            </Link>
-          </div>
-        </li>
-        <li>
-          <div className="stack-sm">
-            <h2>See the events and the number</h2>
-            <p>Webhook events lists what PayPal and Channel3 sent and whether each one verified. How often skip is right leads with the held-out result ({heldOut.skipCorrect} of {heldOut.n} on products it had never seen) and lists every miss with the rule that fired; the {devN}-product set the matching was developed on comes second and re-runs on the server.</p>
-            <div className="actions">
-              <Link className="btn small" href="/events">
-                Webhook events
-              </Link>
-              <Link className="btn small outline" href="/proof">
-                How often skip is right
-              </Link>
+      <ol className="steps" data-testid="start-here-steps">
+        {steps.map((step, i) => (
+          <li key={step.title}>
+            <div className="stack-sm">
+              <h2>{step.title}</h2>
+              <p>{step.body}</p>
+              {step.sampleWeek && (
+                <Suspense fallback={<SampleWeekControls loaded={false} />}>
+                  <SampleState />
+                </Suspense>
+              )}
+              {step.links.length > 0 && (
+                <div className="actions">
+                  {step.links.map((l) => (
+                    <Link key={`${i}-${l.href}`} className={l.outline ? "btn small outline" : "btn small"} href={l.href}>
+                      {l.label}
+                    </Link>
+                  ))}
+                </div>
+              )}
             </div>
-          </div>
-        </li>
+          </li>
+        ))}
       </ol>
 
       <section className="card stack-sm">
@@ -114,7 +74,7 @@ export default function JudgePage() {
         <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
           <li>Real: the product catalogue, prices and 90-day price history (Channel3), the screenshot reading (Claude), and the store return policies, each with its source page.</li>
           <li>Sandbox: every PayPal payment. Money goes to a PayPal sandbox test store; no real money moves.</li>
-          <li>Simulated, and labelled where it appears: the date control on Rebuys, the test price drop, and the forced decline.</li>
+          <li>Simulated, and labelled where it appears: the date control on Rebuys, the test price drop, the forced decline, and the sample week (a fictional shopper; the products, stores and prices are real catalogue listings).</li>
         </ul>
       </section>
 
