@@ -102,6 +102,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 
 ## What we'll tell you before you find it
 
+- **Limits.** Sessions are issued by the server in a signed cookie, and the assistant and screenshot checks have per-session and server-wide hourly limits. When one is reached the app says to try again later. A yes is charged at the price on the card you approved; if the price moved, nothing is charged and the card asks again.
 - **Who sells what.** Checkout and rebuys inside LookLook are sold by "LookLook Test Store (PayPal sandbox)", a PayPal sandbox merchant, not by the retailer in the post; the store names on a verdict are links to the retailers, and we may earn a commission when you buy through them.
 - **PayPal webhook rows appear only once deployed.** PayPal and Channel3 deliver webhooks to a public URL registered with them, so on a local run `/events` shows only the labelled test price drops ("Test event from this app"). A payment's receipt is read from PayPal's capture response either way; the webhook adds a confirmation.
 - **PayPal activity import is off.** Filling the shelf from PayPal activity needs the Transaction Search permission on the PayPal app, which this sandbox app doesn't have yet (403). The shelf comes from manual adds and purchases made in the app.
@@ -120,7 +121,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 
 ## Deploy
 
-`render.yaml` describes one Render web service: `npm ci && npm run build`, then `npm start` on `$PORT`, health check `/api/health`, auto-deploy off. Secrets are entered in the Render dashboard. After the first deploy, register `https://<service>.onrender.com/api/webhooks/paypal` in the PayPal app (copy its webhook ID to `PAYPAL_WEBHOOK_ID`) and `https://<service>.onrender.com/api/webhooks/channel3` in the Channel3 dashboard (copy its signing secret to `CHANNEL3_WEBHOOK_SECRET`).
+`render.yaml` describes one Render web service: `npm ci && npm run build`, then `npm start` on `$PORT`, health check `/api/health`, auto-deploy off. Secrets are entered in the Render dashboard, including `SESSION_SECRET` (any long random string; it signs the session cookie). The limits (`LLM_CALLS_PER_HOUR`, `LLM_MAX_TOKENS`, `CHECKS_PER_SESSION_PER_HOUR`, `CHECKS_PER_HOUR`) have defaults in `render.yaml` and `.env.example`. After the first deploy, register `https://<service>.onrender.com/api/webhooks/paypal` in the PayPal app (copy its webhook ID to `PAYPAL_WEBHOOK_ID`) and `https://<service>.onrender.com/api/webhooks/channel3` in the Channel3 dashboard (copy its signing secret to `CHANNEL3_WEBHOOK_SECRET`).
 
 ## Licence
 
