@@ -34,3 +34,15 @@ services:
       # Allows the labelled "make the next rebuy decline" sandbox test
       - key: DEMO_NEGATIVE_TESTING
         value: "1"
+      # Signs the shopper session cookie (a long random string)
+      - key: SESSION_SECRET
+        sync: false
+      # Server-wide limits on model use (shared by every shopper)
+      - key: LLM_CALLS_PER_HOUR
+        value: "600"
+      - key: LLM_MAX_TOKENS
+        value: "4096"
+      - key: CHECKS_PER_SESSION_PER_HOUR
+        value: "30"
+      - key: CHECKS_PER_HOUR
+        value: "300"

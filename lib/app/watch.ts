@@ -52,7 +52,7 @@ export function applyPriceEvent(state: SessionState, event: Channel3Event, now =
     if (!bySub && !byProduct) continue;
     if (w.lastEventId === event.id) continue;
     // Deliveries can arrive out of order: an event older than the newest one applied is ignored.
-    const at = Date.parse(event.timestamp);
+    const at = Date.parse(event.timestamp ?? "");
     if (w.lastEventAt && Number.isFinite(at) && at < Date.parse(w.lastEventAt)) continue;
     w.lastEventId = event.id;
     if (Number.isFinite(at)) w.lastEventAt = new Date(at).toISOString();

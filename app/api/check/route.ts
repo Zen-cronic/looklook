@@ -7,10 +7,22 @@ import { SAMPLES } from "@/lib/app/samples";
 import { liveCheckServices, missingKeys } from "@/lib/app/services";
 import { loadSession, updateSession } from "@/lib/app/store";
 import type { CheckRecord } from "@/lib/app/types";
+import { CallBudget } from "@/lib/studio/llm";
+import { envInt, GlobalBudget } from "@/lib/studio/guard";
 import { sniffMediaType } from "@/lib/vision/read";
 import { ReaderOutputError } from "@/lib/vision/schema";
 
 const MAX_BYTES = 5 * 1024 * 1024;
+const HOUR = 60 * 60 * 1000;
+// Each new screenshot or link costs a vision call and catalogue calls; one already read is free.
+const perSession = new CallBudget(envInt("CHECKS_PER_SESSION_PER_HOUR", 30), HOUR);
+const allSessions = new GlobalBudget(envInt("CHECKS_PER_HOUR", 300), HOUR);
+
+/** Spend one check from this shopper's and the server's hourly allowance, or answer 429. */
+function takeCheck(sid: string): void {
+  if (!perSession.take(sid)) throw new HttpError(429, "You've checked a lot of new items in the last hour. Try again a bit later; your earlier checks are still here.");
+  if (!allSessions.take()) throw new HttpError(429, "Checking is busy right now. Try again in a few minutes.");
+}
 
 /**
  * Check a screenshot (multipart "image"), a bundled sample ("sample") or a
@@ -37,6 +49,7 @@ export async function POST(request: Request) {
         if (!s) throw new HttpError(404, "No such sample.");
         const bytes = await readFile(join(process.cwd(), "public", "samples", s.file));
         const data = bytes.toString("base64");
+        if (!services.cache?.get("reading", sha256(data))) takeCheck(sid);
         reading = await readImage({ data, mediaType: "image/png" }, services);
         input = { kind: "screenshot", imageHash: sha256(data), sample: s.id };
       } else if (image instanceof File && image.size > 0) {
@@ -45,9 +58,11 @@ export async function POST(request: Request) {
         const mediaType = sniffMediaType(bytes);
         if (!mediaType) throw new HttpError(415, "Use a PNG, JPEG, GIF or WebP screenshot.");
         const data = Buffer.from(bytes).toString("base64");
+        if (!services.cache?.get("reading", sha256(data))) takeCheck(sid);
         reading = await readImage({ data, mediaType }, services);
         input = { kind: "screenshot", imageHash: sha256(data) };
       } else if (typeof url === "string" && url.trim()) {
+        takeCheck(sid);
         reading = await readLink(url, services);
         input = { kind: "link", url: url.trim() };
       } else {

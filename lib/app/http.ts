@@ -1,7 +1,6 @@
 import { cookies, headers } from "next/headers";
 import { PayPalApiError } from "../paypal/errors";
-import { SESSION_COOKIE } from "./session-cookie";
-import { isSessionId } from "./store";
+import { SESSION_COOKIE, sessionSecret, verifySession } from "./session-cookie";
 
 export class HttpError extends Error {
   constructor(
@@ -13,9 +12,12 @@ export class HttpError extends Error {
   }
 }
 
+/** The shopper's session id, only from a cookie this server signed. */
 export async function sessionIdOrThrow(): Promise<string> {
-  const id = (await cookies()).get(SESSION_COOKIE)?.value;
-  if (!isSessionId(id)) throw new HttpError(401, "Open the app in a browser first: no session.");
+  const secret = sessionSecret();
+  if (!secret) throw new HttpError(503, "Sessions aren't set up on this server (SESSION_SECRET).");
+  const id = await verifySession((await cookies()).get(SESSION_COOKIE)?.value, secret);
+  if (!id) throw new HttpError(401, "Open the app in a browser first: no session.");
   return id;
 }
 

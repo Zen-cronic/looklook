@@ -143,10 +143,12 @@ function forcedTool(choice: unknown): { forced: string | null; choice?: Anthropi
   return { forced: null };
 }
 
-export function toAnthropicRequest(turn: StudioTurn, opts: { model?: string; maxTokens?: number } = {}): Anthropic.MessageCreateParamsNonStreaming {
+export function toAnthropicRequest(turn: StudioTurn, opts: { model?: string; maxTokens?: number; serverSystem?: string } = {}): Anthropic.MessageCreateParamsNonStreaming {
   if (!turn || typeof turn !== "object") throw new TurnShapeError("Expected a turn object.");
   const { system, messages } = toMessages(turn.input);
   if (str(turn.instructions)) system.unshift(str(turn.instructions));
+  // The server's own text always comes first.
+  if (opts.serverSystem) system.unshift(opts.serverSystem);
   const format = turn.responseFormat as Json | undefined;
   if (format && (format.type === "json" || format.type === "json_schema")) {
     system.push(`Respond with JSON only, matching this schema:\n${JSON.stringify(format.schema ?? {})}`);

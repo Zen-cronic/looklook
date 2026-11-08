@@ -120,7 +120,9 @@ describe("/api/state", () => {
   let GET: () => Promise<Response>;
   beforeAll(async () => {
     process.env.APP_DATA_DIR = mkdtempSync(join(tmpdir(), "looklook-state-"));
-    vi.doMock("next/headers", () => ({ cookies: async () => ({ get: () => ({ value: "statesession0001" }) }), headers: async () => new Headers() }));
+    const { signSession, sessionSecret } = await import("@/lib/app/session-cookie");
+    const signed = await signSession("statesession0001", sessionSecret()!);
+    vi.doMock("next/headers", () => ({ cookies: async () => ({ get: () => ({ value: signed }) }), headers: async () => new Headers() }));
     vi.doMock("next/server", async (orig) => ({ ...(await orig<typeof import("next/server")>()), connection: async () => undefined }));
     ({ GET } = await import("@/app/api/state/route"));
   });
