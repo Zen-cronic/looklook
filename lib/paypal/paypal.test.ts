@@ -222,3 +222,20 @@ describe("webhooks", () => {
     expect(log.record("e1", "A")).toBe(true);
   });
 });
+
+describe("webhook verify request id", () => {
+  it("covers the body as well as the transmission id, so a replayed id with another body is verified afresh", async () => {
+    const { verifyWebhookSignature } = await import("./webhooks");
+    const ids: string[] = [];
+    const client = { request: async (req: { requestId?: string }) => (ids.push(req.requestId!), { status: 200, body: { verification_status: "FAILURE" } }) };
+    const headers = new Headers({ "paypal-auth-algo": "SHA256withRSA", "paypal-cert-url": "https://api.sandbox.paypal.com/cert", "paypal-transmission-id": "T-1", "paypal-transmission-sig": "sig", "paypal-transmission-time": "2026-11-08T00:00:00Z" });
+    const real = JSON.stringify({ id: "WH-1", event_type: "PAYMENT.CAPTURE.COMPLETED" });
+    const forged = JSON.stringify({ id: "WH-1", event_type: "PAYMENT.CAPTURE.REFUNDED" });
+    await verifyWebhookSignature(client as never, { headers, rawBody: real, webhookId: "W" });
+    await verifyWebhookSignature(client as never, { headers, rawBody: forged, webhookId: "W" });
+    await verifyWebhookSignature(client as never, { headers, rawBody: real, webhookId: "W" });
+    expect(ids[0]).not.toBe(ids[1]);
+    expect(ids[0]).toBe(ids[2]);
+    expect(ids[0].length).toBeLessThanOrEqual(64);
+  });
+});

@@ -1,3 +1,4 @@
+import { createHash } from "node:crypto";
 import type { PayPalClient } from "./client";
 import { buildRequestId } from "./idempotency";
 
@@ -53,7 +54,8 @@ export async function verifyWebhookSignature(
   const res = await client.request<{ verification_status?: string }>({
     method: "POST",
     path: "/v1/notifications/verify-webhook-signature",
-    requestId: buildRequestId("verify", transmissionId),
+    // Transmission id plus a hash of the body: a replayed transmission id with a different body is never answered from a cached result.
+    requestId: buildRequestId("verify", transmissionId, createHash("sha256").update(input.rawBody).digest("hex").slice(0, 24)),
     body,
   });
   if (res.body?.verification_status === "SUCCESS" && event.id) {
