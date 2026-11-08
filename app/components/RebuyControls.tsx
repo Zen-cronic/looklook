@@ -1,6 +1,7 @@
 "use client";
 
 import type { PurchaseSource } from "@/lib/app/types";
+import { leave } from "./motion";
 import { useApi } from "./useApi";
 
 export function DateControls({ dayOffset }: { dayOffset: number }) {
@@ -120,7 +121,14 @@ export function WatchControls({ watchId, canSimulate }: { watchId: string; canSi
             {busy === "drop" ? "Sending…" : "Send a test price drop"}
           </button>
         )}
-        <button className="btn outline small" disabled={!!busy} onClick={() => call("stop", `/api/watch/${watchId}`, "DELETE")}>
+        <button
+          className="btn outline small"
+          disabled={!!busy}
+          onClick={async (e) => {
+            const undo = await leave(e.currentTarget.closest("li"));
+            if (!(await call("stop", `/api/watch/${watchId}`, "DELETE"))) undo();
+          }}
+        >
           Stop watching
         </button>
       </div>

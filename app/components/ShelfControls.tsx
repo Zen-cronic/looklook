@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { CATEGORY_LABELS, KEY_DETAIL, kebab } from "@/lib/app/shelf-ui";
 import { CATEGORIES, type Category } from "@/lib/shelf/categories";
+import { leave } from "./motion";
 import { useApi } from "./useApi";
 
 export function ShelfRowControls({ id, opened, runOutDate }: { id: string; opened: boolean; runOutDate: string | null }) {
@@ -32,7 +33,14 @@ export function ShelfRowControls({ id, opened, runOutDate }: { id: string; opene
           Save date
         </button>
       )}
-      <button className="btn danger small" disabled={!!busy} onClick={() => call("remove", `/api/shelf/${id}`, "DELETE")}>
+      <button
+        className="btn danger small"
+        disabled={!!busy}
+        onClick={async (e) => {
+          const undo = await leave(e.currentTarget.closest("li"));
+          if (!(await call("remove", `/api/shelf/${id}`, "DELETE"))) undo();
+        }}
+      >
         Remove
       </button>
       <button className="btn outline small" onClick={() => setEditing(false)}>
