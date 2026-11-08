@@ -115,7 +115,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 - The four sample posts are mock creator posts we drew; the products and prices in them are real.
 - Two sandbox behaviours we design around: two simultaneous order requests with the same `PayPal-Request-Id` created two orders (sequential repeats return the first), so same-key payment calls are merged in the app before they reach PayPal; and a payment token deleted seconds after it was saved came back a few seconds later, so removal repeats the delete until two checks find nothing. Both are handled inside one process: run a single instance.
 - PayPal's sandbox Orders API rejects a `PayPal-Request-Id` of about 70 characters or more with a bare 422, so longer ids are hashed to at most 64.
-- On Render's free plan the disk is reset on each deploy and restart, which clears sessions and the event log.
+- On Render's free plan files are lost on each deploy and restart, and when the service spins down after a quiet spell, which clears sessions and the event log. If you open the app after it has been idle, you start with a fresh session and an empty `/events`: load the sample week again from `/judge` (one tap) and the rest of the steps work as written.
 - Price bands follow each catalogue listing's headline offer, not a single seller.
 
 ## Deploy
