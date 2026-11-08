@@ -2,6 +2,15 @@
 
 *look twice before you buy*
 
+[![skip on held-out products: 28 of 30](https://img.shields.io/badge/skip%20on%20held--out%20products-28%20of%2030-1f6f50)](lib/facts/facts.test.ts)
+[![held-out baselines: skip everything 13, same category 19](https://img.shields.io/badge/held--out%20baselines-skip%20everything%2013%2C%20same%20category%2019-5b6770)](lib/facts/facts.test.ts)
+[![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
+[![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
+[![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 236](https://img.shields.io/badge/unit%20tests-236-5b6770)](lib/facts/facts.test.ts)
+
+**Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
+
 For anyone who buys skincare and makeup they saw on their feed and ends up with a second of something they already own: LookLook checks the post against your shelf, your budget, the price history and the store's return policy before you pay.
 
 <img src="docs/verdict-skip.png" alt="A skip verdict on a phone: you already own a sunscreen that does the same job" width="320">
@@ -20,12 +29,14 @@ The things you do buy again (a cleanser, a moisturizer) come back as one-tap reb
 
 Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login and test card: see the testing instructions on the project's submission page.
 
-1. **Check a post.** Four sample posts (mock posts of real products) are on the Check page, or upload your own screenshot or paste a store link.
-2. **Buy once and save PayPal for rebuys.** The checkout shows the save-for-later agreement and a per-rebuy cap, then the PayPal buttons and card fields.
-3. **Rebuy with one yes.** On Rebuys, move the simulated date a week ahead; staples due within five days ask for your yes.
-4. **See a decline and recover.** A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.
-5. **Wait for a lower price.** A wait verdict can start a real Channel3 price alert; a labelled test drop runs a price event through the same handler.
+1. **Load the sample week and check a post.** A fictional shopper's week of checks on real catalogue products; the newest, a sunscreen post, is a skip because she owns one that does the same job. Four sample posts (mock posts of real products) are also on the Check page, or upload your own screenshot or paste a store link.
+2. **Wait for a lower price.** The retinol's wait verdict starts a real Channel3 price alert; a labelled test drop runs a price event through the same handler, and the item asks for your yes.
+3. **Buy once and save PayPal for rebuys.** The checkout shows the save-for-later agreement and a per-rebuy cap, then the PayPal buttons and card fields.
+4. **Rebuy with one yes, then a decline.** Staples due within five days ask for your yes, and a repeated yes charges once. A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.
+5. **See your decisions in AG Studio.** Decisions shows verdicts, rebuys, shelf and budgets in one AG Studio workspace; a rebuy is paid from inside it, and Group my waits has Studio's agents build a table of what each wait is waiting for.
 6. **See the events and the number.** `/events` lists every webhook and whether it verified; `/proof` shows the held-out result with every miss, then re-runs the 65-product development set.
+
+The price watch comes before the first purchase on purpose: buying the peptide serum spends this month's skincare budget, and the retinol then waits for next month's budget instead of a lower price.
 
 ## Built with
 
@@ -51,7 +62,7 @@ Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login
 
 ## How a verdict is decided
 
-The model observes; code decides. Claude turns the screenshot into fields (brand, name, price, store, key attributes); a catalogue match is scored in code, and a weak or tied match asks you to confirm. Twelve ordered rules then decide from structured fields only: shelf similarity, run-out dates, the store's cited return-once-opened policy, the budget left and the cleaned price band. Anything unresolved lands on ask or wait, never buy. Money moves only after your tap, on a method you saved, under the cap you set.
+The model observes; code decides. Claude turns the screenshot into fields (brand, name, price, store, key attributes); a catalogue match is scored in code, and a weak or tied match asks you to confirm. Twelve ordered rules then decide from structured fields only: shelf similarity, run-out dates, the store's cited return-once-opened policy, the budget left and the cleaned price band. Anything unresolved lands on ask or wait, never buy: an unconfirmed product or a missing price asks, missing price history waits (unless something you use runs out within three days), and a store whose opened-return policy we couldn't find counts as not returnable. Money moves only after your tap, on a method you saved, under the cap you set.
 
 Most big beauty stores take opened beauty back (Sephora, Ulta, Target, Kohl's and CVS do; Walgreens leaves it to the manager), so the return line is usually reassurance ("Ulta Beauty takes opened beauty back within 30 days, so trying it is low risk"; "CVS Pharmacy takes opened beauty back with a receipt within 60 days") and a reason to skip only where the cited policy refuses opened items or no policy was found.
 
@@ -67,12 +78,12 @@ npm run dev            # or: npm run build && npm start
 
 Each browser gets its own session (a cookie) with the sample shelf. Sessions, the webhook event log and caches are written under `.data/` (`APP_DATA_DIR`).
 
-## Checks
+## Run the checks
 
 ```bash
 npm run eval:skip        # skip correctness on the development set (no network)
 npm run eval:holdout -- --what "what changed"   # re-run the held-out set after an engine change; its scored run is never overwritten
-npm test                 # unit tests
+npm test                 # unit tests, including lib/facts/facts.test.ts (every number in this README)
 npm run lint
 npm run typecheck
 npm run build
@@ -92,10 +103,12 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 ## What we'll tell you before you find it
 
 - **Who sells what.** Checkout and rebuys inside LookLook are sold by "LookLook Test Store (PayPal sandbox)", a PayPal sandbox merchant, not by the retailer in the post; the store names on a verdict are links to the retailers, and we may earn a commission when you buy through them.
+- **PayPal webhook rows appear only once deployed.** PayPal and Channel3 deliver webhooks to a public URL registered with them, so on a local run `/events` shows only the labelled test price drops ("Test event from this app"). A payment's receipt is read from PayPal's capture response either way; the webhook adds a confirmation.
 - **PayPal activity import is off.** Filling the shelf from PayPal activity needs the Transaction Search permission on the PayPal app, which this sandbox app doesn't have yet (403). The shelf comes from manual adds and purchases made in the app.
 - **Waiting saves little on beauty.** In the wait-timing replay (28 purchases, real price histories), waiting by our rule paid $58.56 (1.7%) less than buying on the first price alert, and only $1.07 of that was beauty. For beauty the value is in the skip, not the wait.
+- **Sephora's main returns page blocks automated reading.** Its rule (opened beauty back in "new or gently used" condition within 30 days) is taken from Sephora's own FAQ pages, which state the same window. Every store's rule in `data/return-policies.json` carries its source page and the date it was checked; a store outside the table has no rule and counts as not returnable once opened.
 - Both skip sets' shoppers, shelves, budgets and expected answers are made up by one person. On the held-out set the wrong skip is a body sunscreen read as overlapping a face sunscreen, the missed skip a matte setting spray when a dewy one is owned, and three products (a conditioner, a hair oil, a kettle) got "ask" because the app had no such category at the time. On the development set seven of 65 skip decisions disagree; the causes are listed in `eval/skip-set/RESULTS.md`. 29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable; 7 of the 33 right skips depend on that default.
-- **After the held-out run, the matching changed once.** The held-out misses showed real gaps, so the app gained conditioner, hair oil or serum, lip balm, kettle and toaster categories, and a sunscreen's area (face, body, or both) became its product type, so a body sunscreen no longer counts as a second face sunscreen (commit `c0d3b0d`, 2026-11-07 00:34 EST). Re-run on that code, the held-out set scores 29 of 30 (saying skip to everything 13; same category 18, now that the shopper's lip balm and hair oil stay on her shelf), but those products shaped the change, so it is no longer a held-out number and the headline stays 28 of 30. The development set stayed at 60 of 65. Both re-runs are in the "After later changes" sections of the two RESULTS.md files and on `/proof`.
+- **After the held-out run, the matching changed once.** The held-out misses showed real gaps, so the app gained conditioner, hair oil or serum, lip balm, kettle and toaster categories, and a sunscreen's area (face, body, or both) became its product type, so a body sunscreen no longer counts as a second face sunscreen (commit `c0d3b0d`, 2026-11-07 00:34 EST). Re-run on that code, the held-out set scores 29 of 30 (saying skip to everything 13; same category 18, now that the shopper's lip balm and hair oil stay on her shelf), but those products shaped the change, so it is no longer a held-out number and the headline stays 28 of 30. The development set stayed at 60 of 65 through that change; the store-policy correction below then took it to 58. Both re-runs are in the "After later changes" sections of the two RESULTS.md files and on `/proof`.
 - The first scored run was 55 of 65. Since then the similarity rule changed once (product type, actives, finish and form compared with half credit for neighbouring values; see `eval/skip-set/provenance.json`), and the expected answers were corrected once, for a misread store policy (next point). A first version of that change scored 58 of 65 before its actives rule was replaced; both runs are recorded in `eval/skip-set/README.md`.
 - **Corrections.** On 2026-11-07 we found two store policies read from the wrong place. The policy table said CVS may refuse opened beauty, citing CVS's general returns PDF; the beauty section of CVS's return policy page takes beauty back opened or unopened with a receipt or invoice. It also said Target takes opened electronics back for exchange only, but Target's exchange-only list doesn't include electronics. The table was fixed first (commit `a37226a`, 2026-11-07 00:41 EST), then the expected answers at those stores, before any re-run (`e2c06ee`, 00:42 EST): c02, c06, c24, c26 and held-out h09 stay skip without the non-returnable reason, and c61 keeps its verdict with a corrected why. The development set went from 60 to 58 of 65: c06 and c26 overlap only partly with what the shopper owns, and at a store that takes opened beauty back the engine leaves a partial overlap to the price rules. The held-out headline stays 28 of 30, read from the scored run in `e3cd601`: h09 was a near-duplicate skip decided on the shelf, so its verdict and the score are unaffected; only its reason text changed. Details in both RESULTS.md files and on `/proof`.
 - Dates: receipts, notices, refunds, restocks and event times are real, in US Eastern time. The Rebuys date control moves only run-out dates, look-again dates and this month's budgets; while it is ahead, every page that uses it says "Simulated date" and dates counted from it carry "(simulated date)". A bought verdict keeps the reason it had when it was decided, shown as "At the time: …" under a Bought state.

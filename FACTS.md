@@ -1,0 +1,123 @@
+# Facts
+
+Every number and capability that the README, `/proof`, `/judge` and the app state, where each one appears, and what checks it.
+
+- **Test:** a named test in this repo. `lib/facts/facts.test.ts` also checks this file: every test named below must exist, and every claim must appear word for word in each file listed in backticks under "Where". So a number that goes stale in the README, or a test that is renamed or deleted, fails `npm test`.
+- **External:** a fact about the outside world (a store's policy, a sandbox behaviour). The source page and the date it was last read are given. For the store rules, the test checks that the URL and date here match `data/return-policies.json`. Whether the page still says it needs a person or a fresh reading of the page.
+
+## The number
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F01 | "On 30 products it had never seen, LookLook's skip was right 28 times. Saying skip to everything gets 13; skipping anything in a category you own gets 19." | `README.md`, /proof, /judge, /api/eval/holdout, /api/eval/skip, Decisions skip figure | `lib/facts/facts.test.ts` › "states the held-out headline and its baselines from the scored run"<br>`lib/app/holdout.test.ts` › "reports the committed run's numbers"<br>`lib/app/holdout.test.ts` › "states the headline sentence" |
+| F02 | "Skip precision 92.3% (12 of 13 skips right), recall 92.3% (12 of 13 caught)." | `README.md`, /proof, /judge | `lib/facts/facts.test.ts` › "states held-out precision, recall and the evidence split as computed" |
+| F03 | "Of the 12 right skips, 10 rest on evidence (the shelf, or a cited store policy) and 2 on our default that an unknown opened-return policy counts as not returnable." | `README.md`, /proof, /judge | `lib/facts/facts.test.ts` › "states held-out precision, recall and the evidence split as computed"<br>`lib/app/holdout.test.ts` › "marks the skips that needed the unknown-policy default, matching the run's split" |
+| F04 | "the engine last changed in `4fbf420` (2026-11-06 22:28 EST), the 30 expected answers were committed in `effe79b` (2026-11-07 00:17 EST), and the one scored run was committed as generated in `e3cd601` (2026-11-07 00:20 EST)" | `README.md`, /proof (Order of work), /judge | `lib/facts/facts.test.ts` › "states the order of work with the commits and Eastern times in history.json"<br>`lib/app/holdout.test.ts` › "keeps the order of work: engine, then expectations, then the scored run" |
+| F05 | "The wrong skip, the missed skip and the five other misses are in" | `README.md`, /proof | `lib/app/holdout.test.ts` › "lists every wrong, missed and other miss with the rule that fired" |
+| F06 | "Re-run on that code, the held-out set scores 29 of 30 (saying skip to everything 13; same category 18" | `README.md`, /proof, eval/holdout/RESULTS.md | `lib/facts/facts.test.ts` › "states the held-out re-run after the later matching change"<br>`lib/app/holdout.test.ts` › "are recorded beside the scored run without changing it" |
+| F07 | "58 of 65 there (saying skip to everything gets 39; same category gets 40)" | `README.md`, /proof, eval/skip-set/RESULTS.md, /api/eval/skip | `lib/facts/facts.test.ts` › "states the development set's score and baselines as re-run now, and its committed results agree"<br>`lib/app/app.test.ts` › "recomputes 58 of 65 from the committed test set, with both baselines and the split" |
+| F08 | "Its first scored run was 55 of 65 and one similarity change later 60 of 65" | `README.md`, /proof | `lib/facts/facts.test.ts` › "states the development set's history: first run, matching change, store-policy correction" |
+| F09 | "The development set went from 60 to 58 of 65" | `README.md`, /proof | `lib/facts/facts.test.ts` › "states the development set's history: first run, matching change, store-policy correction"<br>`lib/app/app.test.ts` › "records the store-policy correction: policy first, then expectations, then the re-run" |
+| F10 | "29 of the 65 cases are at stores outside the policy table, where an unknown policy counts as not returnable; 7 of the 33 right skips depend on that default." | `README.md` | `lib/facts/facts.test.ts` › "states how many development cases rest on the unknown-policy default" |
+| F11 | "On the development set seven of 65 skip decisions disagree" | `README.md` | `lib/facts/facts.test.ts` › "states how many development cases rest on the unknown-policy default" |
+| F12 | "`GET /api/eval/skip` and `npm run eval:skip` re-run it with no network calls." | `README.md`, /proof (Run it again) | `lib/app/holdout.test.ts` › "/api/eval/skip leads with the held-out headline and re-runs the development set" |
+| F13 | "`GET /api/eval/holdout` returns every case, read from that run's committed results." | `README.md` | `lib/app/holdout.test.ts` › "/api/eval/holdout returns every held-out case and the development set" |
+| F14 | "waiting by our rule paid $58.56 (1.7%) less than buying on the first price alert, and only $1.07 of that was beauty" | `README.md` | `lib/facts/facts.test.ts` › "states the wait-timing replay numbers from its committed result"<br>`lib/replay/replay.test.ts` › "fits settings on the training days only and reports totals" |
+| F15 | "In the wait-timing replay (28 purchases, real price histories)" | `README.md` | `lib/facts/facts.test.ts` › "states the wait-timing replay numbers from its committed result" |
+
+## How a verdict is decided
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F16 | "The model observes; code decides." | `README.md` | `lib/facts/facts.test.ts` › "decides in code: the engine imports no model client"<br>`lib/verdict/verdict.test.ts` › "uses the model's sentence and never sends a verdict choice back"<br>`lib/vision/vision.test.ts` › "reads, matches, decides and words the reason in that order" |
+| F17 | "Claude turns the screenshot into fields (brand, name, price, store, key attributes)" | `README.md` | `lib/vision/vision.test.ts` › "sends the image with a strict schema at low effort and parses the answer"<br>`lib/vision/vision.test.ts` › "requires every property and forbids extras, as strict structured output needs" |
+| F18 | "a weak or tied match asks you to confirm" | `README.md` | `lib/vision/vision.test.ts` › "asks to confirm when the best match is weak"<br>`lib/vision/vision.test.ts` › "flags a near tie between different products" |
+| F19 | "Twelve ordered rules then decide from structured fields only" | `README.md` | `lib/facts/facts.test.ts` › "counts twelve ordered verdict rules, the same list the engine documents" |
+| F20 | "Anything unresolved lands on ask or wait, never buy" | `README.md`, lib/verdict/engine.ts (doc comment) | `lib/facts/facts.test.ts` › "never answers buy when the product, its price or its price history is unresolved"<br>`lib/verdict/verdict.test.ts` › "asks when confidence is low or the category is unknown"<br>`lib/verdict/verdict.test.ts` › "asks for a price when none was shown"<br>`lib/verdict/verdict.test.ts` › "waits without usable price history unless the need is urgent" |
+| F21 | "a store whose opened-return policy we couldn't find counts as not returnable" | `README.md` | `lib/policies/policies.test.ts` › "marks unknown stores as unknown, never returnable"<br>`lib/verdict/verdict.test.ts` › "skips a partial overlap only where opened returns aren't accepted" |
+| F22 | "(Sephora, Ulta, Target, Kohl's and CVS do; Walgreens leaves it to the manager)" | `README.md` | `lib/facts/facts.test.ts` › "summarises the policy table's opened-beauty answers as the README does" |
+| F23 | "Ulta Beauty takes opened beauty back within 30 days, so trying it is low risk" | `README.md`, verdict pages | `lib/facts/facts.test.ts` › "summarises the policy table's opened-beauty answers as the README does"<br>`lib/app/app.test.ts` › "reassures where opened beauty can go back, and warns where it may not" |
+| F24 | "CVS Pharmacy takes opened beauty back with a receipt within 60 days" | `README.md`, verdict pages | `lib/facts/facts.test.ts` › "summarises the policy table's opened-beauty answers as the README does"<br>`lib/app/app.test.ts` › "names what CVS needs for an opened beauty return" |
+| F25 | "Its rule (opened beauty back in \"new or gently used\" condition within 30 days) is taken from Sephora's own FAQ pages" | `README.md` | `lib/facts/facts.test.ts` › "summarises the policy table's opened-beauty answers as the README does" |
+| F26 | "Every store's rule in `data/return-policies.json` carries its source page and the date it was checked" | `README.md`, verdict pages (See why) | `lib/facts/facts.test.ts` › "gives every store return rule a source page and a check date, as FACTS.md lists them"<br>`lib/policies/policies.test.ts` › "gives every known answer a source URL and a check date" |
+
+## Payments
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F27 | "Saves the wallet or card for later under a short customer id, only when the shopper ticks the save box." | `README.md` | `lib/app/app.test.ts` › "asks PayPal to save the wallet only when the shopper agreed"<br>`lib/app/app.test.ts` › "keeps the PayPal customer id short" |
+| F28 | "Each rebuy is the shopper's yes on an approval card (`payment_initiator: CUSTOMER`, `usage: SUBSEQUENT`), capped per rebuy." | `README.md` | `lib/paypal/paypal.test.ts` › "is customer-initiated on the saved method"<br>`lib/paypal/paypal.test.ts` › "refuses a rebuy above the cap without calling PayPal"<br>`lib/app/app.test.ts` › "states the cap in the agreement" |
+| F29 | "a repeated yes, or a price drop and a run-out date for the same item, charge once" | `README.md` | `lib/app/app.test.ts` › "applies a payment once; a repeat only counts the attempt"<br>`lib/app/app.test.ts` › "gives a price drop on a staple the same key as its run-out rebuy"<br>`lib/paypal/paypal.test.ts` › "sends the item-and-cycle request id and returns a receipt" |
+| F30 | "Send the same yes again: still one order, charged once." | `lib/app/start-here.ts`, /judge | `lib/app/app.test.ts` › "applies a payment once; a repeat only counts the attempt"<br>`lib/app/app.test.ts` › "runs overlapping calls with the same key once" |
+| F31 | "success is read from the capture status, because a declined card can still return a completed order" | `README.md` | `lib/paypal/paypal.test.ts` › "treats a COMPLETED order with a DECLINED capture as not paid" |
+| F32 | "A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method." | `README.md`, /judge, /rebuys | `lib/paypal/paypal.test.ts` › "raises a typed error for INSTRUMENT_DECLINED"<br>`lib/app/app.test.ts` › "records one open decline per item and method"<br>`lib/paypal/paypal.test.ts` › "only sends a mock response header when the demo flag is on" |
+| F33 | "Staples due within five days ask for your yes" | `README.md`, /judge, /rebuys | `lib/facts/facts.test.ts` › "states the coded limits: rebuy lead time, sample posts, request-id length, model"<br>`lib/app/app.test.ts` › "lists staples within the lead time, soonest first" |
+| F34 | "removal repeats the delete until two checks find nothing" | `README.md`, /payments | `lib/app/app.test.ts` › "deletes again when the token comes back, and confirms only after two empty checks" |
+| F35 | "longer ids are hashed to at most 64" | `README.md` | `lib/facts/facts.test.ts` › "states the coded limits: rebuy lead time, sample posts, request-id length, model"<br>`lib/paypal/paypal.test.ts` › "hashes ids that would be too long and rejects empty parts" |
+| F36 | "Sandbox: every PayPal payment." | `README.md`, /judge | `lib/paypal/paypal.test.ts` › "never sends requests anywhere but the sandbox" |
+| F37 | "Checkout and rebuys inside LookLook are sold by \"LookLook Test Store (PayPal sandbox)\"" | `README.md`, checkout and verdict pages | `lib/facts/facts.test.ts` › "names the sandbox test store as the seller, as the app does" |
+| F38 | "A charge can be refunded in full from its receipt." | `README.md`, receipt pages | `lib/facts/facts.test.ts` › "refunds the rest of a capture when no amount is given, under its own request id"<br>Live sandbox run: `PAYPAL_SMOKE=1 npm run smoke:paypal` (partial and full refund) |
+
+## Webhooks
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F39 | "`/api/webhooks/paypal` verifies every delivery with PayPal, handles a repeated event id once, and confirms receipts and removed methods." | `README.md`, /events | `lib/paypal/paypal.test.ts` › "splices the raw event into the verification body unchanged"<br>`lib/paypal/paypal.test.ts` › "returns nothing when a transmission header is missing"<br>`lib/paypal/paypal.test.ts` › "handles each event id once"<br>`lib/app/app.test.ts` › "persists session updates and handles a repeated webhook event once"<br>`lib/app/app.test.ts` › "routes a capture event to the receipt and records the confirmation"<br>`lib/app/app.test.ts` › "marks a saved method removed when PayPal says the token was deleted" |
+| F40 | "`/api/webhooks/channel3` checks the signature, handles a repeated event once, and turns a drop to the target into an approval card." | `README.md`, /events, /rebuys | `lib/app/app.test.ts` › "accepts a valid signature among several"<br>`lib/app/app.test.ts` › "rejects a changed body, an old timestamp and missing headers"<br>`lib/app/app.test.ts` › "asks for a yes when a price event reaches the target, once per event" |
+
+## Retailer links, sample data and dates
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F41 | "the store names on a verdict are links to the retailers, and we may earn a commission when you buy through them" | `README.md`, verdict pages | `lib/facts/facts.test.ts` › "shows the commission notice wherever a retailer link is rendered" |
+| F42 | "Four sample posts (mock posts of real products)" | `README.md`, Check page | `lib/facts/facts.test.ts` › "states the coded limits: rebuy lead time, sample posts, request-id length, model" |
+| F43 | "two skips, four waits, a buy and a cleanser due for a rebuy" | `lib/app/start-here.ts`, /judge | `lib/facts/facts.test.ts` › "describes the sample week as it loads, and why the price watch comes before the first purchase"<br>`lib/app/when.test.ts` › "gives Group my waits two price waits and two budget waits, with two skips, a buy and a staple due" |
+| F44 | "while it is ahead, every page that uses it says \"Simulated date\" and dates counted from it carry \"(simulated date)\"" | `README.md`, /rebuys, /shelf, Decisions | `lib/app/when.test.ts` › "labels counted dates and date columns only while the simulated date is on"<br>`lib/app/when.test.ts` › "never puts the simulated day into a workspace text cell without the label" |
+| F45 | "Claude (`claude-sonnet-5-5`)" | `README.md` | `lib/facts/facts.test.ts` › "states the coded limits: rebuy lead time, sample posts, request-id length, model" |
+
+## AG Studio
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F46 | "our verdict widget pays a due rebuy on the saved method from inside it and updates the shelf grid in place" | `README.md`, /judge | `lib/studio/studio.test.ts` › "lists due staples as rebuys and says whether they fit the saved method's cap"<br>`lib/studio/studio.test.ts` › "after a rebuy the diff updates the shelf row and removes the rebuy row" |
+| F47 | "our agent asks Studio's lead agent to build the table of what each wait is waiting for" | `README.md`, /judge | `lib/studio/studio.test.ts` › "counts waits in code, grouped by what they wait for"<br>`lib/studio/studio.test.ts` › "maps tools and messages, keeps the model on the server"<br>`lib/studio/studio.test.ts` › "limits model calls per session in a rolling window"<br>The table build itself is a live model run (about 30 seconds), not a unit test. |
+
+## Judge kit
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F48 | "Open `/judge` on the running app for six short steps." | `README.md`, /judge | `lib/facts/facts.test.ts` › "keeps the start-here path to six steps or fewer, the same in the README" |
+| F49 | "see the testing instructions on the submission page" | `app/judge/page.tsx`, /judge | `lib/facts/facts.test.ts` › "keeps the start-here path to six steps or fewer, the same in the README" |
+| F50 | "unit tests" badge count | `README.md` | `lib/facts/facts.test.ts` › "states the unit test count" |
+| F51 | "store return rules" badge count | `README.md` | `lib/facts/facts.test.ts` › "gives every store return rule a source page and a check date, as FACTS.md lists them"<br>`lib/facts/facts.test.ts` › "shows only computed numbers on the README badges" |
+
+## Outside-world facts
+
+Store return rules, word for word as the app shows them under See why. Each is checked against its source page on the date given.
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| E01 | "Refund for items in \"new or gently used\" condition within 30 days of purchase." | `data/return-policies.json`, verdict pages | external: https://www.sephora.com/beauty/shop-now-pay-later-faq (checked 2026-11-07) |
+| E02 | "Refund for \"new or gently used\" products within 30 days; days 31-60 give merchandise credit only. All original components, proof of purchase and a government ID are required." | `data/return-policies.json`, verdict pages | external: https://www.ulta.com/guestservices/all#:~:text=new%20or%20gently%20used (checked 2026-11-07) |
+| E03 | "Most beauty items can be returned \"even if opened\" within 90 days with a receipt (120 with a Target Circle Card)." | `data/return-policies.json`, verdict pages | external: https://www.target.com/help/articles/returns-exchanges/returns#Can%20I%20return%20beauty%20products%20that%20have%20been%20opened? (checked 2026-11-07) |
+| E04 | "Electronics come back within 30 days (a longer window for holiday purchases). Opened electronics are not on the exchange-only list, so the general rule applies: opened items \"may be denied a refund or exchange\"." | `data/return-policies.json`, verdict pages | external: https://www.target.com/help/articles/returns-exchanges/returns#Are%20there%20any%20return%20exceptions? (checked 2026-11-07) |
+| E05 | "Refunds cover \"most unopened items\" in new condition within 90 days; opened items \"may be denied a refund or exchange\"." | `data/return-policies.json`, verdict pages | external: https://www.target.com/help/article/000061980 (checked 2026-11-07) |
+| E06 | "Beauty products come back \"opened or unopened\" with a receipt or invoice at any CVS Pharmacy store, subject to a third-party return authorization; 60-day return window." | `data/return-policies.json`, verdict pages | external: https://www.cvs.com/retail/help/return_policy#:~:text=100%25%20satisfaction%20guarantee%20on%20beauty%20purchases (checked 2026-11-07) |
+| E07 | "Most new, unopened items within 60 days; opened items \"may be denied a refund or exchange\"." | `data/return-policies.json`, verdict pages | external: https://www.cvs.com/bizcontent/general/help/returns.pdf (checked 2026-11-07) |
+| E08 | "Cosmetics returns are \"at the discretion of the store manager\", usually as a Walgreens gift card; eligible items within 30 days with a receipt." | `data/return-policies.json`, verdict pages | external: https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp#A0467 (checked 2026-11-07) |
+| E09 | "Electronics returns are at the store manager's discretion, usually as a gift card." | `data/return-policies.json`, verdict pages | external: https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp#A0467 (checked 2026-11-07) |
+| E10 | "Eligible items within 30 days with the receipt or order number; the page does not say whether opened items qualify." | `data/return-policies.json`, verdict pages | external: https://www.walgreens.com/topic/help/shophelp/returns_help_main.jsp#A0227 (checked 2026-11-07) |
+| E11 | "Sephora at Kohl's items in \"new or gently used\" condition within 60 days, with a receipt." | `data/return-policies.json`, verdict pages | external: https://www.kohls.com/stores/wi/oakcreek/109 (checked 2026-11-07) |
+| E12 | "Premium electronics within 30 days; the pages read do not say whether opened items qualify." | `data/return-policies.json`, verdict pages | external: https://corporate.kohls.com/news/holiday-returns-made-convenient-and-hassle-free-at-kohls (checked 2026-11-06) |
+| E13 | "Most merchandise within 90 days (120 with a Kohl's Card), with or without a receipt; opened condition is not addressed." | `data/return-policies.json`, verdict pages | external: https://www.kohls.com/faq/article/893 (checked 2026-11-06) |
+
+PayPal sandbox and hosting behaviours, as observed while building. They describe the sandbox, so they are re-checked by running the live scripts named.
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| E14 | "Filling the shelf from PayPal activity needs the Transaction Search permission on the PayPal app, which this sandbox app doesn't have yet (403)." | `README.md`, /shelf | external: https://api-m.sandbox.paypal.com/v1/reporting/transactions (403 NOT_AUTHORIZED, observed 2026-11-06; re-run with `npm run spike:transaction-search`)<br>`lib/shelf/shelf.test.ts` › "degrades to unavailable on a 403" |
+| E15 | "two simultaneous order requests with the same `PayPal-Request-Id` created two orders (sequential repeats return the first)" | `README.md` | external: https://api-m.sandbox.paypal.com/v2/checkout/orders (observed 2026-11-06)<br>`lib/app/app.test.ts` › "runs overlapping calls with the same key once" |
+| E16 | "a payment token deleted seconds after it was saved came back a few seconds later" | `README.md` | external: https://api-m.sandbox.paypal.com/v3/vault/payment-tokens (observed 2026-11-06)<br>`lib/app/app.test.ts` › "deletes again when the token comes back, and confirms only after two empty checks" |
+| E17 | "PayPal's sandbox Orders API rejects a `PayPal-Request-Id` of about 70 characters or more with a bare 422" | `README.md` | external: https://api-m.sandbox.paypal.com/v2/checkout/orders (observed 2026-11-06; 65 characters worked)<br>`lib/paypal/paypal.test.ts` › "hashes ids that would be too long and rejects empty parts" |
+| E18 | "On Render's free plan the disk is reset on each deploy and restart, which clears sessions and the event log." | `README.md` | external: https://render.com/docs/free (not yet re-read; check before deploying) |
+| E19 | "we may earn a commission when you buy through them" | `README.md`, verdict pages | external: https://api.trychannel3.com (product offers are Channel3 buy links that carry a commission rate, `max_commission_rate`; observed 2026-11-06)<br>`lib/facts/facts.test.ts` › "shows the commission notice wherever a retailer link is rendered" |
