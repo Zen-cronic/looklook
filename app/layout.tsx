@@ -14,6 +14,7 @@ const mono = Martian_Mono({ subsets: ["latin"], variable: "--font-mono", display
 export const metadata: Metadata = {
   title: { default: `${APP_NAME}: ${APP_TAGLINE}`, template: `%s | ${APP_NAME}` },
   description: APP_DESCRIPTION,
+  icons: { apple: "/icons/apple-touch-icon.png" },
 };
 
 export const viewport: Viewport = {
