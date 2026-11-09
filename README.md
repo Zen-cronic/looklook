@@ -88,7 +88,7 @@ npm run lint
 npm run typecheck
 npm run build
 
-npm run replay               # wait-timing replay from the local cache
+npm run replay               # wait-timing replay from the local cache; its output stays local (gitignored)
 PAYPAL_SMOKE=1 DEMO_NEGATIVE_TESTING=1 npm run smoke:paypal   # live sandbox run of the payment library
 CHANNEL3_SMOKE=1 npm run smoke:channel3                       # live product-data run
 VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot to verdict

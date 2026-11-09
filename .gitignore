@@ -14,3 +14,6 @@ build/
 next-env.d.ts
 *.pem
 .data/
+
+# The price-replay output stays local
+data/replay/result.json
