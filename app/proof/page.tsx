@@ -9,6 +9,7 @@ import { RerunEval } from "../components/RerunEval";
 import { VERDICT_WORD } from "../components/VerdictChip";
 import { APP_NAME } from "@/lib/brand";
 import l from "../landing.module.css";
+import { Eyebrow } from "../components/Eyebrow";
 
 export const metadata = { title: "How often skip is right" };
 
@@ -108,17 +109,17 @@ function HeldOut() {
   const o = r.order;
   const bars = [
     { label: APP_NAME, value: r.skipCorrect, mine: true },
-    { label: "Skip everything", value: baselineScore(r, "always-skip") },
-    { label: "Skip anything in a category you own", value: baselineScore(r, "same-category") },
+    { label: "Skipping anything in a category you own", value: baselineScore(r, "same-category") },
+    { label: "Saying skip to everything", value: baselineScore(r, "always-skip") },
   ];
   const last = r.afterChanges.at(-1);
   return (
     <>
       <section className={l.proof} aria-labelledby="chart-title">
         <div>
-          <h2 id="chart-title" className={l.proofEyebrow}>
+          <Eyebrow as="h2" icon="chart" id="chart-title" className={l.proofEyebrow}>
             Right skips out of {r.n}
-          </h2>
+          </Eyebrow>
           <p className={l.proofFigure} aria-hidden="true">
             {r.skipCorrect}
             <span className={l.proofOf}>/{r.n}</span>
@@ -138,6 +139,10 @@ function HeldOut() {
               <span className={l.barValue}>{b.value}</span>
             </li>
           ))}
+          <li className={l.scale} aria-hidden="true">
+            <span>0</span>
+            <span>{r.n} products</span>
+          </li>
         </ul>
       </section>
 
@@ -301,7 +306,7 @@ async function DevelopmentSet() {
           <RerunEval n={r.n} />
         </div>
         <p>
-          {r.skipCorrect} of {r.n} right, re-run now (skip everything: {baselineScore(r, "always-skip")}; same category: {baselineScore(r, "same-category")}). This set was used to tune the matching, so the score at the top leads.
+          {r.skipCorrect} of {r.n} right, re-run now (same category: {baselineScore(r, "same-category")}; skip everything: {baselineScore(r, "always-skip")}). This set was used to tune the matching, so the score at the top leads.
         </p>
         <div className="proof-rows">
           <Row summary={plural(r.wrongSkips.length, "wrong skip", "wrong skips")}>

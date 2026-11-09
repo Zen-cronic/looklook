@@ -155,7 +155,7 @@ export async function payWithSavedMethod(sid: string, input: PayInput, deps: { c
       );
     } catch (e) {
       if (e instanceof RebuyCapExceededError) {
-        throw new HttpError(409, `${formatCents(details.amountCents)} is above your ${formatCents(method.capCents)} per-rebuy cap. Nothing was charged. Raise the cap in Saved methods or pay once with PayPal.`, { overCap: true });
+        throw new HttpError(409, `${formatCents(details.amountCents)} is above your ${formatCents(method.capCents)} per-rebuy cap. Nothing was charged. Raise the cap on the Payments page or pay once with PayPal.`, { overCap: true });
       }
       if (e instanceof InstrumentDeclinedError || e instanceof CaptureDeclinedError) {
         const issue = e instanceof InstrumentDeclinedError ? "INSTRUMENT_DECLINED" : `CAPTURE_DECLINED${e.processorResponseCode ? ` (${e.processorResponseCode})` : ""}`;

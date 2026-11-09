@@ -30,7 +30,7 @@ export async function removeSavedMethod(sid: string, id: string, deps: { client:
     result = await singleFlight(`revoke:${m.vaultId}`, () => revokePaymentToken(deps.client(), m.vaultId, { waitMs: deps.waitMs ?? 2000, sleep: deps.sleep }));
   } catch {
     await updateSession(sid, (s) => {
-      s.notices.push({ id: noticeId(), at: new Date().toISOString(), text: `Removed ${m.label} here: no rebuy can use it. PayPal didn't confirm the delete yet; retry from Saved methods.` });
+      s.notices.push({ id: noticeId(), at: new Date().toISOString(), text: `Removed ${m.label} here: no rebuy can use it. PayPal didn't confirm the delete yet; retry from the Payments page.` });
     });
     throw new HttpError(502, `${m.label} is removed here and no rebuy can use it, but PayPal didn't confirm the delete. Tap Retry removal.`, { removalPending: true });
   }

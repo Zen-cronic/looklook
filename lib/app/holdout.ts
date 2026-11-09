@@ -173,7 +173,7 @@ export function baselineScore(r: { baselines: Array<{ id: string; skipCorrect: n
 
 /** The headline sentence, from the frozen run. */
 export function heldOutHeadline(r: HeldOutResult = heldOutResult()): string {
-  return `On ${r.n} products it had never seen, ${APP_NAME}'s skip was right ${r.skipCorrect} times. Saying skip to everything gets ${baselineScore(r, "always-skip")}; skipping anything in a category you own gets ${baselineScore(r, "same-category")}.`;
+  return `On ${r.n} products it had never seen, ${APP_NAME}'s skip was right ${r.skipCorrect} times. Skipping anything in a category you own gets ${baselineScore(r, "same-category")}; saying skip to everything gets ${baselineScore(r, "always-skip")}.`;
 }
 
 const round3 = (x: number) => Math.round(x * 1000) / 1000;

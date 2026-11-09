@@ -28,7 +28,7 @@ export const CONSENT_TEMPLATE = [
   "Each rebuy is charged only after you tap yes on it, at the price shown on that card.",
   "A rebuy above {cap} is refused.",
   "After every charge you get a notice with the PayPal order and capture IDs.",
-  "Remove the saved method any time in Saved methods; that deletes it at PayPal.",
+  "Remove the saved method any time on the Payments page; that deletes it at PayPal.",
 ];
 
 export function consentLines(capCents: number, currency = "USD"): string[] {

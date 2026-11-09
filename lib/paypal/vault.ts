@@ -22,7 +22,7 @@ export interface PaymentToken {
 export const SAVE_FOR_LATER_CONSENT =
   `Save this payment method with PayPal so ${APP_NAME} can rebuy items you approve. ` +
   "Each rebuy asks for your yes, stays under the cap you set, and you get a notice after every charge. " +
-  "You can remove the saved method at any time in Saved methods.";
+  "You can remove the saved method at any time on the Payments page.";
 
 export type SetupSource =
   | { type: "card"; card?: CardInput }

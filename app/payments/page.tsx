@@ -3,14 +3,15 @@ import { formatTime } from "@/lib/app/dates";
 import { formatCents } from "@/lib/app/money";
 import { currentSession } from "@/lib/app/session";
 import { MethodControls, RetryRemoval } from "../components/MethodControls";
+import { Eyebrow } from "../components/Eyebrow";
 
-export const metadata = { title: "Saved methods" };
+export const metadata = { title: "Payments" };
 
 export default function PaymentsPage() {
   return (
     <main className="page">
       <div style={{ marginBottom: "1.5rem" }}>
-        <h1>Saved methods</h1>
+        <h1>Payments</h1>
         <p className="lede">Cards and PayPal accounts saved for your rebuys.</p>
       </div>
       <Suspense fallback={<div className="skeleton" />}>
@@ -25,9 +26,9 @@ async function Methods() {
   const methods = [...state.methods].reverse();
   if (!methods.length) {
     return (
-      <div className="card stack-sm">
-        <h2>Nothing saved</h2>
-        <p className="muted">The first time you pay with PayPal or a card, you can save it for rebuys you approve, with a cap per rebuy.</p>
+      <div className="empty-frame">
+        <Eyebrow icon="card">Nothing saved yet</Eyebrow>
+        <p className="small muted">The first time you pay with PayPal or a card, you can save it for rebuys you approve, with a cap per rebuy.</p>
       </div>
     );
   }
