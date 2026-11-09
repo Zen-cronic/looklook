@@ -115,6 +115,9 @@ describe("README numbers match the data and code", () => {
     const runs = devSetRuns();
     const [first, similarity] = runs;
     expect(skipProvenanceFirstRun()).toContain(first.result);
+    // Store-policy fixes are labelled as such, never as a matching change.
+    expect(runs.filter((x) => x.label.startsWith("After a matching change")).map((x) => x.commit.slice(0, 7))).toEqual(["1fb8457", "c0d3b0d"]);
+    expect(runs.find((x) => x.commit.startsWith("250e1c4"))?.label).toMatch(/^After a store-policy fix: /);
     expect(README).toContain(`Its first scored run was ${first.result} and one similarity change later ${similarity.result}`);
     expect(README).toContain(`The first scored run was ${first.result}.`);
     expect(README).toContain(`The development set stayed at ${skipProvenanceChange("c0d3b0d").result} through that change`);

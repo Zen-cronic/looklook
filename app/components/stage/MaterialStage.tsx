@@ -29,7 +29,6 @@ export function MaterialStage(props: { material?: keyof typeof MATERIALS; tag: s
       <picture className={s.material}>
         <source type="image/avif" srcSet={m.avif} sizes={SIZES} />
         <source type="image/webp" srcSet={m.webp} sizes={SIZES} />
-        {/* eslint-disable-next-line @next/next/no-img-element */}
         <img src={m.jpg} alt="" width={1200} height={1490} decoding="async" />
       </picture>
       <div className={s.inner}>

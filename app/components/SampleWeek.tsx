@@ -7,7 +7,7 @@ export function SampleWeekNote() {
   return (
     <p className="sample-note" data-testid="sample-week-note">
       <span className="chip sim">Sample week</span>{" "}
-      <span className="small">A fictional shopper&apos;s week of checks: sample data. The products, stores and prices are real catalogue listings; the shopper and the checks are made up.</span>
+      <span className="small">Made-up shopper; real products, stores and prices.</span>
     </p>
   );
 }
@@ -21,7 +21,7 @@ export function SampleWeekControls({ loaded }: { loaded: boolean }) {
   const [error, setError] = useState<string | null>(null);
 
   async function run(action: "sample-week" | "reset") {
-    if (action === "reset" && !window.confirm("Reset to a fresh sample shelf? Your checks, saved methods and receipts in this browser are cleared.")) return;
+    if (action === "reset" && !window.confirm("Start over with a fresh sample shelf? This clears your checks and receipts in this browser and deletes saved payment methods at PayPal.")) return;
     setBusy(action);
     setError(null);
     try {

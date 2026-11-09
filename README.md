@@ -34,7 +34,7 @@ Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login
 3. **Buy once and save PayPal for rebuys.** The checkout shows the save-for-later agreement and a per-rebuy cap, then the PayPal buttons and card fields.
 4. **Rebuy with one yes, then a decline.** Staples due within five days ask for your yes, and a repeated yes charges once. A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.
 5. **See your decisions in AG Studio.** Decisions shows verdicts, rebuys, shelf and budgets in one AG Studio workspace; a rebuy is paid from inside it, and Group my waits has Studio's agents build a table of what each wait is waiting for.
-6. **See the events and the number.** `/events` lists every webhook and whether it verified; `/proof` shows the held-out result with every miss, then re-runs the 65-product development set.
+6. **See the webhooks and the accuracy test.** `/events` lists every webhook and whether it was verified; `/proof` leads with the result on products the app had never seen and lists every miss, then re-runs the 65-product development set the matching was built on.
 
 The price watch comes before the first purchase on purpose: buying the peptide serum spends this month's skincare budget, and the retinol then waits for next month's budget instead of a lower price.
 

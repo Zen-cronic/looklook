@@ -984,7 +984,8 @@ select:focus-visible {
 
 .why summary,
 .disclosure > summary,
-.ids > summary {
+.ids > summary,
+.proof-row > summary {
   cursor: pointer;
   font-weight: 800;
   padding: 0.95rem 0;
@@ -997,14 +998,16 @@ select:focus-visible {
 
 .why summary::-webkit-details-marker,
 .disclosure > summary::-webkit-details-marker,
-.ids > summary::-webkit-details-marker {
+.ids > summary::-webkit-details-marker,
+.proof-row > summary::-webkit-details-marker {
   display: none;
 }
 
 /* Disclosure chevron: one drawn shape, turned when open. */
 .why summary::after,
 .disclosure > summary::after,
-.ids > summary::after {
+.ids > summary::after,
+.proof-row > summary::after {
   content: "";
   flex: none;
   width: 0.85rem;
@@ -1017,13 +1020,15 @@ select:focus-visible {
 
 .why[open] summary::after,
 .disclosure[open] > summary::after,
-.ids[open] > summary::after {
+.ids[open] > summary::after,
+.proof-row[open] > summary::after {
   transform: scaleY(-1);
 }
 
 .why[open] > :not(summary),
 .disclosure[open] > :not(summary),
-.ids[open] > :not(summary) {
+.ids[open] > :not(summary),
+.proof-row[open] > :not(summary) {
   animation: open-down var(--dur-2) var(--ease-out) both;
 }
 
@@ -1813,8 +1818,9 @@ tr:last-child td {
 }
 
 .split-row.evidence {
-  background: var(--signature);
-  color: var(--signature-ink);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: inset 0 0 0 2px var(--ink);
 }
 
 .split-row.default {
@@ -2096,4 +2102,85 @@ html[data-still]::view-transition-new(*) {
 
 .budgets .budget strong {
   font-size: var(--step-0);
+}
+
+/* Start here: the step's action sits on its header row; the detail is behind More */
+.step-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+}
+
+.step-head h2 {
+  flex: 1 1 15rem;
+}
+
+.step-more > summary {
+  justify-content: flex-start;
+  gap: 0.4rem;
+  font-size: var(--step--1);
+  color: var(--ink-2);
+  width: fit-content;
+  min-height: 2rem;
+}
+
+.step-more > p {
+  margin-top: 0.4rem;
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+}
+
+.card.disclosure > summary {
+  min-height: 1.75rem;
+}
+
+/* Proof: records as one-line disclosure rows on hairlines */
+.proof-rows {
+  border-top: var(--rule);
+}
+
+.proof-row {
+  border-bottom: var(--rule);
+}
+
+.proof-row > summary {
+  padding: 0.95rem 0.1rem;
+  min-height: 3rem;
+}
+
+.proof-row-body {
+  padding: 0 0 1.1rem;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.card .proof-rows {
+  margin-top: 0.75rem;
+}
+
+.proof-plain {
+  margin-top: 1rem;
+  font-size: 0.9375rem;
+  font-weight: 600;
+  max-width: 30rem;
+}
+
+.commit-line {
+  color: var(--ink-2);
+}
+
+.rerun {
+  display: grid;
+  justify-items: end;
+  gap: 0.3rem;
+  text-align: right;
+}
+
+@media (max-width: 640px) {
+  .rerun {
+    justify-items: start;
+    text-align: left;
+  }
 }

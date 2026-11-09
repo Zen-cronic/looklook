@@ -15,7 +15,10 @@ export interface StartHereLink {
 
 export interface StartHereStep {
   title: string;
+  /** What to do, in about two lines. */
   body: string;
+  /** The detail, behind "More". */
+  more?: string;
   links: StartHereLink[];
   /** Show the sample-week controls under this step. */
   sampleWeek?: boolean;
@@ -39,37 +42,39 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
   return [
     {
       title: "Load the sample week and check a post",
-      body:
-        "Load the sample week: a fictional shopper's week of checks on real catalogue products (two skips, four waits, a buy and a cleanser due for a rebuy). On Check, the last check is the sunscreen post. You already own a sunscreen that does the same job, so the answer is skip. Open See why for the rule, the shelf item and the cited store policy, and see the same product at other stores with each store's policy.",
+      body: "The week has two skips, four waits, a buy and a cleanser due for a rebuy. Open the sunscreen: skip, you own one already.",
+      more: "On Check, the newest entry is the sunscreen post. Open See why for the rule, the shelf item and the store's cited return policy, and see the same product at other stores.",
       links: [{ href: "/check", label: "Open Check" }],
       sampleWeek: true,
     },
     {
       title: "Wait for a lower price",
-      body:
-        "Open the retinol check (wait for a lower price) and tap Watch for a drop: Channel3 sets a real price alert at the target. On Rebuys, Send a test price drop runs a price event through the same handler, and the retinol asks for your yes.",
+      body: "Open the retinol (a wait for a lower price) and tap Watch for a drop. Then, on Rebuys, tap Send a test price drop.",
+      more: "Channel3 sets a real price alert at the target. The test drop runs a price event through the same handler, and the retinol asks for your yes. Do this before step 3: buying the serum spends this month's skincare budget, and the retinol then waits for next month's budget instead.",
       links: [{ href: "/rebuys", label: "Open Rebuys" }],
     },
     {
       title: "Buy once and save PayPal for rebuys",
-      body:
-        "Open the peptide serum check (buy) and tap Buy for $32.00 with PayPal. Tick Save this payment method, keep the per-rebuy cap, and pay with PayPal or the card fields, using the sandbox login or test card from the testing instructions on the submission page.",
-      links: [],
+      body: "Open the peptide serum, tap Buy for $32.00 with PayPal and tick the save box. Pay with the login or card in the testing instructions on the submission page.",
+      more: "Checkout shows what saving agrees to and a cap per rebuy. Pay with the PayPal button or the card fields.",
+      links: [{ href: "/check", label: "Open Check" }],
     },
     {
       title: "Rebuy with one yes, then a decline",
-      body: `On Rebuys the cleanser is due (staples show up ${numberWord(n.rebuyLeadDays)} days before they run out). Tap Yes: a customer-initiated charge on the saved method, with the PayPal order and capture IDs on the receipt. Send the same yes again: still one order, charged once. Then tap Move a week ahead, tick Make the next rebuy decline and tap Yes on another staple: PayPal answers INSTRUMENT_DECLINED, nothing is charged, and the card asks you to approve another card or PayPal account.`,
+      body: "On Rebuys, tap Yes on the cleanser to pay with the saved method. Then move a week ahead, tick Make the next rebuy decline and tap Yes again.",
+      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and the card asks you to approve another card or PayPal account.`,
       links: [{ href: "/rebuys", label: "Open Rebuys" }],
     },
     {
       title: "See your decisions in AG Studio",
-      body:
-        "On a laptop, open Decisions: your verdicts (skips first), rebuys, shelf and budgets in one AG Studio workspace. Tap Yes on a rebuy to pay with the saved method; the shelf row updates in place. Tap Group my waits: our agent asks Studio's agents to build a table of what each wait is waiting for, in about 30 seconds. Customize opens the Studio editor.",
+      body: "On a laptop, open Decisions: checks, rebuys, shelf and budgets together. Tap Group my waits and Studio's agents build a table of what each wait is waiting for.",
+      more: "Tap Yes on a rebuy there to pay with the saved method; the shelf row updates in place. The table takes about 30 seconds. Customize opens the Studio editor.",
       links: [{ href: "/studio", label: "Open Decisions" }],
     },
     {
-      title: "See the events and the number",
-      body: `Webhook events lists what PayPal and Channel3 sent and whether each one verified. How often skip is right leads with the held-out result (${n.heldOutRight} of ${n.heldOutN} on products it had never seen) and lists every miss with the rule that fired; the ${n.devN}-product set the matching was developed on comes second and re-runs on the server.`,
+      title: "See the webhooks and the accuracy test",
+      body: "Webhook events lists what PayPal and Channel3 sent and whether each was verified. How often skip is right lists every miss.",
+      more: `It leads with ${n.heldOutRight} of ${n.heldOutN} on products the app had never seen, then the ${n.devN} products the matching was built on, which you can re-run on the server.`,
       links: [
         { href: "/events", label: "Webhook events" },
         { href: "/proof", label: "How often skip is right", outline: true },

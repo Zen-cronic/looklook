@@ -137,21 +137,6 @@ export function WatchControls({ watchId, canSimulate }: { watchId: string; canSi
   );
 }
 
-export function ResetButton() {
-  const { call, busy } = useApi();
-  return (
-    <button
-      className="btn outline"
-      disabled={!!busy}
-      onClick={() => {
-        if (window.confirm("Start over with the sample shelf? Your checks and receipts in this browser are cleared, and saved payment methods are deleted at PayPal.")) void call("reset", "/api/demo", "POST", { action: "reset" });
-      }}
-    >
-      {busy ? "Starting over…" : "Start over"}
-    </button>
-  );
-}
-
 export function ReminderDone({ checkId }: { checkId: string }) {
   const { call, busy } = useApi();
   return (

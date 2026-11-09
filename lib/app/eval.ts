@@ -129,7 +129,7 @@ export function devSetRuns(p: DevProvenance = provenance as DevProvenance): DevR
   return [
     { label: "First scored run", commit: p.firstRun.commit, at: p.firstRun.at, result: "55 of 65" },
     ...p.changes.map((c) => ({
-      label: c.commit && correctedAt.has(c.commit) ? "After the store-policy correction (see Corrections)" : `After a matching change: ${c.what}`,
+      label: c.commit && correctedAt.has(c.commit) ? "After the store-policy correction (see Corrections)" : /^Store return/i.test(c.what) ? `After a store-policy fix: ${c.what}` : `After a matching change: ${c.what}`,
       commit: c.commit ?? "",
       at: c.at ?? "",
       result: c.result,
