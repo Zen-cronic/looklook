@@ -58,7 +58,7 @@ export function returnsLine(d: Decision, storeLabel?: string): { tone: ReturnsTo
     case "conditional":
       return { tone: "maybe", text: `${store} takes opened ${what} back only on conditions${p.windowDays ? ` (${p.windowDays} days)` : ""}.` };
     default:
-      return { tone: "unknown", text: `We couldn't find whether ${store} takes ${what} back once opened, so we treat it as not returnable.` };
+      return { tone: "unknown", text: `We couldn't find ${store}'s policy on opened returns, so we treat it as not returnable.` };
   }
 }
 

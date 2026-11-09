@@ -20,7 +20,7 @@ export function PriceHistory({ weekly, target, now }: { weekly: number[]; target
         <circle cx={x(weekly.length - 1)} cy={y(weekly.at(-1)!)} r="3.5" className="series-end" />
       </svg>
       <figcaption className="small">
-        <span className="key series-key" /> 90 days, weekly <span className="key target-key" /> target {formatDollars(target)}
+        <span className="key series-key" /> Price, last 90 days <span className="key target-key" /> Buy at {formatDollars(target)}
       </figcaption>
     </figure>
   );

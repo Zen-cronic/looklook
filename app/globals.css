@@ -593,10 +593,7 @@ select:focus-visible {
 .status-strip {
   display: grid;
   gap: 0.4rem;
-  padding: 0.75rem 0.9rem;
-  border-radius: var(--radius-sm);
-  background: var(--shade);
-  margin-top: 1.75rem;
+  margin-top: 1.25rem;
 }
 
 .status-strip:empty {

@@ -48,7 +48,7 @@ export function templateReason(d: Decision, product: ProductFacts): string {
     case "no-price-history":
       return `There isn't enough price history for ${product.brand} ${product.name} to judge this price; we'll watch it${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
     case "above-usual-price":
-      return `${money(e.price!.shown)} is above its usual low of ${money(e.price!.low!)}; we'll wait for ${money(e.price!.target!)} or less${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
+      return `${money(e.price!.shown)} is above its 90-day low of ${money(e.price!.low!)}; we'd wait for ${money(e.price!.target!)} or less${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
     case "replacing-run-out":
       return `Your ${e.replaces!.brand} ${e.replaces!.name} ${inDays(e.replaces!.daysLeft)}, and this is a fair price.`;
     case "clear-to-buy":

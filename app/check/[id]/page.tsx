@@ -3,7 +3,7 @@ import { notFound } from "next/navigation";
 import { Suspense } from "react";
 import { BUDGET_LABELS } from "@/lib/app/budgets";
 import { formatDate, formatDay, formatTime } from "@/lib/app/dates";
-import { RULE_ORDER, RULE_TEXT, relationText, returnsLine } from "@/lib/app/explain";
+import { RULE_TEXT, relationText, returnsLine } from "@/lib/app/explain";
 import { formatDollars, toCentsSafe } from "@/lib/app/money";
 import { offerLines } from "@/lib/app/offers";
 import { activeMethod, SELLER_OF_RECORD } from "@/lib/app/payments";
@@ -16,7 +16,6 @@ import { targetFor } from "@/lib/app/watch";
 import { isSampleWeekCheck } from "@/lib/app/sample-week";
 import { atTheTime, boughtReceipt, countedDate, eventTime, SIMULATED } from "@/lib/app/when";
 import { PriceHistory } from "../../components/PriceHistory";
-import { SampleWeekNote } from "../../components/SampleWeek";
 import { SimDate } from "../../components/SimDate";
 import { VerdictActions } from "../../components/VerdictActions";
 import { VerdictSummary } from "../../components/VerdictSummary";
@@ -57,7 +56,6 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
   const returns = returnsLine(d, storeName);
   const method = activeMethod(state);
   const watch = check.watchId ? state.watch.find((w) => w.id === check.watchId && !w.closedAt) : undefined;
-  const ruleIndex = RULE_ORDER.indexOf(d.rule) + 1;
   const product = check.product;
   const wait = waitAction(check, today);
   // Days counted from the shopper's today say so while the simulated date is on.
@@ -98,27 +96,23 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
             {d.verdict === "wait" && wait?.kind === "price" && target !== null && (
               <div className="price-wait">
                 {check.band?.usable && check.band.weekly ? <PriceHistory weekly={check.band.weekly} target={target} now={price ?? target} /> : null}
-                <p className="small">{check.band?.usable ? `Usually ${formatDollars(check.band.typical)}, lowest ${formatDollars(check.band.low)} in the last 90 days. Worth buying at ${formatDollars(target)} or less.` : `Not enough price history to judge, so we'd wait for ${formatDollars(target)} (10% under) or less.`}</p>
+                <p className="small">{check.band?.usable ? `Last 90 days: usually ${formatDollars(check.band.typical)}, lowest ${formatDollars(check.band.low)}.` : `Not enough price history to judge, so we'd wait for ${formatDollars(target)} (10% under) or less.`}</p>
               </div>
             )}
-            {d.verdict === "wait" && wait?.kind === "budget" && e.budget && (
-              <p className="returns maybe">
-                {formatDollars(e.budget.remaining)} left in {BUDGET_LABELS[e.budget.group].toLowerCase()} this month. The budget starts again on {countedDay(wait.on)}.
-              </p>
-            )}
+            {d.verdict === "wait" && wait?.kind === "budget" && e.budget && <p className="returns maybe">Budget starts again {countedDay(wait.on)}.</p>}
             <details className="why">
               <summary>See why</summary>
               <dl className="evidence">
                 <dt>Rule</dt>
                 <dd>
-                  {RULE_TEXT[d.rule]} <span className="muted small">(rule {ruleIndex} of 12)</span>
+                  {RULE_TEXT[d.rule]}
                 </dd>
                 {e.shelf && (
                   <>
                     <dt>On your shelf</dt>
                     <dd>
                       {e.shelf.brand} {e.shelf.name}: {relationText(e.shelf.relation)}
-                      {e.shelf.relation !== "same-product" && <> (match {Math.round(e.shelf.score * 100)}%)</>}
+                      {e.shelf.relation !== "same-product" && <> ({Math.round(e.shelf.score * 100)}% match)</>}
                       {e.shelf.matched.length > 0 && <>, same {e.shelf.matched.map(attributeWord).join(", ")}</>}. {(shelfItem?.opened ?? e.shelf.opened) ? "Opened" : "Unopened"}
                       {shelfItem?.runOutDate ? `, runs out ${countedDate(shelfItem.runOutDate, state.dayOffset)}` : ""}.
                     </dd>
@@ -170,7 +164,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 )}
                 <dt>Read from</dt>
                 <dd>
-                  {check.input.kind === "link" ? "The store link" : isSampleWeekCheck(check.input.sample) ? "A sample week entry (fictional shopper)" : check.input.sample ? "The sample post" : "Your screenshot"}: {[check.fields.brand, check.fields.productName, check.fields.variant, check.fields.price ? formatDollars(check.fields.price.amount) : null, check.fields.store].filter(Boolean).join(", ") || "nothing legible"}.
+                  {check.input.kind === "link" ? "The store link" : isSampleWeekCheck(check.input.sample) ? "A sample week entry" : check.input.sample ? "The sample post" : "Your screenshot"}: {[check.fields.brand, check.fields.productName, check.fields.variant, check.fields.price ? formatDollars(check.fields.price.amount) : null, check.fields.store].filter(Boolean).join(", ") || "nothing legible"}.
                 </dd>
                 {product && (
                   <>
@@ -205,17 +199,16 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                     </li>
                   ))}
                 </ul>
-                <p className="commission">Store names are links to the retailers. We may earn a commission when you buy through them.</p>
+                <p className="commission">We may earn a commission when you buy through them.</p>
               </section>
             )}
-            <VerdictActions checkId={check.id} verdict={d.verdict} rule={d.rule} price={price} priceLabel={price !== null ? formatDollars(price) : null} savedMethod={method ? { id: method.id, label: method.label, capLabel: formatDollars(method.capCents / 100), withinCap: price !== null && toCentsSafe(price) <= method.capCents } : null} watch={watch ? { target: formatDollars(watch.targetPrice) } : null} wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? countedDay(wait.on) : undefined, reminderOn } : null} sellerLabel={SELLER_OF_RECORD} targetLabel={target !== null ? formatDollars(target) : null} shelfItemId={e.shelf?.itemId ?? null} purchasedReceiptId={check.purchasedReceiptId ?? null} candidates={check.candidates} needsConfirmation={check.needsConfirmation} />
+            <VerdictActions checkId={check.id} verdict={d.verdict} rule={d.rule} price={price} priceLabel={price !== null ? formatDollars(price) : null} savedMethod={method ? { id: method.id, label: method.label, capLabel: formatDollars(method.capCents / 100), withinCap: price !== null && toCentsSafe(price) <= method.capCents } : null} watch={watch ? { target: formatDollars(watch.targetPrice) } : null} wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? formatDay(wait.on).replace(/^\w+, /, "") : undefined, reminderOn } : null} sellerLabel={SELLER_OF_RECORD} targetLabel={target !== null ? formatDollars(target) : null} shelfItemId={e.shelf?.itemId ?? null} purchasedReceiptId={check.purchasedReceiptId ?? null} candidates={check.candidates} needsConfirmation={check.needsConfirmation} />
           </article>
         </Frames>
         {link && <ShelfLink label={link.label} brand={link.brand} name={link.name} note={link.note} href={`/shelf#${link.id}`} />}
       </MaterialStage>
       <div className="status-strip">
         <SimDate today={today} dayOffset={state.dayOffset} />
-        {check.input.kind === "screenshot" && isSampleWeekCheck(check.input.sample) && <SampleWeekNote />}
       </div>
     </div>
   );

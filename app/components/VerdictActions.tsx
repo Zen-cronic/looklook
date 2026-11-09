@@ -124,7 +124,7 @@ export function VerdictActions(p: Props) {
           <p className="notice">We&apos;ll remind you on {p.wait.reminderOn}, when next month&apos;s budget starts. Until then there&apos;s no buy button for this one.</p>
         ) : (
           <button className="btn" disabled={!!busy} onClick={remind}>
-            {busy === "remind" ? "Saving…" : `Remind me when next month's budget starts (${p.wait.onLabel})`}
+            {busy === "remind" ? "Saving…" : `Remind me ${p.wait.onLabel}`}
           </button>
         ))}
       {p.verdict === "wait" && p.wait?.kind === "run-out" &&
@@ -132,7 +132,7 @@ export function VerdictActions(p: Props) {
           <p className="notice">We&apos;ll remind you on {p.wait.reminderOn}.</p>
         ) : (
           <button className="btn" disabled={!!busy} onClick={remind}>
-            {busy === "remind" ? "Saving…" : `Remind me on ${p.wait.onLabel}`}
+            {busy === "remind" ? "Saving…" : `Remind me ${p.wait.onLabel}`}
           </button>
         ))}
       {p.verdict === "wait" && (p.wait?.kind === "run-out" || p.wait?.kind === "set-run-out") && p.shelfItemId && (
@@ -183,7 +183,7 @@ export function VerdictActions(p: Props) {
           Buy now anyway
         </button>
       )}
-      {(p.verdict === "buy" || p.verdict === "skip" || (p.verdict === "wait" && p.wait?.kind === "price")) && p.price !== null && <p className="small muted">Buying here: sold by {p.sellerLabel}.</p>}
+      {(p.verdict === "buy" || p.verdict === "skip" || (p.verdict === "wait" && p.wait?.kind === "price")) && p.price !== null && <p className="small muted">Sold by {p.sellerLabel}.</p>}
     </div>
   );
 }

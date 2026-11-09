@@ -75,7 +75,7 @@ export function Intake({ samples }: { samples: Sample[] }) {
           <circle cx="18.5" cy="15.5" r="2" />
         </svg>
         <strong>Add a screenshot</strong>
-        <span className="hint">A creator post or a store page. PNG or JPEG, up to 5 MB.</span>
+        <span className="hint">A post or store page. PNG or JPEG, up to 5&nbsp;MB.</span>
         <span className="btn" aria-hidden>
           Choose image
         </span>
