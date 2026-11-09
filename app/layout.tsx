@@ -3,6 +3,7 @@ import { Albert_Sans, Martian_Mono, Unbounded } from "next/font/google";
 import Link from "next/link";
 import { Suspense, ViewTransition } from "react";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/lib/brand";
+import { FilmBadge } from "./components/FilmBadge";
 import { NavLinks } from "./components/NavLinks";
 import { MOTION_SCRIPT, stillAtBuild } from "./components/motion";
 import "./globals.css";
@@ -47,6 +48,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Link href="/proof">How often skip is right</Link>
           <Link href="/events">Webhook events</Link>
         </footer>
+        {process.env.NODE_ENV !== "production" && <FilmBadge />}
       </body>
     </html>
   );
