@@ -333,7 +333,7 @@ describe("landing page", () => {
 
   it("puts the intake on /check and sends every Check link there", () => {
     const intake = read("app/check/page.tsx");
-    expect(intake).toContain("<Intake samples={SAMPLES} />");
+    expect(intake).toContain("<Intake samples={SAMPLES}");
     expect(read("app/components/NavLinks.tsx")).toContain('{ href: "/check", label: "Check" }');
     for (const file of ["app/check/[id]/page.tsx", "app/checkout/[id]/page.tsx", "app/components/VerdictActions.tsx"]) {
       expect(read(file), file).not.toMatch(/href="\/"/);

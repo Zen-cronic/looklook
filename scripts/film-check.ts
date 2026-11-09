@@ -3,8 +3,10 @@
  * session, opens the main pages with ?film=1, and fails if any page's visible
  * text (or an image's alt) names a known brand, product line, store, creator
  * handle or card network, or shows a product image that isn't an unbranded
- * stand-in. Then checks the same pages without the switch still show the
- * real names, so the mode stays off by default.
+ * stand-in. Covers the checkout for a buy verdict and the pages a phone's
+ * share sheet opens (a shared link, a shared screenshot's token, a share
+ * error). Then checks the same pages without the switch still show the real
+ * names, so the mode stays off by default.
  *
  *   npm run film:check -- http://localhost:3200
  */
@@ -22,9 +24,22 @@ async function main() {
 
   const load = await fetch(`${base}/api/demo`, { method: "POST", headers: { ...plain, "content-type": "application/json" }, body: JSON.stringify({ action: "sample-week" }) });
   if (!load.ok) throw new Error(`loading the sample week failed: ${load.status}`);
-  const state = (await (await fetch(`${base}/api/state`, { headers: plain })).json()) as { checks: Array<{ id: string }>; receipts: Array<{ id: string }> };
+  const state = (await (await fetch(`${base}/api/state`, { headers: plain })).json()) as { checks: Array<{ id: string; decision: { verdict: string } }>; receipts: Array<{ id: string }> };
 
-  const pages = ["/", "/check", ...state.checks.map((c) => `/check/${c.id}`), "/shelf", "/rebuys", "/payments", "/events", "/proof", "/judge", "/studio", ...state.receipts.map((r) => `/receipts/${r.id}`)];
+  // A checkout for the first buy verdict (no PayPal call until the buttons are used).
+  const buy = state.checks.find((c) => c.decision.verdict === "buy");
+  const checkout: string[] = [];
+  if (buy) {
+    const res = await fetch(`${base}/api/intents`, { method: "POST", headers: { ...plain, "content-type": "application/json" }, body: JSON.stringify({ source: { kind: "check", checkId: buy.id } }) });
+    const intent = (await res.json()) as { id?: string };
+    if (intent.id) checkout.push(`/checkout/${intent.id}`);
+  }
+  if (!checkout.length) throw new Error("couldn't open a checkout for a buy verdict");
+
+  // What a phone's share sheet opens; the page clears the query and checks in the browser.
+  const share = ["/check?url=https%3A%2F%2Fwww.ulta.com%2Fp%2Fexample", "/check?text=Look%20https%3A%2F%2Fwww.sephora.com%2Fproduct%2Fexample", "/check?shared=aaaaaaaaaaaaaaaaaaaaaaaa.zz.bb", "/check?share_error=type"];
+
+  const pages = ["/", "/check", ...share, ...state.checks.map((c) => `/check/${c.id}`), ...checkout, "/shelf", "/rebuys", "/payments", "/events", "/proof", "/judge", "/studio", ...state.receipts.map((r) => `/receipts/${r.id}`)];
   const problems: string[] = [];
   for (const path of pages) {
     const html = await (await fetch(`${base}${path}${path.includes("?") ? "&" : "?"}film=1`, { headers: film })).text();
@@ -40,8 +55,10 @@ async function main() {
   if (stateHit) problems.push(`/api/state: shows "${stateHit}"`);
 
   // Off by default: the same session without the switch shows the real names.
-  const real = visibleText(await (await fetch(`${base}/check/week-spf`, { headers: plain })).text());
-  if (!namesABrand(real)) problems.push("/check/week-spf without ?film=1 shows no real names: the mode looks on by default");
+  for (const path of ["/check/week-spf", ...checkout]) {
+    const real = visibleText(await (await fetch(`${base}${path}`, { headers: plain })).text());
+    if (!namesABrand(real)) problems.push(`${path} without ?film=1 shows no real names: the mode looks on by default`);
+  }
 
   console.log(`${pages.length} pages and /api/state checked in filming mode`);
   if (problems.length) {

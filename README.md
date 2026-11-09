@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 294](https://img.shields.io/badge/unit%20tests-294-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 298](https://img.shields.io/badge/unit%20tests-298-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 

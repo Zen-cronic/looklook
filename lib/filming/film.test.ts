@@ -1,4 +1,4 @@
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { NextRequest } from "next/server";
 import { describe, expect, it } from "vitest";
@@ -11,6 +11,10 @@ import { seedState } from "../app/seed";
 import type { SavedMethod, SessionState } from "../app/types";
 import { applyPriceEvent, newWatch, simulatedDropEvent } from "../app/watch";
 import { landingSample } from "../app/landing";
+import { returnsLine } from "../app/explain";
+import { SHARE_ERRORS, sharedInput, validateSharedLink } from "../app/share";
+import { shelfLink } from "../app/shelf-link";
+import { studioPayload } from "../studio/tables";
 import { FILM_COOKIE, filmFromCookie, filmFromEnv, filmParam } from "./flag";
 import { BRANDS, compactSimulated, FILM_IMAGES, FILM_SAMPLES, namesABrand, neutralText, PRODUCT_TABLE, productImage, productName, shortId, STORE_DOMAINS, STORE_LABEL_STYLE, storeLabel, uniqueStoreLabels } from "./neutral";
 import { filmState, neutralDeep } from "./view";
@@ -246,5 +250,67 @@ describe("filming mode names", () => {
     expect(namesABrand(visibleText(html))).toBeNull();
     expect(namesABrand(visibleText(html.replace("A post", "A CeraVe post")))).toBe("CeraVe");
     expect(namesABrand(visibleText(html.replace("<p>Face", "<p>CVS Face")))).toBe("CVS");
+  });
+});
+
+describe("filming mode on the framed pages, Decisions and the share flow", () => {
+  it("shows the Decisions tables (shelf table, Needs your yes, price watches, verdicts) generically, as /api/state sends them", () => {
+    const raw = filmedWeek();
+    const real = studioPayload(raw, TODAY);
+    const shown = neutralDeep(real, { shortIds: true });
+    for (const text of shownStrings(shown)) expect(namesABrand(text), text).toBeNull();
+    // The real tables do name things, so the check above means something.
+    expect(shownStrings(real).some((t) => namesABrand(t))).toBe(true);
+    const rebuy = shown.tables.rebuys.find((r) => r.id === "staple:sh-cleanser" || String(r.id).startsWith("watch:"));
+    expect(rebuy).toBeDefined();
+    expect(shown.tables.shelf.find((r) => r.id === "sh-cleanser")?.product).toBe("Hydrating Cleanser");
+    // Amounts, dates and days left are the real ones.
+    expect(shown.tables.shelf.map((r) => [r.id, r.runOutDate, r.daysLeft, r.price])).toEqual(real.tables.shelf.map((r) => [r.id, r.runOutDate, r.daysLeft, r.price]));
+    expect(shown.budget).toEqual(real.budget);
+  });
+
+  it("words the verdict and checkout context column generically: returns line, store policy and the shelf item it matched", () => {
+    const raw = filmedWeek();
+    const view = filmState(raw);
+    let lines = 0;
+    for (const c of view.checks) {
+      const store = c.decision.evidence.policy && !c.decision.evidence.policy.fallback ? c.decision.evidence.policy.retailerName : c.store;
+      const r = returnsLine(c.decision, store);
+      if (r) {
+        lines++;
+        expect(namesABrand(r.text), r.text).toBeNull();
+      }
+      const link = shelfLink(c, view.shelf);
+      if (link) for (const t of [link.brand, link.name, link.label, link.note]) expect(namesABrand(t), t).toBeNull();
+    }
+    expect(lines).toBeGreaterThan(0);
+    const skip = raw.checks.find((c) => c.id === "week-spf")!;
+    expect(returnsLine(skip.decision, skip.decision.evidence.policy?.retailerName)?.text).toMatch(/^CVS/);
+    expect(returnsLine(view.checks.find((c) => c.id === "week-spf")!.decision, "Pharmacy")?.text).toMatch(/^Pharmacy/);
+  });
+
+  it("keeps the rebuy shelf links and the payments agreement generic", () => {
+    const view = filmState(filmedWeek(), { shortIds: true });
+    for (const item of view.shelf) for (const t of [item.brand, item.name, item.store ?? ""]) expect(namesABrand(t), t).toBeNull();
+    for (const m of view.methods) for (const t of [m.label, m.consentText]) expect(namesABrand(t), t).toBeNull();
+  });
+
+  it("names nothing in the share flow's messages, and a shared /check still shows the unbranded sample posts", () => {
+    for (const message of Object.values(SHARE_ERRORS)) expect(namesABrand(message), message).toBeNull();
+    for (const link of ["javascript:alert(1)", "not a link", `https://www.ulta.com/${"x".repeat(2100)}`]) {
+      const v = validateSharedLink(link);
+      expect("error" in v && namesABrand(v.error)).toBeFalsy();
+    }
+    for (const q of [{ share_error: "type" }, { share_error: "nope" }, { text: "no link here" }, { shared: "bad" }]) {
+      const v = sharedInput(q);
+      expect(v?.kind).toBe("error");
+      expect(namesABrand(v && v.kind === "error" ? v.message : "")).toBeNull();
+    }
+    // The /check page hands the share to the same intake in both modes, with the film copies of the posts in filming mode.
+    const page = readFileSync(join(process.cwd(), "app/check/page.tsx"), "utf8");
+    expect(page).toMatch(/film \? <Intake samples=\{SAMPLES\.map\(\(x\) => \(\{ \.\.\.x, \.\.\.FILM_SAMPLES\[x\.id\] \}\)\)\} shared=\{shared\}/);
+    expect(page).toContain("<Intake samples={SAMPLES} shared={shared} />");
+    // The intake's fallback while the share is read is a blank card, never the real posts.
+    expect(page).not.toContain("fallback={<Intake");
   });
 });
