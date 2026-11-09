@@ -1748,7 +1748,8 @@ tr:last-child td {
 
 /* PayPal's iframes carry a few pixels of their own margin; pull them onto the column edge */
 .card-fields .field-slot > div {
-  margin: 0 -21px 0 -6px;
+  margin-left: -6px;
+  width: calc(100% + 15px) !important;
 }
 
 .card-fields.pending .field-slot {
