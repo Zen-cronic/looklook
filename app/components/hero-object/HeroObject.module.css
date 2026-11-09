@@ -83,7 +83,7 @@
 .wire {
   position: absolute;
   left: 2.6rem;
-  right: calc(100% - var(--indent) + 0.5rem);
+  right: calc(100% - var(--indent) - 1px);
   top: -3.25rem;
   bottom: calc(50% - 1.5px);
   border-left: 2px dotted var(--ink);

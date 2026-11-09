@@ -6,10 +6,10 @@ import { formatDollars } from "@/lib/app/money";
  */
 export function PriceHistory({ weekly, target, now }: { weekly: number[]; target: number; now: number }) {
   if (weekly.length < 2) return null;
-  const w = 340;
+  const w = 320;
   const h = 128;
   const left = 8;
-  const right = w - 92; // the labels at the line's end sit in this gutter
+  const right = w - 110; // the labels at the line's end sit in this gutter
   const top = 22;
   const bottom = h - 36;
   const lo = Math.min(...weekly, target, now);

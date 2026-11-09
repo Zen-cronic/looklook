@@ -72,17 +72,19 @@ function verdictTracks(p: StudioPayload): number {
 
 function layouts(p: StudioPayload, narrow = false) {
   if (narrow) {
-    // One column on a phone: each widget keeps its own height, and the shelf rows wrap to two lines.
+    // One column on a phone: each widget keeps its own height, the verdict list grows to fit its
+    // (taller, narrower) cards, and the shelf rows wrap to two lines.
+    const v = Math.ceil(verdictTracks(p) * 1.12);
     const shelfRows = Math.ceil((p.tables.shelf.length * 50 + 70) / TRACK_PX);
     const watchRows = p.tables.watchlist.length ? Math.ceil((p.tables.watchlist.length * 50 + 70) / TRACK_PX) : 8;
     const base = {
-      verdicts: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 40 },
-      budget: { xTrack: 0, yTrack: 40, xSpan: 24, ySpan: 12 },
-      skip: { xTrack: 0, yTrack: 52, xSpan: 24, ySpan: 10 },
-      shelf: { xTrack: 0, yTrack: 62, xSpan: 24, ySpan: shelfRows },
-      watch: { xTrack: 0, yTrack: 62 + shelfRows, xSpan: 24, ySpan: watchRows },
+      verdicts: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: v },
+      budget: { xTrack: 0, yTrack: v, xSpan: 24, ySpan: 12 },
+      skip: { xTrack: 0, yTrack: v + 12, xSpan: 24, ySpan: 10 },
+      shelf: { xTrack: 0, yTrack: v + 22, xSpan: 24, ySpan: shelfRows },
+      watch: { xTrack: 0, yTrack: v + 22 + shelfRows, xSpan: 24, ySpan: watchRows },
     };
-    return { base, withWaits: { ...base, waits: { xTrack: 0, yTrack: 62 + shelfRows + watchRows, xSpan: 24, ySpan: 10 } }, tracks: 62 + shelfRows + watchRows };
+    return { base, withWaits: { ...base, waits: { xTrack: 0, yTrack: v + 22 + shelfRows + watchRows, xSpan: 24, ySpan: 10 } }, tracks: v + 22 + shelfRows + watchRows };
   }
   const shelf = shelfSpan(p.tables.shelf.length);
   const watch = watchSpan(p.tables.watchlist.length);
