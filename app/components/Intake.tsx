@@ -69,9 +69,14 @@ export function Intake({ samples }: { samples: Sample[] }) {
         }}
       >
         <input ref={fileRef} type="file" accept="image/png,image/jpeg,image/webp,image/gif" onChange={(e) => sendFile(e.target.files?.[0])} />
+        <svg className="drop-icon" viewBox="0 0 44 44" aria-hidden="true" focusable="false">
+          <rect x="11" y="4" width="22" height="36" rx="5" />
+          <path d="M17 31l4.5-6 3.5 4 2.5-3 3.5 5" />
+          <circle cx="18.5" cy="15.5" r="2" />
+        </svg>
         <strong>Add a screenshot</strong>
-        <span className="muted">A creator post or a store page. PNG or JPEG, up to 5 MB.</span>
-        <span className="btn outline small" aria-hidden>
+        <span className="hint">A creator post or a store page. PNG or JPEG, up to 5 MB.</span>
+        <span className="btn" aria-hidden>
           Choose image
         </span>
       </label>

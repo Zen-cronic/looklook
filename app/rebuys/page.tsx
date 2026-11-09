@@ -96,80 +96,84 @@ async function Rebuys() {
           <DateControls dayOffset={state.dayOffset} />
         </div>
 
-        <h2>Needs your yes</h2>
-        {due.length === 0 && drops.length === 0 && reminders.length === 0 && (
-          <div className="card">
-            <p>Nothing to approve right now.</p>
-            <p className="small muted">A staple shows up here five days before its run-out date, and a watched item when its price drops to your target.</p>
-          </div>
-        )}
-        {reminders.map((c) => (
-          <article key={c.id} className="approval reminder">
-            <div className="approval-head">
-              <div>
-                <p className="approval-tag">Reminder</p>
-                <div className="brand-line">{c.facts.brand}</div>
-                <h3>{c.facts.name}</h3>
-                <p className="small muted">
-                  {c.reminder!.kind === "budget" ? `Your budget started again on ${countedDay(c.reminder!.on)}.` : `You asked to look again on ${countedDay(c.reminder!.on)}.`} The verdict now: {c.decision.verdict}.
-                </p>
-              </div>
+        <section className="cobalt-field stack" aria-labelledby="needs-yes">
+          <h2 id="needs-yes" className="field-title">
+            Needs your yes
+          </h2>
+          {due.length === 0 && drops.length === 0 && reminders.length === 0 && (
+            <div className="card">
+              <p>Nothing to approve right now.</p>
+              <p className="small muted">A staple shows up here five days before its run-out date, and a watched item when its price drops to your target.</p>
             </div>
-            <div className="actions" style={{ marginTop: "0.85rem" }}>
-              <Link className="btn" href={`/check/${c.id}`}>
-                Look at it again
-              </Link>
-              <ReminderDone checkId={c.id} />
-            </div>
-          </article>
-        ))}
-        {due.map((d) => {
-          const source: PurchaseSource = { kind: "staple", shelfItemId: d.item.id, cycle: d.cycle };
-          const declined = declineFor(state, source);
-          return (
-            <article key={d.item.id} className={`approval${declined ? " declined" : ""}`}>
+          )}
+          {reminders.map((c) => (
+            <article key={c.id} className="approval reminder">
               <div className="approval-head">
                 <div>
-                  <div className="brand-line">{d.item.brand}</div>
-                  <h3>{d.item.name}</h3>
+                  <p className="approval-tag">Reminder</p>
+                  <div className="brand-line">{c.facts.brand}</div>
+                  <h3>{c.facts.name}</h3>
                   <p className="small muted">
-                    {d.daysLeft < 0 ? `Ran out ${-d.daysLeft} days ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`} ({countedDate(d.item.runOutDate!, state.dayOffset)}). Last bought at {d.item.store ?? "a store"}.
+                    {c.reminder!.kind === "budget" ? `Your budget started again on ${countedDay(c.reminder!.on)}.` : `You asked to look again on ${countedDay(c.reminder!.on)}.`} The verdict now: {c.decision.verdict}.
                   </p>
                 </div>
-                <div className="amount">{formatCents(d.amountCents)}</div>
               </div>
-              <ApprovalButtons source={source} amountCents={d.amountCents} version={d.cycle} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="rebuy" />
+              <div className="actions" style={{ marginTop: "0.85rem" }}>
+                <Link className="btn" href={`/check/${c.id}`}>
+                  Look at it again
+                </Link>
+                <ReminderDone checkId={c.id} />
+              </div>
             </article>
-          );
-        })}
-        {drops.map((w) => {
-          const source: PurchaseSource = { kind: "watch", watchId: w.id };
-          const cents = Math.round(w.currentPrice * 100);
-          const declined = declineFor(state, source);
-          const hold = watchBudgetHold(state, w, today);
-          return (
-            <article key={w.id} className={`approval price-drop${declined ? " declined" : ""}${hold ? " held" : ""}`}>
-              <div className="approval-head">
-                <div>
-                  <p className="approval-tag">Price drop</p>
-                  <div className="brand-line">{w.product.brand}</div>
-                  <h3>{w.product.title}</h3>
-                  <p className="small muted">
-                    Price dropped from {formatDollars(w.startPrice)} to {formatDollars(w.currentPrice)}, at or under your {formatDollars(w.targetPrice)} target.
-                  </p>
+          ))}
+          {due.map((d) => {
+            const source: PurchaseSource = { kind: "staple", shelfItemId: d.item.id, cycle: d.cycle };
+            const declined = declineFor(state, source);
+            return (
+              <article key={d.item.id} className={`approval${declined ? " declined" : ""}`}>
+                <div className="approval-head">
+                  <div>
+                    <div className="brand-line">{d.item.brand}</div>
+                    <h3>{d.item.name}</h3>
+                    <p className="small muted">
+                      {d.daysLeft < 0 ? `Ran out ${-d.daysLeft} days ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`} ({countedDate(d.item.runOutDate!, state.dayOffset)}). Last bought at {d.item.store ?? "a store"}.
+                    </p>
+                  </div>
+                  <div className="amount">{formatCents(d.amountCents)}</div>
                 </div>
-                <div className="amount">{formatCents(cents)}</div>
-              </div>
-              {hold ? (
-                <p className="returns maybe" style={{ margin: "0.85rem 0 0" }}>
-                  Still over budget: {formatDollars(hold.remaining)} left in {BUDGET_LABELS[hold.group].toLowerCase()} this month. We&apos;ll ask again when it starts over on {countedDay(hold.restartsOn)}.
-                </p>
-              ) : (
-                <ApprovalButtons source={source} amountCents={cents} version={w.droppedAt ?? ""} amountLabel={formatCents(cents)} method={methodFor(method, cents)} declined={declined} verb="buy" />
-              )}
-            </article>
-          );
-        })}
+                <ApprovalButtons source={source} amountCents={d.amountCents} version={d.cycle} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="rebuy" />
+              </article>
+            );
+          })}
+          {drops.map((w) => {
+            const source: PurchaseSource = { kind: "watch", watchId: w.id };
+            const cents = Math.round(w.currentPrice * 100);
+            const declined = declineFor(state, source);
+            const hold = watchBudgetHold(state, w, today);
+            return (
+              <article key={w.id} className={`approval price-drop${declined ? " declined" : ""}${hold ? " held" : ""}`}>
+                <div className="approval-head">
+                  <div>
+                    <p className="approval-tag">Price drop</p>
+                    <div className="brand-line">{w.product.brand}</div>
+                    <h3>{w.product.title}</h3>
+                    <p className="small muted">
+                      Price dropped from {formatDollars(w.startPrice)} to {formatDollars(w.currentPrice)}, at or under your {formatDollars(w.targetPrice)} target.
+                    </p>
+                  </div>
+                  <div className="amount">{formatCents(cents)}</div>
+                </div>
+                {hold ? (
+                  <p className="returns maybe" style={{ margin: "0.85rem 0 0" }}>
+                    Still over budget: {formatDollars(hold.remaining)} left in {BUDGET_LABELS[hold.group].toLowerCase()} this month. We&apos;ll ask again when it starts over on {countedDay(hold.restartsOn)}.
+                  </p>
+                ) : (
+                  <ApprovalButtons source={source} amountCents={cents} version={w.droppedAt ?? ""} amountLabel={formatCents(cents)} method={methodFor(method, cents)} declined={declined} verb="buy" />
+                )}
+              </article>
+            );
+          })}
+        </section>
 
         <h2 style={{ marginTop: "2rem" }}>Watching for a drop</h2>
         {open.length === 0 ? (
@@ -182,8 +186,7 @@ async function Rebuys() {
                   <div className="brand-line">{w.product.brand}</div>
                   <div className="name-line">{w.product.title}</div>
                   <div className="small muted">
-                    {w.droppedAt ? `Dropped to ${formatDollars(w.currentPrice)}, at or under your ${formatDollars(w.targetPrice)} target (above).` : `Now ${formatDollars(w.currentPrice)}, buy at ${formatDollars(w.targetPrice)} or less.`}{" "}
-                    {w.subscription.status === "active" ? "Channel3 price alert on." : w.subscription.status === "unavailable" ? "Channel3 couldn't set a price alert for this listing." : ""}
+                    {w.droppedAt ? `Dropped to ${formatDollars(w.currentPrice)}, at or under your ${formatDollars(w.targetPrice)} target (above).` : `Now ${formatDollars(w.currentPrice)}, buy at ${formatDollars(w.targetPrice)} or less.`} {w.subscription.status === "active" ? "Channel3 price alert on." : w.subscription.status === "unavailable" ? "Channel3 couldn't set a price alert for this listing." : ""}
                   </div>
                 </div>
                 <WatchControls watchId={w.id} canSimulate={!w.droppedAt} />
@@ -204,7 +207,9 @@ async function Rebuys() {
                       {c.facts.name}
                     </span>
                   </Link>
-                  <span className="small muted">{c.reminder!.kind === "budget" ? "Budget starts again" : "Look again"} {countedDay(c.reminder!.on)}</span>
+                  <span className="small muted">
+                    {c.reminder!.kind === "budget" ? "Budget starts again" : "Look again"} {countedDay(c.reminder!.on)}
+                  </span>
                 </li>
               ))}
             </ul>

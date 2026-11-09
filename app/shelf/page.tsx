@@ -76,10 +76,10 @@ async function Shelf() {
           </div>
         ))}
       </section>
-      <aside className="card stack">
+      <aside className="cobalt-field budgets stack">
         <div>
-          <h2>Monthly budgets</h2>
-          <p className="small muted">A check says wait when the price is more than what&apos;s left.</p>
+          <h2 className="field-title">Monthly budgets</h2>
+          <p className="small">A check says wait when the price is more than what&apos;s left.</p>
         </div>
         {BUDGET_GROUPS.map((g) => {
           const limit = state.budgets.limits[g];
@@ -89,7 +89,7 @@ async function Shelf() {
             <div key={g} className="budget">
               <div>
                 <strong>{BUDGET_LABELS[g]}</strong>
-                <div className="small muted">
+                <div className="small">
                   {limit === undefined ? "No limit" : `${formatDollars(remaining[g] ?? 0)} left of ${formatDollars(limit)}`}
                 </div>
               </div>

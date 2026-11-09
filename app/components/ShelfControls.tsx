@@ -155,7 +155,7 @@ export function BudgetEditor({ group, label, limit }: { group: string; label: st
   const [value, setValue] = useState(limit === null ? "" : String(limit));
   if (!editing) {
     return (
-      <button className="btn outline small" onClick={() => setEditing(true)} aria-label={`Change the ${label} budget`}>
+      <button className="btn small on-field" onClick={() => setEditing(true)} aria-label={`Change the ${label} budget`}>
         Change
       </button>
     );
@@ -170,7 +170,7 @@ export function BudgetEditor({ group, label, limit }: { group: string; label: st
       }}
     >
       <input type="number" min="0" step="1" inputMode="numeric" value={value} onChange={(e) => setValue(e.target.value)} aria-label={`${label} monthly budget in dollars`} placeholder="No limit" />
-      <button className="btn small" disabled={!!busy}>
+      <button className="btn small on-field fill" disabled={!!busy}>
         Save
       </button>
       {error && <span className="error small">{error.error}</span>}
