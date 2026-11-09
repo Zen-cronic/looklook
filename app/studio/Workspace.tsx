@@ -62,20 +62,33 @@ const TRACK_PX = 20;
 const shelfSpan = (rows: number) => Math.max(10, Math.ceil((rows * 26 + 96) / TRACK_PX));
 const watchSpan = (rows: number) => (rows ? Math.max(8, Math.ceil((rows * 26 + 96) / TRACK_PX)) : 6);
 
-function layouts(p: StudioPayload) {
+function layouts(p: StudioPayload, narrow = false) {
+  if (narrow) {
+    // One column on a phone: each widget keeps its own height, and the shelf rows wrap to two lines.
+    const shelfRows = Math.ceil((p.tables.shelf.length * 50 + 70) / TRACK_PX);
+    const watchRows = p.tables.watchlist.length ? Math.ceil((p.tables.watchlist.length * 50 + 70) / TRACK_PX) : 8;
+    const base = {
+      verdicts: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 40 },
+      budget: { xTrack: 0, yTrack: 40, xSpan: 24, ySpan: 12 },
+      skip: { xTrack: 0, yTrack: 52, xSpan: 24, ySpan: 10 },
+      shelf: { xTrack: 0, yTrack: 62, xSpan: 24, ySpan: shelfRows },
+      watch: { xTrack: 0, yTrack: 62 + shelfRows, xSpan: 24, ySpan: watchRows },
+    };
+    return { base, withWaits: { ...base, waits: { xTrack: 0, yTrack: 62 + shelfRows + watchRows, xSpan: 24, ySpan: 10 } }, tracks: 62 + shelfRows + watchRows };
+  }
   const shelf = shelfSpan(p.tables.shelf.length);
   const watch = watchSpan(p.tables.watchlist.length);
   const base = {
-    budget: { xTrack: 9, yTrack: 0, xSpan: 8, ySpan: 12 },
+    budget: { xTrack: 8, yTrack: 0, xSpan: 9, ySpan: 12 },
     skip: { xTrack: 17, yTrack: 0, xSpan: 7, ySpan: 12 },
-    shelf: { xTrack: 9, yTrack: 12, xSpan: 15, ySpan: shelf },
-    watch: { xTrack: 9, yTrack: 12 + shelf, xSpan: 15, ySpan: watch },
-    verdicts: { xTrack: 0, yTrack: 0, xSpan: 9, ySpan: 12 + shelf + watch },
+    shelf: { xTrack: 8, yTrack: 12, xSpan: 16, ySpan: shelf },
+    watch: { xTrack: 8, yTrack: 12 + shelf, xSpan: 16, ySpan: watch },
+    verdicts: { xTrack: 0, yTrack: 0, xSpan: 8, ySpan: 12 + shelf + watch },
   };
   // With the waits table: it takes the slot under the figures, the grids move down.
   const withWaits = {
     ...base,
-    waits: { xTrack: 9, yTrack: 12, xSpan: 15, ySpan: 10 },
+    waits: { xTrack: 8, yTrack: 12, xSpan: 16, ySpan: 10 },
     shelf: { ...base.shelf, yTrack: 22 },
     watch: { ...base.watch, yTrack: 22 + shelf },
     verdicts: { ...base.verdicts, ySpan: 22 + shelf + watch },
@@ -99,7 +112,7 @@ function initialState(p: StudioPayload, narrow: boolean): AgReportState {
             : {
                 type: "grid",
                 format: { title: { enabled: true, text: "Shelf" } },
-                dataMapping: { cols: [{ id: "shelf.product" }, { id: "shelf.runOutDate" }, { id: "shelf.daysLeft" }, { id: "shelf.price" }, { id: "shelf.lastRestocked" }] },
+                dataMapping: { cols: [{ id: "shelf.product" }, { id: "shelf.runOutDate" }, { id: "shelf.daysLeft" }, { id: "shelf.price" }] },
               },
           watch:
             narrow || p.tables.watchlist.length === 0
@@ -110,7 +123,7 @@ function initialState(p: StudioPayload, narrow: boolean): AgReportState {
                   dataMapping: { cols: [{ id: "watchlist.product" }, { id: "watchlist.startPrice" }, { id: "watchlist.currentPrice" }, { id: "watchlist.targetPrice" }, { id: "watchlist.status" }, { id: "watchlist.alert" }] },
                 },
         },
-        widgetLayout: layouts(p).base,
+        widgetLayout: layouts(p, narrow).base,
       },
     ],
     selectedPageId: PAGE_ID,
@@ -455,8 +468,8 @@ export default function Workspace({ initial, narrow }: Props) {
   const waits = waitCounts(payload.tables.verdicts);
   const [initial0] = useState(() => initialState(initial, narrow));
   // The canvas is as tall as its widgets, so the page scrolls, not the canvas. On a phone the widgets stack in one column.
-  const tracks = layouts(initial).tracks + (run.kind !== "idle" ? 10 : 0);
-  const canvasHeight = `${(narrow ? tracks * 2 + 30 : Math.max(tracks, 34)) * TRACK_PX + 24}px`;
+  const tracks = layouts(initial, narrow).tracks + (run.kind !== "idle" ? 10 : 0);
+  const canvasHeight = `${Math.max(tracks, 34) * TRACK_PX + (narrow ? 80 : 24)}px`;
   const editing = mode === "edit" && !narrow;
 
   return (
