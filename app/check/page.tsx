@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { currentSession } from "@/lib/app/session";
 import { SAMPLES } from "@/lib/app/samples";
+import { sharedInput } from "@/lib/app/share";
 import { formatDollars } from "@/lib/app/money";
 import { shelfLink } from "@/lib/app/shelf-link";
 import { atTheTime } from "@/lib/app/when";
@@ -15,7 +16,7 @@ import { Frames, MaterialStage, ShelfLink } from "../components/stage/MaterialSt
 
 export const metadata = { title: "Check a post" };
 
-export default function CheckPage() {
+export default function CheckPage({ searchParams }: PageProps<"/check">) {
   return (
     <main className="page">
       <div className="page-head">
@@ -27,7 +28,9 @@ export default function CheckPage() {
           <LatestCheck />
         </Suspense>
         <div className="lead">
-          <Intake samples={SAMPLES} />
+          <Suspense fallback={<Intake samples={SAMPLES} />}>
+            <SharedIntake searchParams={searchParams} />
+          </Suspense>
         </div>
         <Suspense fallback={null}>
           <RecentChecks />
@@ -35,6 +38,12 @@ export default function CheckPage() {
       </div>
     </main>
   );
+}
+
+/** Opened from a phone's share sheet: check the shared link or screenshot straight away. */
+async function SharedIntake({ searchParams }: { searchParams: PageProps<"/check">["searchParams"] }) {
+  const shared = sharedInput(await searchParams);
+  return <Intake samples={SAMPLES} shared={shared} />;
 }
 
 async function RecentChecks() {

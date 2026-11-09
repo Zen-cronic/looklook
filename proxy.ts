@@ -4,7 +4,8 @@ import { SESSION_COOKIE, newSessionId, sessionSecret, signSession, verifySession
 /**
  * Every visitor gets their own shopper session (shelf, saved methods,
  * receipts), issued here and kept in a signed cookie. A cookie we didn't sign
- * gets a fresh, empty session instead. Webhook endpoints don't need one.
+ * gets a fresh, empty session instead. Webhook endpoints don't need one, and
+ * neither does /api/share: the page it sends a phone to gets the session.
  */
 export async function proxy(request: NextRequest) {
   const secret = sessionSecret();
@@ -22,5 +23,5 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ["/((?!_next/|api/webhooks/|api/health|favicon.ico|samples/|media/).*)"],
+  matcher: ["/((?!_next/|api/webhooks/|api/health|api/share|favicon.ico|manifest.webmanifest|icons/|samples/|media/).*)"],
 };

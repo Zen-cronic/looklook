@@ -3,14 +3,22 @@
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
 import type { Sample } from "@/lib/app/samples";
+import type { SharedInput } from "@/lib/app/share";
 
 const STEPS = ["Reading the post", "Finding it in the catalogue", "Checking your shelf, budget and the store's return policy"];
 
-export function Intake({ samples }: { samples: Sample[] }) {
+/**
+ * The check form. `shared` comes from a phone's share sheet (/check?url=…,
+ * ?text=…, ?shared=…): a link or a shared screenshot is checked at once,
+ * with the same request, limits and error messages as the form.
+ */
+export function Intake({ samples, shared }: { samples: Sample[]; shared?: SharedInput }) {
   const router = useRouter();
-  const [busy, setBusy] = useState(false);
+  const autoStart = shared && shared.kind !== "error" ? shared : undefined;
+  const [busy, setBusy] = useState(Boolean(autoStart));
   const [step, setStep] = useState(0);
-  const [error, setError] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(shared?.kind === "error" ? shared.message : null);
+  const started = useRef(false);
   const [over, setOver] = useState(false);
   const [url, setUrl] = useState("");
   const fileRef = useRef<HTMLInputElement>(null);
@@ -21,10 +29,15 @@ export function Intake({ samples }: { samples: Sample[] }) {
     return () => clearInterval(t);
   }, [busy]);
 
-  async function send(form: FormData) {
+  function send(form: FormData) {
     setStep(0);
     setBusy(true);
     setError(null);
+    void post(form);
+  }
+
+  /** Ask for the check and open its verdict; the busy state is already showing. */
+  async function post(form: FormData) {
     try {
       const res = await fetch("/api/check", { method: "POST", body: form });
       const data = await res.json();
@@ -36,6 +49,21 @@ export function Intake({ samples }: { samples: Sample[] }) {
     }
   }
 
+  useEffect(() => {
+    if (started.current) return;
+    started.current = true;
+    // Clear the share from the address bar, so a reload or Back doesn't check it again.
+    if (shared) window.history.replaceState(null, "", "/check");
+    if (!autoStart) return;
+    const f = new FormData();
+    if (autoStart.kind === "url") f.set("url", autoStart.url);
+    else f.set("shared", autoStart.token);
+    // Busy from the first render, so only the request is left to start.
+    void post(f);
+    // Runs once, for the share this page was opened with.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   function sendFile(file: File | undefined) {
     if (!file) return;
     const f = new FormData();
@@ -45,7 +73,7 @@ export function Intake({ samples }: { samples: Sample[] }) {
 
   if (busy) {
     return (
-      <div className="card working" role="status" aria-live="polite">
+      <div className="card working" role="status" aria-live="polite" data-testid={autoStart ? "shared-check" : undefined}>
         <span className="spinner" aria-hidden />
         <span>{STEPS[step]}…</span>
       </div>

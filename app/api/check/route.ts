@@ -5,6 +5,7 @@ import { appToday } from "@/lib/app/dates";
 import { HttpError, handle, sessionIdOrThrow } from "@/lib/app/http";
 import { SAMPLES } from "@/lib/app/samples";
 import { liveCheckServices, missingKeys } from "@/lib/app/services";
+import { MAX_SHARED_LINK, ShareError, claimSharedImage } from "@/lib/app/share";
 import { loadSession, updateSession } from "@/lib/app/store";
 import type { CheckRecord } from "@/lib/app/types";
 import { CallBudget } from "@/lib/studio/llm";
@@ -25,9 +26,10 @@ function takeCheck(sid: string): void {
 }
 
 /**
- * Check a screenshot (multipart "image"), a bundled sample ("sample") or a
- * store link ("url"). Claude reads it, the catalogue match and the verdict are
- * decided in code, and the check is stored for this shopper.
+ * Check a screenshot (multipart "image"), a bundled sample ("sample"), a
+ * store link ("url") or a screenshot shared from a phone ("shared", the
+ * one-time token from /api/share). Claude reads it, the catalogue match and
+ * the verdict are decided in code, and the check is stored for this shopper.
  */
 export async function POST(request: Request) {
   return handle(async () => {
@@ -41,6 +43,7 @@ export async function POST(request: Request) {
     const image = form.get("image");
     const sample = form.get("sample");
     const url = form.get("url");
+    const shared = form.get("shared");
     let reading;
     let input: CheckRecord["input"];
     try {
@@ -61,7 +64,20 @@ export async function POST(request: Request) {
         if (!services.cache?.get("reading", sha256(data))) takeCheck(sid);
         reading = await readImage({ data, mediaType }, services);
         input = { kind: "screenshot", imageHash: sha256(data) };
+      } else if (typeof shared === "string" && shared) {
+        const upload = claimSharedImage(shared);
+        const data = Buffer.from(upload.bytes).toString("base64");
+        try {
+          if (!services.cache?.get("reading", sha256(data))) takeCheck(sid);
+        } catch (e) {
+          // Refused by a limit: keep the screenshot so the same link works once the limit allows.
+          upload.putBack();
+          throw e;
+        }
+        reading = await readImage({ data, mediaType: upload.mediaType }, services);
+        input = { kind: "screenshot", imageHash: sha256(data) };
       } else if (typeof url === "string" && url.trim()) {
+        if (url.trim().length > MAX_SHARED_LINK) throw new HttpError(422, "That link is too long to check. Paste the store page's address instead.");
         takeCheck(sid);
         reading = await readLink(url, services);
         input = { kind: "link", url: url.trim() };
@@ -70,6 +86,7 @@ export async function POST(request: Request) {
       }
     } catch (e) {
       if (e instanceof CheckInputError) throw new HttpError(422, e.message);
+      if (e instanceof ShareError) throw new HttpError(e.status, e.message);
       if (e instanceof ReaderOutputError) throw new HttpError(422, "We couldn't read that image. Try a sharper screenshot that shows the product name.");
       throw e;
     }
