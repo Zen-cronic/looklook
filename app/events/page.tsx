@@ -11,10 +11,14 @@ export default function EventsPage() {
     <main className="page wide">
       <div style={{ marginBottom: "1.5rem", maxWidth: "44rem" }}>
         <h1>Webhook events</h1>
-        <p className="lede">What PayPal and Channel3 sent, whether it checked out, and what it changed.</p>
+        <p className="lede">What PayPal and Channel3 sent, whether it was verified, and what it changed.</p>
         <p className="small muted" style={{ marginTop: "0.5rem" }}>
-          PayPal events are checked with PayPal&apos;s verify-webhook-signature call; Channel3 events with their signing secret (HMAC-SHA256). A repeated event ID is acknowledged and handled once.
+          PayPal events are verified with PayPal; Channel3 events by their signature. A repeated event is handled once.
         </p>
+        <details className="disclosure step-more" style={{ marginTop: "0.4rem" }}>
+          <summary>How events are verified</summary>
+          <p>PayPal events are checked with PayPal&apos;s verify-webhook-signature call; Channel3 events with their signing secret (HMAC-SHA256). A repeated event ID is acknowledged and handled once.</p>
+        </details>
       </div>
       <Suspense fallback={<div className="skeleton" />}>
         <Events />
@@ -55,7 +59,7 @@ async function Events() {
             <th>Received</th>
             <th>From</th>
             <th>Event</th>
-            <th>Check</th>
+            <th>Verified</th>
             <th>What it did</th>
           </tr>
         </thead>
@@ -70,7 +74,7 @@ async function Events() {
                 <div className="mono small">{e.type ?? "unknown"}</div>
                 {e.eventId && <div className="mono small muted">{e.eventId}</div>}
               </td>
-              <td data-label="Check">
+              <td data-label="Verified">
                 <VerificationChip e={e} /> {e.duplicate && <span className="chip wait">Repeat, handled once</span>}
               </td>
               <td data-label="What it did" className="small">{e.duplicate ? "Nothing: already handled." : e.state === "failed" ? "Not applied yet: waiting for the sender to retry." : e.state === "processing" && !e.effect ? "Being applied." : (e.effect ?? "")}</td>

@@ -173,16 +173,21 @@ export function VerdictWidget(params: AgWidgetParams) {
                 {r.lookAgain ? `, look again ${countedDay(r.lookAgain, ctx.simulated)}` : ""}
               </p>
             ) : null}
-            {r.returns ? <p className="small muted">{String(r.returns)}</p> : null}
+            {r.returns ? (
+              <p className="small muted">
+                {r.policyUrl ? (
+                  <a href={String(r.policyUrl)} target="_blank" rel="noreferrer">
+                    {String(r.returns)}
+                  </a>
+                ) : (
+                  String(r.returns)
+                )}
+              </p>
+            ) : null}
             <div className="decision-links">
               <a className="btn small outline" href={`/check/${r.id}`}>
                 See why
               </a>
-              {r.policyUrl ? (
-                <a className="btn small outline" href={String(r.policyUrl)} target="_blank" rel="noreferrer">
-                  Store policy
-                </a>
-              ) : null}
               {r.status === "Watching" && <span className="small muted">Watching the price</span>}
             </div>
             {r.payable ? <ApproveButton ctx={ctx} label="Buy" req={{ source: { kind: "check", checkId: String(r.id) }, withinCap: Boolean(r.withinCap), amount: Number(r.price) }} /> : null}
@@ -286,11 +291,73 @@ export function SkipWidget(params: AgWidgetParams) {
         {skip.right} of {skip.n}
       </div>
       <div className="small muted">
-        products it had never seen. Saying skip to everything gets {skip.alwaysSkip}; skipping anything in a category you own gets {skip.sameCategory}. On the {skip.dev.n} it was developed on: {skip.dev.right}.
+        right on {skip.n} products it had never seen. Skip everything: {skip.alwaysSkip}. Same category: {skip.sameCategory}.
       </div>
       <a className="btn small outline" href="/proof">
         See every case
       </a>
+    </div>
+  );
+}
+
+/** The shelf as stacked rows, for a phone: product, when it runs out, days left. */
+export function ShelfListWidget(params: AgWidgetParams) {
+  const ctx = params.context as WorkspaceContext;
+  const rows = useTable(params, "shelf");
+  if (!rows) return <div className="decision-list loading">Loading the shelf…</div>;
+  const sorted = [...rows].sort((a, b) => (typeof a.daysLeft === "number" ? a.daysLeft : 1e9) - (typeof b.daysLeft === "number" ? b.daysLeft : 1e9));
+  return (
+    <div className="decision-list">
+      <div className="decision-head">
+        <h2>Shelf</h2>
+        <p className="small muted">{rows.length} items</p>
+      </div>
+      <ul className="stack-rows">
+        {sorted.map((r) => {
+          const days = typeof r.daysLeft === "number" ? r.daysLeft : null;
+          return (
+            <li key={String(r.id)}>
+              <span className="name-line">{String(r.product)}</span>
+              <span className="small muted">
+                {days === null ? "No run-out date" : days < 0 ? `Ran out ${-days} days ago` : days === 0 ? "Runs out today" : `${days} ${days === 1 ? "day" : "days"} left, runs out ${countedDay(r.runOutDate, ctx.simulated)}`}
+                {r.price ? `. ${money(r.price)} last time` : ""}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </div>
+  );
+}
+
+/** Items watched for a price drop, or a plain card when there are none. */
+export function WatchListWidget(params: AgWidgetParams) {
+  const rows = useTable(params, "watchlist");
+  useEffect(() => {
+    (params.widgetApi as unknown as WidgetApiLike).setDisplayState("displayed");
+  }, [params]);
+  return (
+    <div className="decision-list">
+      <div className="decision-head">
+        <h2>Price watches</h2>
+      </div>
+      {!rows || rows.length === 0 ? (
+        <div className="empty-card">
+          <p>Nothing watched yet.</p>
+          <p className="small muted">Tap Watch for a drop on a wait verdict, and the price shows up here.</p>
+        </div>
+      ) : (
+        <ul className="stack-rows">
+          {rows.map((r) => (
+            <li key={String(r.id)}>
+              <span className="name-line">{String(r.product)}</span>
+              <span className="small muted">
+                Was {money(r.startPrice)}, now {money(r.currentPrice)}, buy at {money(r.targetPrice)}. {String(r.status ?? "")}
+              </span>
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

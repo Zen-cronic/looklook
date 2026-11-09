@@ -9,10 +9,9 @@ import { APP_NAME } from "@/lib/brand";
 import type { PurchaseSource } from "@/lib/app/types";
 import { formatDay } from "@/lib/app/dates";
 import { diffRows, fieldName, TABLES, waitCounts, type FieldKind, type Row, type StudioPayload, type TableId } from "@/lib/studio/schema";
-import { SampleWeekControls } from "../components/SampleWeek";
 import { claudeAdapter, type TurnInfo } from "./adapter";
 import { DEFAULT_WAITS_WIDGET, isWaitsWidget, type WaitsWidget } from "./waits";
-import { BudgetWidget, SkipWidget, VerdictWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
+import { BudgetWidget, ShelfListWidget, SkipWidget, VerdictWidget, WatchListWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
 
 const LICENSE = process.env.NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY;
 const PAGE_ID = "decisions";
@@ -58,47 +57,65 @@ function sources(payload: StudioPayload) {
   }));
 }
 
-const BASE_LAYOUT = {
-  verdicts: { xTrack: 0, yTrack: 0, xSpan: 9, ySpan: 40 },
-  budget: { xTrack: 9, yTrack: 0, xSpan: 8, ySpan: 12 },
-  skip: { xTrack: 17, yTrack: 0, xSpan: 7, ySpan: 12 },
-  shelf: { xTrack: 9, yTrack: 12, xSpan: 15, ySpan: 16 },
-  watch: { xTrack: 9, yTrack: 28, xSpan: 15, ySpan: 12 },
-};
+// Canvas rows are 20px. The shelf grid is tall enough for every row, so it never cuts off mid-list.
+const TRACK_PX = 20;
+const shelfSpan = (rows: number) => Math.max(10, Math.ceil((rows * 26 + 96) / TRACK_PX));
+const watchSpan = (rows: number) => (rows ? Math.max(8, Math.ceil((rows * 26 + 96) / TRACK_PX)) : 6);
 
-// With the waits table: it takes the slot under the figures, the grids move down.
-const WITH_WAITS_LAYOUT = {
-  ...BASE_LAYOUT,
-  waits: { xTrack: 9, yTrack: 12, xSpan: 15, ySpan: 10 },
-  shelf: { xTrack: 9, yTrack: 22, xSpan: 15, ySpan: 16 },
-  watch: { xTrack: 9, yTrack: 38, xSpan: 15, ySpan: 10 },
-};
+function layouts(p: StudioPayload) {
+  const shelf = shelfSpan(p.tables.shelf.length);
+  const watch = watchSpan(p.tables.watchlist.length);
+  const base = {
+    budget: { xTrack: 9, yTrack: 0, xSpan: 8, ySpan: 12 },
+    skip: { xTrack: 17, yTrack: 0, xSpan: 7, ySpan: 12 },
+    shelf: { xTrack: 9, yTrack: 12, xSpan: 15, ySpan: shelf },
+    watch: { xTrack: 9, yTrack: 12 + shelf, xSpan: 15, ySpan: watch },
+    verdicts: { xTrack: 0, yTrack: 0, xSpan: 9, ySpan: 12 + shelf + watch },
+  };
+  // With the waits table: it takes the slot under the figures, the grids move down.
+  const withWaits = {
+    ...base,
+    waits: { xTrack: 9, yTrack: 12, xSpan: 15, ySpan: 10 },
+    shelf: { ...base.shelf, yTrack: 22 },
+    watch: { ...base.watch, yTrack: 22 + shelf },
+    verdicts: { ...base.verdicts, ySpan: 22 + shelf + watch },
+  };
+  return { base, withWaits, tracks: 12 + shelf + watch };
+}
 
-const INITIAL_STATE = {
-  pages: [
-    {
-      id: PAGE_ID,
-      name: "Decisions",
-      widgets: {
-        verdicts: { type: "verdictList", dataMapping: {} },
-        budget: { type: "budgetFigure", dataMapping: {} },
-        skip: { type: "skipFigure", dataMapping: {} },
-        shelf: {
-          type: "grid",
-          format: { title: { enabled: true, text: "Shelf" } },
-          dataMapping: { cols: [{ id: "shelf.product" }, { id: "shelf.runOutDate" }, { id: "shelf.daysLeft" }, { id: "shelf.price" }, { id: "shelf.lastRestocked" }] },
+/** The page as it opens: grids on a wide screen, stacked lists on a phone, and a plain card when nothing is watched. */
+function initialState(p: StudioPayload, narrow: boolean): AgReportState {
+  return {
+    pages: [
+      {
+        id: PAGE_ID,
+        name: "Decisions",
+        widgets: {
+          verdicts: { type: "verdictList", dataMapping: {} },
+          budget: { type: "budgetFigure", dataMapping: {} },
+          skip: { type: "skipFigure", dataMapping: {} },
+          shelf: narrow
+            ? { type: "shelfList", dataMapping: {} }
+            : {
+                type: "grid",
+                format: { title: { enabled: true, text: "Shelf" } },
+                dataMapping: { cols: [{ id: "shelf.product" }, { id: "shelf.runOutDate" }, { id: "shelf.daysLeft" }, { id: "shelf.price" }, { id: "shelf.lastRestocked" }] },
+              },
+          watch:
+            narrow || p.tables.watchlist.length === 0
+              ? { type: "watchList", dataMapping: {} }
+              : {
+                  type: "grid",
+                  format: { title: { enabled: true, text: "Price watches" } },
+                  dataMapping: { cols: [{ id: "watchlist.product" }, { id: "watchlist.startPrice" }, { id: "watchlist.currentPrice" }, { id: "watchlist.targetPrice" }, { id: "watchlist.status" }, { id: "watchlist.alert" }] },
+                },
         },
-        watch: {
-          type: "grid",
-          format: { title: { enabled: true, text: "Watching for a drop" } },
-          dataMapping: { cols: [{ id: "watchlist.product" }, { id: "watchlist.startPrice" }, { id: "watchlist.currentPrice" }, { id: "watchlist.targetPrice" }, { id: "watchlist.status" }, { id: "watchlist.alert" }] },
-        },
+        widgetLayout: layouts(p).base,
       },
-      widgetLayout: BASE_LAYOUT,
-    },
-  ],
-  selectedPageId: PAGE_ID,
-} as unknown as AgReportState;
+    ],
+    selectedPageId: PAGE_ID,
+  } as unknown as AgReportState;
+}
 
 const STEP_WORDS: Record<string, string> = {
   delegate_to: "Handing the request to Studio's lead agent",
@@ -138,7 +155,6 @@ function themeFromTokens() {
   const css = getComputedStyle(document.documentElement);
   const v = (name: string) => css.getPropertyValue(name).trim();
   const font = `${v("--font-ui")}, sans-serif`;
-  const display = `${v("--font-display")}, sans-serif`;
   return studioTheme.withParams({
     accentColor: v("--signature"),
     foregroundColor: v("--ink"),
@@ -150,8 +166,12 @@ function themeFromTokens() {
     studioWidgetBorderRadius: v("--radius"),
     fontFamily: font,
     studioCanvasFontFamily: font,
-    studioWidgetTitleFontFamily: display,
+    studioWidgetTitleFontFamily: font,
     studioWidgetTitleFontWeight: 800,
+    studioCanvasBorder: false,
+    studioCanvasShadow: false,
+    studioCanvasPadding: "0px",
+    studioWidgetBorder: `0.5px solid ${v("--ink")}`,
     studioWidgetSubtitleFontFamily: font,
     studioWidgetCaptionFontFamily: font,
     studioPanelHeaderFontFamily: font,
@@ -183,7 +203,8 @@ function addedWidgets(api: AgStudioApi): string[] {
 }
 
 /** Replace the decisions page, keeping the base widgets and adding `waits` when given. */
-function withWaits(api: AgStudioApi, waits: WaitsWidget | null, id = "waits"): void {
+function withWaits(api: AgStudioApi, payload: StudioPayload, waits: WaitsWidget | null, id = "waits"): void {
+  const { base: BASE_LAYOUT, withWaits: WITH_WAITS_LAYOUT } = layouts(payload);
   const st = api.getState() as unknown as { pages: PageLike[] } & Record<string, unknown>;
   const pages = st.pages.map((p) => {
     if (p.id !== PAGE_ID) return p;
@@ -305,8 +326,26 @@ export default function Workspace({ initial, narrow }: Props) {
             minSize: { width: 220, height: 160 },
             ai: { description: "How often skip is right on 30 held-out products it had never seen (the single scored run), beside saying skip to everything, with a link to every case. Needs no data." },
           },
+          {
+            id: "shelfList",
+            label: "Shelf list",
+            form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
+            comp: ShelfListWidget,
+            defaultSize: { width: 320, height: 480 },
+            minSize: { width: 220, height: 160 },
+            ai: { description: "The shopper's shelf as stacked rows: product, when it runs out and days left. Reads the shelf table; needs no field mapping." },
+          },
+          {
+            id: "watchList",
+            label: "Price watches",
+            form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
+            comp: WatchListWidget,
+            defaultSize: { width: 320, height: 240 },
+            minSize: { width: 220, height: 120 },
+            ai: { description: "Items watched for a price drop as stacked rows, or a short note when nothing is watched. Reads the watch list table; needs no field mapping." },
+          },
         ],
-        menu: [...base.menu, { label: APP_NAME, widgetIds: ["verdictList", "budgetFigure", "skipFigure"] }],
+        menu: [...base.menu, { label: APP_NAME, widgetIds: ["verdictList", "budgetFigure", "skipFigure", "shelfList", "watchList"] }],
       } as never),
     [],
   );
@@ -366,9 +405,9 @@ export default function Workspace({ initial, narrow }: Props) {
       const step = t.tools.map((n) => STEP_WORDS[n]).find(Boolean) ?? (t.ok ? "Thinking" : "A step failed, retrying");
       setRun((r) => (r.kind === "running" ? { ...r, calls, step } : r));
     };
-    withWaits(api, null);
+    withWaits(api, payload, null);
     const fallback = (note: string) => {
-      withWaits(api, readCache() ?? DEFAULT_WAITS_WIDGET);
+      withWaits(api, payload, readCache() ?? DEFAULT_WAITS_WIDGET);
       setRun({ kind: "done", seconds: Math.round((Date.now() - startedAt) / 1000), calls, fromCache: true, note });
     };
     let session: AgAiChatSession | null = null;
@@ -392,7 +431,7 @@ export default function Workspace({ initial, narrow }: Props) {
       if (outcome === "timeout") session.cancel();
       const built = addedWidgets(api).map((id) => [id, snapshot(api, id)] as const).find(([, s]) => s);
       if (outcome !== "idle" || !built) return fallback(outcome === "timeout" ? "The assistant took too long, so this is the saved table." : "The assistant didn't finish, so this is the saved table.");
-      withWaits(api, built[1]!, built[0]);
+      withWaits(api, payload, built[1]!, built[0]);
       try {
         localStorage.setItem(CACHE_KEY, JSON.stringify(built[1]));
       } catch {}
@@ -414,11 +453,15 @@ export default function Workspace({ initial, narrow }: Props) {
   }, [run.kind]);
 
   const waits = waitCounts(payload.tables.verdicts);
+  const [initial0] = useState(() => initialState(initial, narrow));
+  // The canvas is as tall as its widgets, so the page scrolls, not the canvas. On a phone the widgets stack in one column.
+  const tracks = layouts(initial).tracks + (run.kind !== "idle" ? 10 : 0);
+  const canvasHeight = `${(narrow ? tracks * 2 + 30 : Math.max(tracks, 34)) * TRACK_PX + 24}px`;
   const editing = mode === "edit" && !narrow;
 
   return (
     <AgStudioProvider licenseKey={LICENSE} modules={[AgStudioAiModule]}>
-      <div className={`workspace${narrow ? " narrow" : ""}`}>
+      <div className={`workspace${narrow ? " narrow" : ""}${editing ? " editing" : ""}`}>
         <div className="workspace-bar">
           <div>
             <h1>Decisions</h1>
@@ -435,11 +478,9 @@ export default function Workspace({ initial, narrow }: Props) {
             </div>
           )}
         </div>
-        <SampleWeekControls loaded={payload.sample} />
         {payload.dayOffset > 0 && (
           <p className="simdate" data-testid="studio-simdate">
-            <span className="chip sim">Simulated date: {formatDay(payload.today)}</span>{" "}
-            <span className="small muted">Run-out, look-again and decided dates count from it. Restock and payment times are real (ET).</span>
+            <span className="chip sim">Simulated date: {formatDay(payload.today)}</span>
           </p>
         )}
         {narrow && (
@@ -479,12 +520,12 @@ export default function Workspace({ initial, narrow }: Props) {
             </button>
           </div>
         )}
-        <div className="workspace-canvas" data-testid="studio">
+        <div className="workspace-canvas" data-testid="studio" style={canvasHeight ? { height: canvasHeight } : undefined}>
           <AgStudio
             style={{ height: "100%", width: "100%" }}
             data={data as never}
             mode={editing ? "edit" : "view"}
-            initialState={INITIAL_STATE}
+            initialState={initial0}
             widgets={widgets as never}
             theme={theme}
             layout={{ columns: 24, minWidth: 250 } as never}

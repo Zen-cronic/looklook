@@ -49,17 +49,9 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <dt>Paid with</dt>
           <dd>{r.methodLabel}</dd>
           <dt>How</dt>
-          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "Your yes on a saved method (customer-initiated)"}</dd>
+          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "You tapped yes; paid with your saved method"}</dd>
           <dt>PayPal order</dt>
           <dd>{r.orderId}</dd>
-          <dt>Capture</dt>
-          <dd>
-            {r.captureId ?? "none"} ({r.captureStatus})
-          </dd>
-          <dt>Request ID</dt>
-          <dd>{r.requestId}</dd>
-          <dt>Time</dt>
-          <dd>{formatTime(r.createdAt)} ET</dd>
           {r.refund && (
             <>
               <dt>Refund</dt>
@@ -69,6 +61,29 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
             </>
           )}
         </dl>
+        <details className="ids receipt-ids">
+          <summary>PayPal details</summary>
+          <dl className="receipt-lines">
+            <dt>Capture</dt>
+            <dd>
+              {r.captureId ?? "none"} ({r.captureStatus})
+            </dd>
+            <dt>Request ID</dt>
+            <dd>{r.requestId}</dd>
+            {r.kind !== "first-purchase" && (
+              <>
+                <dt>Charge type</dt>
+                <dd>customer-initiated</dd>
+              </>
+            )}
+            {r.webhook && (
+              <>
+                <dt>Webhook</dt>
+                <dd>{r.webhook.type}</dd>
+              </>
+            )}
+          </dl>
+        </details>
         <div className="receipt-foot stack-sm">
           {r.status === "failed" ? (
             <p>
@@ -76,7 +91,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
             </p>
           ) : (
             <p>
-              <strong className="sticker paid">Charged once.</strong> {repeatsLine(r)}
+              <strong className="sticker paid">Charged once.</strong> {r.attempts > 1 ? repeatsLine(r) : null}
             </p>
           )}
           {r.shelfNote && <p>{r.shelfNote}</p>}
@@ -91,7 +106,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
             </p>
           )}
           {r.kind === "first-purchase" && !method && <p className="muted">This method was not saved.</p>}
-          <p className="muted small">{r.webhook ? `PayPal confirmed it by webhook (${r.webhook.type}) at ${formatTime(r.webhook.at)} ET.` : "PayPal's webhook for this payment hasn't arrived here yet."}</p>
+          <p className="muted small">{r.webhook ? `PayPal confirmed it at ${formatTime(r.webhook.at)} ET.` : "Waiting for PayPal's confirmation."}</p>
         </div>
       </article>
       <ReceiptActions receiptId={r.id} source={r.source} amountCents={r.amountCents} canRepeat={r.kind === "saved-method" && (r.status === "completed" || r.status === "pending")} canRefund={!!r.captureId && (r.status === "completed" || r.status === "partly-refunded") && r.refund?.status !== "PENDING"} />

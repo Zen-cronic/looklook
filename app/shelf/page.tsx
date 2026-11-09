@@ -30,7 +30,7 @@ function dueFor(item: ShelfItem, today: string, dayOffset: number): DueLabel {
   if (!item.runOutDate) return { kind: "none", label: "" };
   const left = daysBetween(today, item.runOutDate);
   const title = `Runs out ${countedDate(item.runOutDate, dayOffset)}`;
-  if (left < 0) return { kind: "out", big: String(-left), label: -left === 1 ? "day ago, ran out" : "days ago, ran out", title };
+  if (left < 0) return { kind: "out", label: `Ran out ${-left} ${left === -1 ? "day" : "days"} ago`, title };
   if (left === 0) return { kind: "out", label: "Runs out today", title };
   if (left <= 7) return { kind: "soon", big: String(left), label: left === 1 ? "day left" : "days left", title };
   return { kind: "later", label: `${left} days left`, title };

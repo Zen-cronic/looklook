@@ -31,12 +31,10 @@ export function ShelfRow(props: { id: string; brand: string; kind: string; name:
           <span className="title">{props.name}</span>
           {props.sub && <span className="sub">{props.sub}</span>}
         </span>
-        {props.due.kind !== "none" && (
-          <span className={`due ${props.due.kind}`} title={props.due.title}>
-            {props.due.big && <strong>{props.due.big}</strong>}
-            <span>{props.due.label}</span>
-          </span>
-        )}
+        <span className={`due ${props.due.kind}`} title={props.due.title}>
+          {props.due.big && <strong>{props.due.big}</strong>}
+          {props.due.label && <span>{props.due.label}</span>}
+        </span>
         <svg className="go row-go" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
           <path d="M6 3.5 10.5 8 6 12.5" />
         </svg>

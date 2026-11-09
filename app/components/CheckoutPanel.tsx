@@ -45,9 +45,12 @@ function loadSdk(clientId: string): Promise<PayPalNamespace> {
   });
 }
 
+// Card inputs match the app's own fields: a 2px ink edge and a 12px radius. The fields are PayPal's
+// iframes, which can't load the app's fonts, so they use a system face.
 const FIELD_STYLE = {
-  input: { "font-size": "16px", "font-family": "Helvetica, Arial, sans-serif", padding: "12px", color: "#0a0a0a" },
-  ".invalid": { color: "#a3001b" },
+  input: { "font-size": "16px", "font-family": "Helvetica, Arial, sans-serif", padding: "13px 14px", color: "#0a0a0a", border: "2px solid #0a0a0a", "border-radius": "12px", "box-shadow": "none" },
+  "input:focus": { border: "2px solid #2b3bff", "box-shadow": "0 0 0 3px #e3e6ff" },
+  ".invalid": { color: "#a3001b", border: "2px solid #a3001b" },
 };
 
 interface Props {
@@ -182,16 +185,20 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
           <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} />
           Save this payment method for rebuys I approve
         </label>
-        <div className="cap-input" style={{ opacity: save ? 1 : 0.5 }}>
-          <label htmlFor="cap">Per-rebuy cap</label>
-          <span>$</span>
-          <input id="cap" type="number" min="1" max="1000" step="1" inputMode="numeric" value={cap} disabled={!save} onChange={(e) => setCap(e.target.value)} />
-        </div>
-        <ul>
-          {consentTemplate.map((l) => (
-            <li key={l}>{l.replace("{cap}", capLabel)}</li>
-          ))}
-        </ul>
+        {save && (
+          <>
+            <div className="cap-input">
+              <label htmlFor="cap">Cap per rebuy</label>
+              <span>$</span>
+              <input id="cap" type="number" min="1" max="1000" step="1" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value)} />
+            </div>
+            <ul>
+              {consentTemplate.map((l) => (
+                <li key={l}>{l.replace("{cap}", capLabel)}</li>
+              ))}
+            </ul>
+          </>
+        )}
       </section>
 
       {error && (
@@ -210,7 +217,7 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
         <div ref={buttonsEl} className="paypal-area" />
         {status === "loading" && <div className="skeleton" style={{ height: "3rem" }} />}
         <div className="or">or pay by card</div>
-        <div className="card-fields stack-sm" hidden={cardReady === "no"}>
+        <div className={`card-fields stack-sm${cardReady === "pending" ? " pending" : ""}`} hidden={cardReady === "no"}>
           <div ref={nameEl} className="field-slot" />
           <div ref={numberEl} className="field-slot" />
           <div className="field-row">

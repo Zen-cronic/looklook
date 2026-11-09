@@ -11,7 +11,7 @@ export default function PaymentsPage() {
     <main className="page">
       <div style={{ marginBottom: "1.5rem" }}>
         <h1>Saved methods</h1>
-        <p className="lede">Payment methods PayPal keeps for your rebuys, and what you agreed to when you saved them.</p>
+        <p className="lede">Cards and PayPal accounts saved for your rebuys.</p>
       </div>
       <Suspense fallback={<div className="skeleton" />}>
         <Methods />
@@ -48,21 +48,9 @@ async function Methods() {
             <summary>What you agreed to</summary>
             <div className="stack-sm" style={{ paddingBottom: "0.85rem" }}>
               <p>{m.consentText}</p>
-              <details className="ids">
-                <summary>Details</summary>
-                <dl className="receipt-lines" style={{ padding: 0 }}>
-                  <dt>PayPal token</dt>
-                  <dd>{m.vaultId}</dd>
-                  {m.customerId && (
-                    <>
-                      <dt>PayPal customer</dt>
-                      <dd>{m.customerId}</dd>
-                    </>
-                  )}
-                  <dt>First order</dt>
-                  <dd>{m.firstOrderId}</dd>
-                </dl>
-              </details>
+              <p className="small muted mono">
+                PayPal token: {m.vaultId}. First order: {m.firstOrderId}.
+              </p>
             </div>
           </details>
           {m.status === "active" && <MethodControls id={m.id} label={m.label} capDollars={m.capCents / 100} />}

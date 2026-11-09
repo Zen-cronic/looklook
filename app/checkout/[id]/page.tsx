@@ -30,7 +30,7 @@ async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["param
   return (
     <div className="stack">
       <div>
-        <h1>{replaced ? "Approve with another method" : "Pay with PayPal"}</h1>
+        <h1>{replaced ? "Approve with another method" : "Checkout"}</h1>
         {replaced && <p className="lede">PayPal declined {replaced.label} for this rebuy. Nothing was charged. Pick another card or PayPal account below.</p>}
       </div>
       <div className="card product-row" style={{ padding: "0.9rem 1rem" }}>

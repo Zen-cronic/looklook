@@ -284,10 +284,6 @@ img {
   }
 }
 
-/* The Decisions workspace is wider; the header and footer line up with it */
-body:has(.studio-page) :is(.topbar-inner, .footer) {
-  max-width: 96rem;
-}
 
 /* Type */
 h1 {
@@ -778,9 +774,10 @@ select:focus-visible {
   gap: 0.5rem;
 }
 
+/* Sample posts: mixed sizes, the first one tall and the last one wide */
 .samples {
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
+  grid-template-columns: repeat(2, minmax(0, 1fr));
   gap: 0.75rem;
 }
 
@@ -795,6 +792,8 @@ select:focus-visible {
   overflow: hidden;
   cursor: pointer;
   color: var(--ink);
+  display: flex;
+  flex-direction: column;
   transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
 }
 
@@ -811,7 +810,7 @@ select:focus-visible {
 .sample img {
   aspect-ratio: 4 / 5;
   object-fit: cover;
-  object-position: top;
+  object-position: 50% 45%;
   width: 100%;
   border-bottom: var(--edge);
 }
@@ -824,9 +823,40 @@ select:focus-visible {
   line-height: 1.25;
 }
 
-@media (max-width: 520px) {
+@media (min-width: 720px) {
   .samples {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: 1.25fr 1fr 1fr;
+  }
+
+  .sample:first-child {
+    grid-row: span 2;
+  }
+
+  .sample:first-child img {
+    flex: 1;
+    aspect-ratio: auto;
+    min-height: 0;
+  }
+
+  .sample:first-child span {
+    font-family: var(--font-display);
+    font-size: var(--step-0);
+    font-weight: 800;
+    letter-spacing: -0.03em;
+    padding: 0.7rem 0.8rem;
+  }
+
+  .sample:last-child {
+    grid-column: span 2;
+  }
+
+  .sample:last-child img {
+    aspect-ratio: 2 / 1;
+  }
+
+  .sample:nth-child(2) img,
+  .sample:nth-child(3) img {
+    aspect-ratio: 1 / 1;
   }
 }
 
@@ -1700,13 +1730,31 @@ tr:last-child td {
   background: var(--shade);
 }
 
+/* PayPal's button first and full width; card fields keep their height while PayPal loads them */
 .paypal-area {
   min-height: 3rem;
   width: 100%;
 }
 
+.paypal-area > div,
+.paypal-area iframe {
+  width: 100% !important;
+  max-width: none !important;
+}
+
 .card-fields .field-slot {
-  min-height: 3.25rem;
+  min-height: 3.6rem;
+}
+
+/* PayPal's iframes carry a few pixels of their own margin; pull them onto the column edge */
+.card-fields .field-slot > div {
+  margin-inline: -0.25rem;
+}
+
+.card-fields.pending .field-slot {
+  border-radius: var(--radius-sm);
+  background: var(--shade);
+  margin-bottom: 0.4rem;
 }
 
 .consent {
@@ -1734,9 +1782,11 @@ tr:last-child td {
   white-space: nowrap;
 }
 
-.cap-input span {
+.cap-input span,
+.cap-input input {
   font-family: var(--font-mono);
   font-weight: 700;
+  color: var(--ink);
 }
 
 .split {
@@ -2306,5 +2356,21 @@ html[data-still]::view-transition-new(*) {
   .rerun {
     justify-items: start;
     text-align: left;
+  }
+}
+
+/* Receipt: the PayPal ids sit behind one row */
+.receipt-ids {
+  margin: 0 1.4rem;
+  border-top: var(--rule);
+}
+
+.receipt-ids > summary {
+  padding: 0.75rem 0;
+}
+
+@media (max-width: 640px) {
+  .receipt-ids {
+    margin: 0 1.1rem;
   }
 }
