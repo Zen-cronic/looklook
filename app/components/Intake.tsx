@@ -1,7 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useEffect, useRef, useState } from "react";
+import { startTransition, useEffect, useRef, useState } from "react";
 import type { Sample } from "@/lib/app/samples";
 import type { SharedInput } from "@/lib/app/share";
 
@@ -42,7 +42,11 @@ export function Intake({ samples, shared }: { samples: Sample[]; shared?: Shared
       const res = await fetch("/api/check", { method: "POST", body: form });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? "That didn't work. Try again.");
-      router.push(`/check/${data.id}`);
+      // Leave the busy state with the navigation, so Back shows the form again, not a spinner.
+      startTransition(() => {
+        router.push(`/check/${data.id}`);
+        setBusy(false);
+      });
     } catch (e) {
       setError((e as Error).message);
       setBusy(false);
