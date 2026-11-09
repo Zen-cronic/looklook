@@ -59,8 +59,8 @@
 }
 
 .workspace-run.done {
-  background: var(--buy);
-  color: var(--buy-ink);
+  background: var(--ink);
+  color: var(--card);
 }
 
 .workspace-canvas {
@@ -93,7 +93,7 @@
   padding: 0.75rem 1rem;
   border-radius: var(--radius-sm);
   background: var(--card);
-  border-left: 5px solid var(--ink);
+  border: var(--rule);
   font-size: var(--step--1);
 }
 
@@ -126,10 +126,9 @@
   letter-spacing: -0.035em;
 }
 
+/* Records get a hairline; a rebuy or a buy you can pay here is an action card */
 .decision {
-  --status: var(--line-strong);
-  border: 1.5px solid var(--line);
-  border-left: 7px solid var(--status);
+  border: var(--rule);
   border-radius: var(--radius-sm);
   padding: 0.75rem 0.9rem;
   background: var(--card);
@@ -138,13 +137,15 @@
   gap: 0.35rem;
 }
 
-.decision.skip { --status: var(--skip); }
-.decision.wait { --status: var(--wait); }
-.decision.buy { --status: var(--buy); }
-.decision.ask { --status: var(--ask); }
-.decision.rebuy { --status: var(--ink); border-color: var(--ink); }
-.decision.bought { --status: var(--line-strong); }
-.decision.rebuy.declined { --status: var(--alert); }
+.decision.rebuy,
+.decision.payable {
+  border: var(--edge);
+  box-shadow: var(--shadow-hard-sm);
+}
+
+.decision.bought {
+  background: var(--paper);
+}
 
 .decision-top {
   display: flex;
@@ -184,8 +185,8 @@
   font-weight: 800;
   padding: 0.3rem 0.7rem;
   border-radius: var(--radius-pill);
-  background: var(--buy);
-  color: var(--buy-ink);
+  background: var(--ink);
+  color: var(--card);
   animation: settle var(--dur-3) var(--ease-spring) both;
 }
 
@@ -279,8 +280,8 @@
   border-radius: var(--radius);
   border: var(--edge);
   box-shadow: var(--shadow-hard-sm);
-  background: var(--buy);
-  color: var(--buy-ink);
+  background: var(--card);
+  color: var(--ink);
   font-size: var(--step--1);
   font-weight: 700;
   animation: settle var(--dur-3) var(--ease-spring) both;
@@ -292,6 +293,6 @@
 }
 
 .workspace-run.done.saved {
-  background: var(--wait);
-  color: var(--wait-ink);
+  background: var(--card);
+  color: var(--ink);
 }

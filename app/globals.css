@@ -17,23 +17,22 @@
   --accent: #ff8bc7;
   --accent-ink: #0a0a0a;
 
-  /* Verdicts: fill, text on the fill, light tint, text on the tint */
+  /* Verdicts, one loud colour: Skip is solid cobalt, Buy solid ink, Wait an ink outline
+     on the page colour, Check this pink. Pink is the only other accent: a small highlighter. */
   --skip: #2b3bff;
   --skip-ink: #ffffff;
   --skip-tint: #e3e6ff;
   --skip-deep: #1b27d6;
-  --wait: #ffd23f;
+  --wait: #f4f4f2;
   --wait-ink: #0a0a0a;
-  --wait-tint: #fff2bf;
-  --wait-deep: #0a0a0a;
-  --buy: #22d36f;
-  --buy-ink: #0a0a0a;
-  --buy-tint: #d3f7e2;
-  --buy-deep: #0a0a0a;
+  --wait-edge: #0a0a0a;
+  --buy: #0a0a0a;
+  --buy-ink: #ffffff;
   --ask: #ff8bc7;
   --ask-ink: #0a0a0a;
-  --ask-tint: #ffe0f0;
-  --ask-deep: #0a0a0a;
+
+  /* Edges: action cards get the ink edge and hard shadow; records get a hairline */
+  --rule: 0.5px solid var(--ink);
 
   /* Errors, declines and refused events */
   --alert: #e0102d;
@@ -577,9 +576,9 @@ select:focus-visible {
 }
 
 .chip.skip { background: var(--skip); color: var(--skip-ink); }
-.chip.wait { background: var(--wait); color: var(--wait-ink); }
+.chip.wait { background: var(--card); color: var(--wait-ink); box-shadow: inset 0 0 0 2px var(--wait-edge); }
 .chip.buy { background: var(--buy); color: var(--buy-ink); }
-.chip.ask { background: var(--ask); color: var(--ask-ink); }
+.chip.ask { background: var(--ask); color: var(--ask-ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
 .chip.alert { background: var(--alert); color: var(--alert-ink); }
 .chip.sim {
   background: var(--ink);
@@ -773,6 +772,8 @@ select:focus-visible {
 
 .verdict.skip .verdict-head { background: var(--skip); color: var(--skip-ink); }
 .verdict.wait .verdict-head { background: var(--wait); color: var(--wait-ink); }
+.verdict.buy .verdict-head :focus-visible,
+.verdict.skip .verdict-head :focus-visible { outline-color: var(--card); }
 .verdict.buy .verdict-head { background: var(--buy); color: var(--buy-ink); }
 .verdict.ask .verdict-head { background: var(--ask); color: var(--ask-ink); }
 
@@ -842,34 +843,47 @@ select:focus-visible {
 
 .returns {
   margin: 0 1.4rem;
-  padding: 0.75rem 1rem 0.75rem 2.4rem;
+  padding: 0.75rem 1rem 0.75rem 2.6rem;
   border-radius: var(--radius-sm);
   font-weight: 700;
   font-size: 0.9375rem;
   line-height: 1.4;
   position: relative;
+  background: var(--paper);
+  color: var(--ink);
 }
 
-/* A solid status dot instead of a tinted edge */
+/* A small drawn icon says the kind of note; pink only when it warns */
 .returns::before {
   content: "";
   position: absolute;
-  left: 1rem;
-  top: 1.05rem;
-  width: 0.7rem;
-  height: 0.7rem;
+  left: 0.95rem;
+  top: 0.85rem;
+  width: 1.05rem;
+  height: 1.05rem;
   border-radius: 50%;
-  background: currentColor;
+  background-color: var(--ink);
+  background-repeat: no-repeat;
+  background-position: center;
+  background-size: 0.7rem;
 }
 
-.returns.ok { background: var(--buy-tint); color: var(--ink); }
-.returns.ok::before { background: var(--buy); box-shadow: 0 0 0 1.5px var(--ink); }
-.returns.no { background: var(--alert-tint); color: var(--alert-deep); }
-.returns.no::before { background: var(--alert); }
-.returns.maybe { background: var(--wait-tint); color: var(--ink); }
-.returns.maybe::before { background: var(--wait); box-shadow: 0 0 0 1.5px var(--ink); }
-.returns.unknown { background: var(--shade); color: var(--ink-2); }
-.returns.unknown::before { background: var(--line-strong); }
+.returns.ok::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.3l2.3 2.3 4.7-5' fill='none' stroke='white' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+}
+
+.returns.maybe::before,
+.returns.unknown::before {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 5.4v3.4' stroke='white' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='6' cy='3.2' r='1' fill='white'/%3E%3C/svg%3E");
+}
+
+.returns.no::before {
+  background-color: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 2.8v3.8' stroke='%230a0a0a' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='6' cy='8.9' r='1' fill='%230a0a0a'/%3E%3C/svg%3E");
+}
+
+.returns.unknown { color: var(--ink-2); }
 
 .why {
   margin: 1rem 1.4rem 0;
@@ -1091,8 +1105,8 @@ select:focus-visible {
   white-space: nowrap;
 }
 
-.days.soon { background: var(--wait); color: var(--wait-ink); }
-.days.out { background: var(--alert); color: var(--alert-ink); }
+.days.soon { background: var(--accent); color: var(--accent-ink); box-shadow: inset 0 0 0 1.5px var(--ink); }
+.days.out { background: var(--ink); color: var(--card); }
 
 .group-label {
   font-size: var(--step--1);
@@ -1150,33 +1164,36 @@ select:focus-visible {
   font-size: var(--step-1);
 }
 
-/* Approval: a hero card; the band on top carries the status colour */
+/* Approval: an action card, so the ink edge and hard shadow; no colour band */
 .approval {
-  --status: var(--buy);
   position: relative;
   border-radius: var(--radius);
   background: var(--card);
   border: var(--edge);
   box-shadow: var(--shadow-hard);
-  padding: 1.6rem 1.3rem 1.2rem;
+  padding: 1.3rem 1.3rem 1.2rem;
   overflow: hidden;
 }
 
-.approval::before {
+/* A small pink tag for what changed: a price drop or a reminder */
+.approval-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.approval-tag::before {
   content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  height: 0.6rem;
-  background: var(--status);
-  border-bottom: var(--edge);
-}
-
-.approval.declined {
-  --status: var(--alert);
-}
-
-.approval.price-drop {
-  --status: var(--wait);
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--ink);
 }
 
 .approval .amount {
@@ -1211,7 +1228,7 @@ select:focus-visible {
 .notice {
   background: var(--card);
   border-radius: var(--radius-sm);
-  border-left: 5px solid var(--ink);
+  border: var(--rule);
   padding: 0.8rem 1rem;
   font-size: 0.9375rem;
 }
@@ -1284,8 +1301,8 @@ select:focus-visible {
 }
 
 .sticker.paid {
-  background: var(--buy);
-  color: var(--buy-ink);
+  background: var(--accent);
+  color: var(--accent-ink);
   animation: settle var(--dur-3) var(--ease-spring) 220ms both;
 }
 
@@ -1544,7 +1561,7 @@ tr:last-child td {
   margin: 1rem 1.4rem 0;
   padding: 0.9rem 1rem;
   border-radius: var(--radius-sm);
-  background: var(--wait-tint);
+  background: var(--paper);
   color: var(--ink);
 }
 
@@ -1611,7 +1628,6 @@ tr:last-child td {
 .offers ul {
   list-style: none;
   display: grid;
-  gap: 0.4rem;
   margin-bottom: 0.5rem;
 }
 
@@ -1620,15 +1636,13 @@ tr:last-child td {
   justify-content: space-between;
   align-items: flex-start;
   gap: 0.75rem;
-  padding: 0.55rem 0.8rem;
-  border-radius: var(--radius-sm);
-  border-left: 5px solid var(--line-strong);
-  background: var(--paper);
+  padding: 0.6rem 0.1rem;
+  border-bottom: var(--rule);
 }
 
-.offer.yes { border-left-color: var(--buy); }
-.offer.no { border-left-color: var(--alert); }
-.offer.conditional { border-left-color: var(--wait); }
+.offer:first-child {
+  border-top: var(--rule);
+}
 
 .offer a {
   font-weight: 800;
@@ -1638,13 +1652,6 @@ tr:last-child td {
   font-size: 1rem;
 }
 
-.approval.held {
-  --status: var(--line-strong);
-}
-
-.approval.reminder {
-  --status: var(--ask);
-}
 
 /* Tables that stack into cards on a phone */
 @media (max-width: 640px) {
@@ -1714,8 +1721,8 @@ tr:last-child td {
 }
 
 .split-row.evidence {
-  background: var(--buy);
-  color: var(--buy-ink);
+  background: var(--signature);
+  color: var(--signature-ink);
 }
 
 .split-row.default {

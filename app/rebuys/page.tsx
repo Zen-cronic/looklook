@@ -107,6 +107,7 @@ async function Rebuys() {
           <article key={c.id} className="approval reminder">
             <div className="approval-head">
               <div>
+                <p className="approval-tag">Reminder</p>
                 <div className="brand-line">{c.facts.brand}</div>
                 <h3>{c.facts.name}</h3>
                 <p className="small muted">
@@ -150,6 +151,7 @@ async function Rebuys() {
             <article key={w.id} className={`approval price-drop${declined ? " declined" : ""}${hold ? " held" : ""}`}>
               <div className="approval-head">
                 <div>
+                  <p className="approval-tag">Price drop</p>
                   <div className="brand-line">{w.product.brand}</div>
                   <h3>{w.product.title}</h3>
                   <p className="small muted">

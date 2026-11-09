@@ -159,7 +159,7 @@ export function VerdictWidget(params: AgWidgetParams) {
           );
         }
         return (
-          <article key={String(r.id)} className={`decision ${cls}`} data-testid={`verdict-${r.id}`}>
+          <article key={String(r.id)} className={`decision ${cls}${r.payable ? " payable" : ""}`} data-testid={`verdict-${r.id}`}>
             <div className="decision-top">
               <span className={`chip ${cls}`}>{String(r.verdict)}</span>
               <span className="decision-price num">{money(r.price)}</span>

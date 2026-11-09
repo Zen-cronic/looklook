@@ -415,10 +415,6 @@
   background: color-mix(in srgb, var(--card) 30%, transparent);
 }
 
-.approval {
-  --status: var(--signature);
-}
-
 .approvalActions {
   display: flex;
   flex-wrap: wrap;
