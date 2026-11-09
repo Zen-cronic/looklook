@@ -2,15 +2,22 @@ services:
   - type: web
     name: looklook
     runtime: node
-    plan: free
+    plan: starter
     region: ohio
     autoDeploy: false
     buildCommand: npm ci && npm run build
     startCommand: npm start
     healthCheckPath: /api/health
+    # Sessions, saved payment methods and the webhook event log survive restarts and deploys
+    disk:
+      name: looklook-data
+      mountPath: /var/data
+      sizeGB: 1
     envVars:
       - key: NODE_VERSION
         value: "22"
+      - key: APP_DATA_DIR
+        value: /var/data
       # PayPal sandbox REST app (never live keys)
       - key: PAYPAL_CLIENT_ID
         sync: false
