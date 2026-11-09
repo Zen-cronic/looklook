@@ -2,6 +2,8 @@ import { baseUrl, handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/li
 import { boughtFor, checkoutOrderBody } from "@/lib/app/payments";
 import { indexAdd, loadSession, updateSession } from "@/lib/app/store";
 import type { MethodType } from "@/lib/app/types";
+import { productName } from "@/lib/filming/neutral";
+import { filmOn } from "@/lib/filming/server";
 import { freshRequestId, getPayPalClient, type PayPalOrder } from "@/lib/paypal";
 
 /** Create the PayPal order the JS SDK buttons (wallet or card fields) approve. */
@@ -20,7 +22,9 @@ export async function POST(request: Request) {
     const bought = intent.approvalKey ? boughtFor(state, intent.approvalKey) : undefined;
     if (bought) throw new HttpError(409, "Already bought. Nothing more was charged.", { alreadyBought: true, receiptId: bought.id });
     const base = await baseUrl();
-    const orderBody = checkoutOrderBody(intent, { funding, save, customerId: state.customerId, returnUrl: `${base}/checkout/${intent.id}`, cancelUrl: `${base}/checkout/${intent.id}` }, intent.productId);
+    // Filming mode: the item name PayPal shows in its approval window is the generic one. Amount, SKU and request id are unchanged.
+    const shown = (await filmOn()) ? { ...intent, title: productName({ brand: intent.brand, name: intent.title, id: intent.productId, category: intent.category }) } : intent;
+    const orderBody = checkoutOrderBody(shown, { funding, save, customerId: state.customerId, returnUrl: `${base}/checkout/${intent.id}`, cancelUrl: `${base}/checkout/${intent.id}` }, intent.productId);
     const res = await getPayPalClient().request<PayPalOrder>({ method: "POST", path: "/v2/checkout/orders", requestId: freshRequestId("checkout"), body: orderBody });
     await updateSession(sid, (s) => {
       const i = s.intents.find((x) => x.id === intent.id);
