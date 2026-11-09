@@ -7,7 +7,7 @@ import { CATEGORY_LABELS } from "@/lib/app/shelf-ui";
 import { countedDate, restockedLabel } from "@/lib/app/when";
 import { budgetGroupOf } from "@/lib/shelf/categories";
 import type { ShelfItem } from "@/lib/shelf/types";
-import { AddShelfItem, BudgetEditor, ShelfRowControls } from "../components/ShelfControls";
+import { AddShelfItem, BudgetEditor, ShelfRow, type DueLabel } from "../components/ShelfControls";
 import { SimDate } from "../components/SimDate";
 
 export const metadata = { title: "Shelf" };
@@ -26,29 +26,26 @@ export default function ShelfPage() {
   );
 }
 
-function daysChip(item: ShelfItem, today: string, dayOffset: number) {
-  if (!item.runOutDate) return <span className="days">No run-out date</span>;
+function dueFor(item: ShelfItem, today: string, dayOffset: number): DueLabel {
+  if (!item.runOutDate) return { kind: "none", label: "" };
   const left = daysBetween(today, item.runOutDate);
-  const cls = left < 0 ? "days out" : left <= 7 ? "days soon" : "days";
-  const text = left < 0 ? `Ran out ${-left} ${left === -1 ? "day" : "days"} ago` : left === 0 ? "Runs out today" : `${left} ${left === 1 ? "day" : "days"} left`;
-  return (
-    <span className={cls} title={`Runs out ${countedDate(item.runOutDate, dayOffset)}`}>
-      {text}
-    </span>
-  );
+  const title = `Runs out ${countedDate(item.runOutDate, dayOffset)}`;
+  if (left < 0) return { kind: "out", big: String(-left), label: -left === 1 ? "day ago, ran out" : "days ago, ran out", title };
+  if (left === 0) return { kind: "out", label: "Runs out today", title };
+  if (left <= 7) return { kind: "soon", big: String(left), label: left === 1 ? "day left" : "days left", title };
+  return { kind: "later", label: `${left} days left`, title };
 }
 
 async function Shelf() {
   const { state, today } = await currentSession();
   const remaining = remainingBudgets(state.budgets, today);
   const groups = BUDGET_GROUPS.map((g) => ({ group: g, items: state.shelf.filter((i) => budgetGroupOf(i.category) === g) })).filter((x) => x.items.length);
-  const fromOrders = state.shelf.filter((i) => i.source === "app-order").length;
   return (
     <div className="shelf-grid">
       <section>
         <SimDate today={today} dayOffset={state.dayOffset} />
         <p className="small muted" style={{ marginBottom: "0.75rem" }}>
-          {state.shelf.length} items: {state.shelf.length - fromOrders} added by you, {fromOrders} from your purchases here. Import from PayPal activity: off.
+          {state.shelf.length} items
         </p>
         <AddShelfItem />
         {groups.map(({ group, items }) => (
@@ -57,19 +54,16 @@ async function Shelf() {
             <ul className="list">
               {items.map((item) => (
                 <li key={item.id} id={item.id} className="shelf-item">
-                  <div>
-                    <div className="sub">
-                      {item.brand}, {CATEGORY_LABELS[item.category].toLowerCase()}
-                    </div>
-                    <div className="title">{item.name}</div>
-                    <div className="sub">
-                      {item.opened ? "Opened" : "Unopened"}
-                      {item.price ? `, ${formatDollars(item.price)} last time` : ""}
-                      {item.lastRestockedOn ? `, restocked ${restockedLabel(state, item)}` : ""}
-                    </div>
-                  </div>
-                  {daysChip(item, today, state.dayOffset)}
-                  <ShelfRowControls id={item.id} opened={item.opened} runOutDate={item.runOutDate} />
+                  <ShelfRow
+                    id={item.id}
+                    brand={item.brand}
+                    kind={CATEGORY_LABELS[item.category].toLowerCase()}
+                    name={item.name}
+                    sub={[item.opened ? "" : "Unopened", item.price ? `${formatDollars(item.price)} last time` : "", item.lastRestockedOn ? `restocked ${restockedLabel(state, item)}` : ""].filter(Boolean).join(", ").replace(/^./, (c) => c.toUpperCase())}
+                    opened={item.opened}
+                    runOutDate={item.runOutDate}
+                    due={dueFor(item, today, state.dayOffset)}
+                  />
                 </li>
               ))}
             </ul>

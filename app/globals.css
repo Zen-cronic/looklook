@@ -194,6 +194,10 @@ img {
   color: var(--ink);
 }
 
+.mainnav .nav-short {
+  display: none;
+}
+
 .mainnav a[aria-current="page"] {
   background: var(--ink);
   color: var(--card);
@@ -243,7 +247,7 @@ img {
   .mainnav {
     position: fixed;
     left: 0.6rem;
-    right: 0.6rem;
+    right: calc(0.6rem + 4px);
     bottom: calc(0.6rem + env(safe-area-inset-bottom));
     z-index: 20;
     margin: 0;
@@ -254,16 +258,21 @@ img {
     justify-content: space-between;
   }
 
-  .mainnav a.wide-only {
+  .mainnav .nav-long {
     display: none;
+  }
+
+  .mainnav .nav-short {
+    display: inline;
   }
 
   .mainnav a {
     flex: 1;
     text-align: center;
-    font-size: 0.78rem;
-    padding: 0.7rem 0.15rem;
+    font-size: 0.75rem;
+    padding: 0.75rem 0.1rem;
     white-space: nowrap;
+    min-width: 0;
   }
 
   body {
@@ -358,7 +367,7 @@ h3 {
 }
 
 .list > li + li {
-  border-top: 1px solid var(--line);
+  border-top: var(--rule);
 }
 
 /* Buttons: chunky pills, solid signature primary, ink outline secondary */
@@ -1156,26 +1165,118 @@ select:focus-visible {
   }
 }
 
+/* Shelf: an object list. The whole row opens its controls; due-soon items show a big numeral. */
 .shelf-item {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 0.35rem 1rem;
-  align-items: center;
+  padding: 0 !important;
 }
 
-.shelf-item .title {
+.shelf-item:target {
+  background: color-mix(in srgb, var(--accent) 22%, var(--card));
+}
+
+.shelf-row {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  align-items: center;
+  gap: 0.9rem;
+  padding: 0.85rem 1.1rem;
+  min-height: 4rem;
+  transition: background-color var(--dur-1) var(--ease-out);
+}
+
+.shelf-row:hover {
+  background: var(--paper);
+}
+
+.shelf-row:focus-visible {
+  outline-offset: -3px;
+}
+
+.shelf-row[aria-expanded="true"] .row-go {
+  transform: rotate(90deg);
+}
+
+.swatch {
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: var(--paper);
+  border: var(--rule);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1rem;
+  letter-spacing: -0.03em;
+}
+
+.shelf-text {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.shelf-text .title {
   font-weight: 800;
   line-height: 1.25;
 }
 
-.shelf-item .sub {
+.shelf-text .sub {
   font-size: var(--step--1);
   color: var(--muted);
 }
 
+.due {
+  display: flex;
+  align-items: baseline;
+  gap: 0.35rem;
+  white-space: nowrap;
+  font-size: var(--step--1);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.due strong {
+  font-family: var(--font-display);
+  font-weight: 900;
+  font-size: var(--step-3);
+  letter-spacing: -0.05em;
+  line-height: 0.9;
+  color: var(--ink);
+}
+
+.due.soon > span,
+.due.out > span {
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.due.soon::before,
+.due.out::before {
+  content: "";
+  align-self: center;
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+
+.row-go {
+  color: var(--ink-2);
+}
+
 .shelf-item .controls {
-  grid-column: 1 / -1;
-  margin-top: 0.2rem;
+  margin: 0 1.1rem;
+  padding: 0.25rem 0 1rem 3.4rem;
   display: flex;
   flex-wrap: wrap;
   gap: 0.5rem;
@@ -1187,6 +1288,32 @@ select:focus-visible {
   min-height: 2.5rem;
   padding: 0.3rem 0.6rem;
   font-size: var(--step--1);
+}
+
+@media (max-width: 520px) {
+  .shelf-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    gap: 0.7rem;
+    padding: 0.8rem 0.9rem;
+  }
+
+  .shelf-row .due {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  .shelf-row .row-go {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  .due strong {
+    font-size: var(--step-2);
+  }
+
+  .shelf-item .controls {
+    padding-left: 0;
+  }
 }
 
 .days {

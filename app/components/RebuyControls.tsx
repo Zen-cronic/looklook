@@ -101,12 +101,7 @@ export function ApprovalButtons({ source, amountCents, version, amountLabel, met
           </button>
         )}
       </div>
-      {method && !declined && (
-        <p className="small muted">
-          {method.withinCap ? `Charged to ${method.label} only when you tap yes. Your cap is ${method.capLabel} per rebuy.` : `${method.label} is saved, but this is above its ${method.capLabel} cap.`}
-        </p>
-      )}
-      {!method && !declined && <p className="small muted">The first payment can save your PayPal or card for one-tap rebuys.</p>}
+      {method && !method.withinCap && !declined && <p className="small muted">{`${method.label} is saved, but this is above its ${method.capLabel} cap.`}</p>}
     </div>
   );
 }

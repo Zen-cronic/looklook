@@ -6,19 +6,49 @@ import { CATEGORIES, type Category } from "@/lib/shelf/categories";
 import { leave } from "./motion";
 import { useApi } from "./useApi";
 
-export function ShelfRowControls({ id, opened, runOutDate }: { id: string; opened: boolean; runOutDate: string | null }) {
+/** How soon an item runs out, as the row shows it: a big numeral when it is due soon. */
+export interface DueLabel {
+  kind: "soon" | "out" | "later" | "none";
+  big?: string;
+  label: string;
+  title?: string;
+}
+
+/** One shelf item: the whole row opens its edit controls. */
+export function ShelfRow(props: { id: string; brand: string; kind: string; name: string; sub: string; opened: boolean; runOutDate: string | null; due: DueLabel }) {
+  const [editing, setEditing] = useState(false);
+  const dueText = [props.due.big, props.due.label].filter(Boolean).join(" ");
+  return (
+    <>
+      <button type="button" className="shelf-row" aria-expanded={editing} aria-label={`Edit ${props.name}${dueText ? `, ${dueText}` : ""}`} onClick={() => setEditing((e) => !e)}>
+        <span className="swatch" aria-hidden="true">
+          {props.brand.replace(/[^A-Za-z0-9]/g, "").charAt(0) || "?"}
+        </span>
+        <span className="shelf-text">
+          <span className="sub">
+            {props.brand}, {props.kind}
+          </span>
+          <span className="title">{props.name}</span>
+          {props.sub && <span className="sub">{props.sub}</span>}
+        </span>
+        {props.due.kind !== "none" && (
+          <span className={`due ${props.due.kind}`} title={props.due.title}>
+            {props.due.big && <strong>{props.due.big}</strong>}
+            <span>{props.due.label}</span>
+          </span>
+        )}
+        <svg className="go row-go" viewBox="0 0 16 16" aria-hidden="true" focusable="false">
+          <path d="M6 3.5 10.5 8 6 12.5" />
+        </svg>
+      </button>
+      {editing && <ShelfRowControls id={props.id} opened={props.opened} runOutDate={props.runOutDate} onDone={() => setEditing(false)} />}
+    </>
+  );
+}
+
+function ShelfRowControls({ id, opened, runOutDate, onDone }: { id: string; opened: boolean; runOutDate: string | null; onDone: () => void }) {
   const { call, busy, error } = useApi();
   const [date, setDate] = useState(runOutDate ?? "");
-  const [editing, setEditing] = useState(false);
-  if (!editing) {
-    return (
-      <div className="controls">
-        <button className="btn outline small" onClick={() => setEditing(true)}>
-          Edit
-        </button>
-      </div>
-    );
-  }
   return (
     <div className="controls">
       <button className="btn outline small" disabled={!!busy} onClick={() => call("open", `/api/shelf/${id}`, "PATCH", { opened: !opened })}>
@@ -43,7 +73,7 @@ export function ShelfRowControls({ id, opened, runOutDate }: { id: string; opene
       >
         Remove
       </button>
-      <button className="btn outline small" onClick={() => setEditing(false)}>
+      <button className="btn outline small" onClick={onDone}>
         Done
       </button>
       {error && <span className="error small">{error.error}</span>}

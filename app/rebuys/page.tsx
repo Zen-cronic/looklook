@@ -8,7 +8,7 @@ import { dueReminders, upcomingReminders, watchBudgetHold } from "@/lib/app/remi
 import { currentSession } from "@/lib/app/session";
 import type { Notice, PurchaseSource, SavedMethod, SessionState } from "@/lib/app/types";
 import { negativeTestingEnabled } from "@/lib/paypal/config";
-import { countedDate, SIMULATED } from "@/lib/app/when";
+import { SIMULATED } from "@/lib/app/when";
 import { Chevron } from "../components/Chevron";
 import { ApprovalButtons, DateControls, DeclineToggle, ReminderDone, WatchControls } from "../components/RebuyControls";
 
@@ -82,14 +82,14 @@ async function Rebuys() {
             <>
               <span className="chip">Today</span>
               <span className="date">{formatDay(today)}</span>
-              <span className="small muted">US Eastern. Move the date ahead to see staples come due.</span>
+              <span className="small muted">Move the date ahead to see staples come due.</span>
             </>
           ) : (
             <>
               <span className="chip sim">Simulated date</span>
               <span className="date">{formatDay(today)}</span>
               <span className="small muted">
-                {state.dayOffset} {state.dayOffset === 1 ? "day" : "days"} ahead of today ({formatDay(realToday())}). Run-out dates and budgets use it; charge times stay real.
+                {state.dayOffset} {state.dayOffset === 1 ? "day" : "days"} ahead of today ({formatDay(realToday())}). Run-out dates and budgets use it; charge times are real.
               </span>
             </>
           )}
@@ -100,6 +100,7 @@ async function Rebuys() {
           <h2 id="needs-yes" className="field-title">
             Needs your yes
           </h2>
+          {(due.length > 0 || drops.length > 0) && <p className="small">{method ? `Paid with ${method.label} when you tap yes, up to ${formatCents(method.capCents, method.currency)} each.` : "The first payment can save your PayPal or card for one-tap rebuys."}</p>}
           {due.length === 0 && drops.length === 0 && reminders.length === 0 && (
             <div className="card">
               <p>Nothing to approve right now.</p>
@@ -136,7 +137,7 @@ async function Rebuys() {
                     <div className="brand-line">{d.item.brand}</div>
                     <h3>{d.item.name}</h3>
                     <p className="small muted">
-                      {d.daysLeft < 0 ? `Ran out ${-d.daysLeft} days ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`} ({countedDate(d.item.runOutDate!, state.dayOffset)}). Last bought at {d.item.store ?? "a store"}.
+                      {d.daysLeft < 0 ? `Ran out ${-d.daysLeft} ${d.daysLeft === -1 ? "day" : "days"} ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`}. Last bought at {d.item.store ?? "a store"}.
                     </p>
                   </div>
                   <div className="amount">{formatCents(d.amountCents)}</div>
@@ -177,7 +178,7 @@ async function Rebuys() {
 
         <h2 style={{ marginTop: "2rem" }}>Watching for a drop</h2>
         {open.length === 0 ? (
-          <p className="muted">Nothing yet. When a check says wait for a better price, tap Watch for a drop and Channel3 sends the price changes here.</p>
+          <p className="muted">Nothing watched yet. Tap Watch for a drop on a wait verdict.</p>
         ) : (
           <ul className="list">
             {open.map((w) => (
@@ -222,7 +223,7 @@ async function Rebuys() {
           <div className="card stack-sm">
             <h2>Test a decline</h2>
             <DeclineToggle on={state.demo.declineNextRebuy} />
-            <p className="small muted">PayPal&apos;s sandbox answers the next rebuy with INSTRUMENT_DECLINED, the error a refused card gives. The card then asks you to approve another method.</p>
+            <p className="small muted">The next rebuy comes back declined (INSTRUMENT_DECLINED), as a refused card would. Nothing is charged, and you can pick another card or PayPal.</p>
           </div>
         )}
         {notices.length > 0 && (

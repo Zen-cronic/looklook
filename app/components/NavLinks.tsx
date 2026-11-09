@@ -7,8 +7,8 @@ const LINKS = [
   { href: "/check", label: "Check" },
   { href: "/shelf", label: "Shelf" },
   { href: "/rebuys", label: "Rebuys" },
-  { href: "/payments", label: "Saved methods" },
-  { href: "/studio", label: "Decisions", wide: true },
+  { href: "/payments", label: "Saved methods", short: "Payments" },
+  { href: "/studio", label: "Decisions" },
 ];
 
 export function NavLinks(props: { static?: boolean }) {
@@ -25,8 +25,15 @@ function Links({ path }: { path: string | null }) {
       {LINKS.map((l) => {
         const active = path !== null && (path === l.href || path.startsWith(`${l.href}/`));
         return (
-          <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined} className={"wide" in l ? "wide-only" : undefined}>
-            {l.label}
+          <Link key={l.href} href={l.href} aria-current={active ? "page" : undefined}>
+            {"short" in l ? (
+              <>
+                <span className="nav-long">{l.label}</span>
+                <span className="nav-short">{l.short}</span>
+              </>
+            ) : (
+              l.label
+            )}
           </Link>
         );
       })}
