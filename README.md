@@ -38,6 +38,8 @@ Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login
 
 The price watch comes before the first purchase on purpose: buying the peptide serum spends this month's skincare budget, and the retinol then waits for next month's budget instead of a lower price.
 
+From a phone, share a store link or a screenshot straight to LookLook: the "Look twice" Shortcut on iPhone, or the installed app in Android's share sheet. How to set it up: [docs/share-shortcut.md](docs/share-shortcut.md) (tested on desktop; phone test after deploy).
+
 ## Built with
 
 | Service | What it does here |

@@ -81,6 +81,11 @@ export default function JudgePage() {
       <Lotion className="panel-material" sizes="(min-width: 720px) 42rem, 100vw" />
       </div>
 
+      <p className="small" data-testid="share-from-phone">
+        <strong>From a phone:</strong> share a store link or a screenshot straight to {APP_NAME} with the &ldquo;Look twice&rdquo; Shortcut (iPhone) or the share sheet (Android).{" "}
+        <a href="https://github.com/Zen-cronic/looklook/blob/main/docs/share-shortcut.md">How to set it up</a> (tested on desktop; phone test after deploy).
+      </p>
+
       <details className="card disclosure">
         <summary>What&apos;s real and what&apos;s a test</summary>
         <ul style={{ margin: "0.85rem 0 0 1.1rem" }} className="stack-sm">
