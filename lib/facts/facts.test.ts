@@ -4,7 +4,7 @@ import { describe, expect, it, vi } from "vitest";
 import skipResults from "@/eval/skip-set/results.json";
 import skipCases from "@/eval/skip-set/cases.json";
 import { recordSpend } from "../app/budgets";
-import { DEV_SET_SIZE, devCorrections, devSetRuns, replaySummary, runSkipEval } from "../app/eval";
+import { DEV_SET_SIZE, devCorrections, devSetRuns, runSkipEval } from "../app/eval";
 import { RULE_ORDER, RULE_TEXT, returnsLine } from "../app/explain";
 import { offerLines } from "../app/offers";
 import { baselineScore, heldOutHeadline, heldOutResult } from "../app/holdout";
@@ -134,12 +134,6 @@ describe("README numbers match the data and code", () => {
     const outside = cases.filter((c) => openedReturnPolicy(c.store, c.category).fallback).length;
     expect(README).toContain(`${outside} of the ${r.n} cases are at stores outside the policy table, where an unknown policy counts as not returnable; ${r.split.onDefault} of the ${r.skipsRight} right skips depend on that default.`);
     expect(README).toContain(`On the development set ${numberWord(r.n - r.skipCorrect)} of ${r.n} skip decisions disagree`);
-  });
-
-  it("states the wait-timing replay numbers from its committed result", () => {
-    const s = replaySummary();
-    expect(README).toContain(`In the wait-timing replay (${s.products} purchases, real price histories)`);
-    expect(README).toContain(`waiting by our rule paid $${s.saved.toFixed(2)} (${(s.savedPct * 100).toFixed(1)}%) less than buying on the first price alert, and only $${s.beautySaved.toFixed(2)} of that was beauty`);
   });
 
   it("counts twelve ordered verdict rules, the same list the engine documents", () => {

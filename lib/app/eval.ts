@@ -1,7 +1,6 @@
 import cases from "@/eval/skip-set/cases.json";
 import bandsFile from "@/eval/skip-set/price-bands.json";
 import shelf from "@/eval/skip-set/shelf.json";
-import replay from "@/data/replay/result.json";
 import provenance from "@/eval/skip-set/provenance.json";
 import type { PriceBand } from "../channel3/band";
 import { baselines, runCase, scoreOutcomes, splitCorrectSkips, type Baseline, type CaseOutcome, type ShelfFile, type SkipSet, type SkipSplit, skipOnDefault } from "../eval/skip-set";
@@ -171,15 +170,3 @@ export function devSetJson(r: SkipEvalResult) {
   };
 }
 
-export interface ReplaySummary {
-  products: number;
-  saved: number;
-  savedPct: number;
-  beautySaved: number;
-}
-
-/** The wait-timing replay, as one line: our wait rule against buying on the first price alert. */
-export function replaySummary(): ReplaySummary {
-  const r = replay as unknown as { totals: { products: number; saved: number; savedPct: number }; byCategory: Record<string, { saved: number }> };
-  return { products: r.totals.products, saved: r.totals.saved, savedPct: r.totals.savedPct, beautySaved: r.byCategory["beauty-staples"]?.saved ?? 0 };
-}

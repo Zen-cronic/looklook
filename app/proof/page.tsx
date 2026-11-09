@@ -1,6 +1,6 @@
 import { connection } from "next/server";
 import { Suspense } from "react";
-import { devCorrections, devSetRuns, runSkipEval, replaySummary, type CaseRow } from "@/lib/app/eval";
+import { devCorrections, devSetRuns, runSkipEval, type CaseRow } from "@/lib/app/eval";
 import { RULE_TEXT } from "@/lib/app/explain";
 import { baselineScore, heldOutHeadline, heldOutResult, type HeldOutRow } from "@/lib/app/holdout";
 import { formatDollars } from "@/lib/app/money";
@@ -291,7 +291,6 @@ function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
 async function DevelopmentSet() {
   await connection();
   const r = runSkipEval();
-  const replay = replaySummary();
   const p = r.provenance;
   const runs = devSetRuns(p);
   return (
@@ -336,12 +335,6 @@ async function DevelopmentSet() {
         </div>
       </section>
 
-      <section className="card stack-sm">
-        <h2>Does waiting for a lower price pay?</h2>
-        <p>
-          Across {replay.products} purchases with real 90-day price histories, waiting by our rule paid {formatDollars(replay.saved)} ({pct(replay.savedPct)}) less than buying at the first price alert. For beauty it saved only {formatDollars(replay.beautySaved)}, so for beauty, skip helps more than waiting.
-        </p>
-      </section>
     </>
   );
 }
