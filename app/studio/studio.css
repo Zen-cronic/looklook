@@ -97,6 +97,7 @@
 
 /* Verdict list widget */
 .decision-list {
+  container-type: inline-size;
   height: 100%;
   overflow: auto;
   padding: 0.9rem;
@@ -109,6 +110,65 @@
 
 .decision-list.loading {
   color: var(--muted);
+}
+
+/* The cards: one column, two when the widget is wide enough */
+.decision-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.6rem;
+  align-items: start;
+}
+
+@container (min-width: 36rem) {
+  .decision-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* The shelf as a table in the app's own type: mono, right-aligned days and prices, a pink pill when it runs out soon */
+.shelf-table-wrap {
+  overflow-x: auto;
+  border-top: 1px solid var(--hairline);
+}
+
+.shelf-table {
+  min-width: 34rem;
+  font-size: 0.875rem;
+}
+
+.shelf-table th {
+  font-size: 0.6875rem;
+  color: var(--ink-2);
+  border-bottom: 1px solid var(--hairline);
+  padding: 0.55rem 0.7rem;
+  white-space: nowrap;
+}
+
+.shelf-table td {
+  padding: 0.45rem 0.7rem;
+  border-bottom: 1px solid var(--hairline);
+  vertical-align: middle;
+}
+
+.shelf-table td.mono {
+  font-size: 0.8125rem;
+  white-space: nowrap;
+}
+
+.shelf-table .num {
+  text-align: right;
+  white-space: nowrap;
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  font-feature-settings: "tnum";
+}
+
+.shelf-table .due.soon {
+  display: inline-flex;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  padding: 0.15rem 0.55rem 0.15rem 0.45rem;
 }
 
 .decision-head {
@@ -152,21 +212,15 @@
   font-weight: 800;
 }
 
-/* Records get a hairline; a rebuy or a buy you can pay here is an action card */
+/* Every decision is a white card in a hairline; the cobalt button marks the ones you can pay here */
 .decision {
-  border: var(--rule);
+  border: var(--edge);
   border-radius: var(--radius-sm);
   padding: 0.75rem 0.9rem;
   background: var(--card);
   display: flex;
   flex-direction: column;
   gap: 0.35rem;
-}
-
-.decision.rebuy,
-.decision.payable {
-  border: var(--edge);
-  box-shadow: var(--shadow-hard-sm);
 }
 
 .decision.bought {
@@ -296,6 +350,11 @@
   white-space: nowrap;
 }
 
+.budget-bars .meter-slot {
+  display: block;
+  min-width: 0;
+}
+
 .budget-bars .meter {
   grid-column: auto;
 }
@@ -308,7 +367,6 @@
   padding: 0.75rem 1rem;
   border-radius: var(--radius);
   border: var(--edge);
-  box-shadow: var(--shadow-hard-sm);
   background: var(--card);
   color: var(--ink);
   font-size: var(--step--1);
@@ -364,8 +422,11 @@
   min-width: 12rem;
 }
 
-/* Customizing: the page widens to give the canvas room beside the panels */
-body:has(.workspace.editing) .studio-page {
+/* Customizing: the page widens to give the canvas room beside the panels, and the header and footer
+   widen with it, so the wordmark, the title and the canvas share one left edge */
+body:has(.workspace.editing) .studio-page,
+body:has(.workspace.editing) .topbar-inner,
+body:has(.workspace.editing) .footer {
   max-width: 96rem;
 }
 

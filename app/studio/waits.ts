@@ -25,6 +25,6 @@ export const DEFAULT_WAITS_WIDGET: WaitsWidget = {
     },
     sort: [{ field: { id: "verdicts.waitingFor" }, direction: "asc" }],
   },
-  layout: { xTrack: 8, yTrack: 12, xSpan: 16, ySpan: 10 },
+  layout: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 10 },
   filters: [{ field: { id: "verdicts.verdict" }, model: { operator: "equals", value: "Wait" } }],
 };

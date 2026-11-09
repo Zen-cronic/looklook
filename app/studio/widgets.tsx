@@ -4,6 +4,7 @@ import type { AgWidgetParams } from "ag-studio";
 import { useEffect, useState } from "react";
 import type { PurchaseSource } from "@/lib/app/types";
 import type { Cell, SkipFigure } from "@/lib/studio/schema";
+import { Eyebrow } from "../components/Eyebrow";
 
 export interface ApproveRequest {
   source: PurchaseSource;
@@ -71,6 +72,7 @@ function useTable(params: AgWidgetParams, table: string): Rows | null {
 }
 
 const money = (n: Cell | Date | undefined) => (typeof n === "number" ? new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" }).format(n) : "");
+const fullDay = (d: Cell | Date | undefined) => (d instanceof Date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(d) : typeof d === "string" && d ? d : "");
 const plainDay = (d: Cell | Date | undefined) => (d instanceof Date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d) : typeof d === "string" && d ? d : "");
 /** A date counted from the shopper's today, labelled while the simulated date is on. */
 const countedDay = (d: Cell | Date | undefined, simulated?: boolean) => {
@@ -118,12 +120,11 @@ function ApproveButton({ ctx, req, label }: { ctx: WorkspaceContext; req: Approv
   );
 }
 
-/** Verdicts, skips first, each with its reason and evidence; buys and due rebuys can be approved here. */
+/** Verdicts, skips first, each with its reason and evidence; a buy can be approved here. Two columns when the widget is wide. */
 export function VerdictWidget(params: AgWidgetParams) {
   const ctx = params.context as WorkspaceContext;
   const verdicts = useTable(params, "verdicts");
-  const rebuys = useTable(params, "rebuys");
-  if (!verdicts || !rebuys) return <div className="decision-list loading">Loading decisions…</div>;
+  if (!verdicts) return <div className="decision-list loading">Loading decisions…</div>;
   // Bought checks go last, under their own state: their reasons describe the day they were decided.
   const isBought = (r: Record<string, Cell | Date>) => r.status === "Bought";
   const sorted = [...verdicts].sort((a, b) => Number(isBought(a)) - Number(isBought(b)) || Number(a.rank) - Number(b.rank));
@@ -138,13 +139,16 @@ export function VerdictWidget(params: AgWidgetParams) {
         <p className="small muted">{counts.join(", ")}</p>
       </div>
       {sorted.length === 0 && <p className="muted">No checks yet. Check a post on the Check page.</p>}
+      <div className="decision-grid">
       {sorted.map((r) => {
         const cls = verdictClass[String(r.verdict)] ?? "ask";
         if (isBought(r)) {
           return (
             <article key={String(r.id)} className="decision bought" data-testid={`verdict-${r.id}`}>
               <div className="decision-top">
-                <span className="chip">Bought</span>
+                <Eyebrow as="span" icon="receipt">
+                  Bought
+                </Eyebrow>
                 <span className="decision-price num">{money(r.price)}</span>
               </div>
               <h3>{String(r.product)}</h3>
@@ -184,19 +188,33 @@ export function VerdictWidget(params: AgWidgetParams) {
           </article>
         );
       })}
+      </div>
+    </div>
+  );
+}
 
-      <div className="decision-head" style={{ marginTop: "1.25rem" }}>
+/** Staples running out and price drops waiting for the shopper's yes, each payable here. */
+export function RebuyWidget(params: AgWidgetParams) {
+  const ctx = params.context as WorkspaceContext;
+  const rebuys = useTable(params, "rebuys");
+  if (!rebuys) return <div className="decision-list loading">Loading rebuys…</div>;
+  return (
+    <div className="decision-list">
+      <div className="decision-head">
         <h2>Needs your yes</h2>
         <p className="small muted">{rebuys.length ? `${rebuys.length} waiting` : "Nothing due"}</p>
       </div>
       {rebuys.length === 0 && <p className="small muted">Staples show up five days before they run out, and watched items when the price drops to your target.</p>}
+      <div className="decision-grid">
       {rebuys.map((r) => {
         const source: PurchaseSource = r.sourceKind === "watch" ? { kind: "watch", watchId: String(r.sourceRef) } : { kind: "staple", shelfItemId: String(r.sourceRef), cycle: String(r.cycle) };
         const days = typeof r.daysLeft === "number" ? r.daysLeft : null;
         return (
           <article key={String(r.id)} className={`decision rebuy${r.declined ? " declined" : ""}`} data-testid={`rebuy-${r.id}`}>
             <div className="decision-top">
-              <span className="chip">{String(r.kind)}</span>
+              <Eyebrow as="span" icon={r.sourceKind === "watch" ? "chart" : "clock"}>
+                {String(r.kind)}
+              </Eyebrow>
               <span className="decision-price num">{money(r.price)}</span>
             </div>
             <h3>{String(r.product)}</h3>
@@ -215,6 +233,7 @@ export function VerdictWidget(params: AgWidgetParams) {
           </article>
         );
       })}
+      </div>
     </div>
   );
 }
@@ -244,6 +263,7 @@ export function BudgetWidget(params: AgWidgetParams) {
   if (!rows) return <div className="figure-widget loading">Loading budgets…</div>;
   const left = rows.reduce((s, r) => s + Number(r.left ?? 0), 0);
   const limit = rows.reduce((s, r) => s + Number(r.limit ?? 0), 0);
+  const maxCap = Math.max(1, ...rows.map((r) => Number(r.limit ?? 0)));
   return (
     <div className="figure-widget">
       <div className="figure-label">Left this month</div>
@@ -251,13 +271,19 @@ export function BudgetWidget(params: AgWidgetParams) {
       <div className="small muted">of {money(limit)} across your budgets</div>
       <ul className="budget-bars">
         {rows.map((r) => {
-          // Filled = what's left, the same as the shelf's budgets.
-          const pct = Number(r.limit) > 0 ? Math.max(0, Math.min(100, Math.round((Number(r.left) / Number(r.limit)) * 100))) : 0;
+          // Spent against the cap, the same as the shelf's budgets: the track is as long as the cap
+          // (against the largest budget), the fill is what's spent.
+          const cap = Number(r.limit);
+          const spent = Math.max(0, cap - Number(r.left));
+          const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((spent / cap) * 100))) : 0;
+          const length = cap > 0 ? Math.max(12, Math.round((cap / maxCap) * 100)) : 0;
           return (
             <li key={String(r.id)}>
               <span>{String(r.group)}</span>
-              <span className="meter" aria-hidden>
-                <span style={{ width: `${pct}%` }} />
+              <span className="meter-slot">
+                <span className="meter" style={{ width: `${length}%` }} aria-hidden>
+                  <span style={{ width: `${pct}%` }} />
+                </span>
               </span>
               <span className="num small">{money(r.left)} left</span>
             </li>
@@ -317,6 +343,59 @@ export function ShelfListWidget(params: AgWidgetParams) {
           );
         })}
       </ul>
+    </div>
+  );
+}
+
+/** Days left as the shelf table shows it: a pink pill when it runs out within six days, or already has. */
+function DaysCell({ days }: { days: number | null }) {
+  if (days === null) return null;
+  if (days <= 6) {
+    const text = days < 0 ? `${-days} ${days === -1 ? "day" : "days"} ago` : days === 0 ? "Today" : `${days} ${days === 1 ? "day" : "days"}`;
+    return <span className="due soon">{text}</span>;
+  }
+  return <>{days}</>;
+}
+
+/** The shelf as a table in the app's own type: product, when it runs out, days left and the last price. */
+export function ShelfTableWidget(params: AgWidgetParams) {
+  const ctx = params.context as WorkspaceContext;
+  const rows = useTable(params, "shelf");
+  if (!rows) return <div className="decision-list loading">Loading the shelf…</div>;
+  const sorted = [...rows].sort((a, b) => (typeof a.daysLeft === "number" ? a.daysLeft : 1e9) - (typeof b.daysLeft === "number" ? b.daysLeft : 1e9));
+  return (
+    <div className="decision-list shelf-widget" data-testid="studio-shelf">
+      <div className="decision-head">
+        <h2>Shelf</h2>
+        <p className="small muted">{rows.length} items</p>
+      </div>
+      <div className="shelf-table-wrap">
+        <table className="shelf-table">
+          <thead>
+            <tr>
+              <th>Product</th>
+              <th>Runs out{ctx.simulated ? " (simulated date)" : ""}</th>
+              <th className="num">Days left</th>
+              <th className="num">Last price</th>
+            </tr>
+          </thead>
+          <tbody>
+            {sorted.map((r) => {
+              const days = typeof r.daysLeft === "number" ? r.daysLeft : null;
+              return (
+                <tr key={String(r.id)}>
+                  <td>{String(r.product)}</td>
+                  <td className="mono">{fullDay(r.runOutDate)}</td>
+                  <td className="num">
+                    <DaysCell days={days} />
+                  </td>
+                  <td className="num">{money(r.price)}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
     </div>
   );
 }

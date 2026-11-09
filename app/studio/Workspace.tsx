@@ -9,14 +9,15 @@ import { APP_NAME } from "@/lib/brand";
 import type { PurchaseSource } from "@/lib/app/types";
 import { formatDay } from "@/lib/app/dates";
 import { diffRows, fieldName, TABLES, waitCounts, type FieldKind, type Row, type StudioPayload, type TableId } from "@/lib/studio/schema";
+import { Eyebrow } from "../components/Eyebrow";
 import { SampleWeekNote } from "../components/SampleWeek";
 import { claudeAdapter, type TurnInfo } from "./adapter";
 import { DEFAULT_WAITS_WIDGET, isWaitsWidget, type WaitsWidget } from "./waits";
-import { BudgetWidget, ShelfListWidget, SkipWidget, VerdictWidget, WatchListWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
+import { BudgetWidget, RebuyWidget, ShelfListWidget, ShelfTableWidget, SkipWidget, VerdictWidget, WatchListWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
 
 const LICENSE = process.env.NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY;
 const PAGE_ID = "decisions";
-const BASE_WIDGETS = ["verdicts", "budget", "skip", "shelf", "watch"];
+const BASE_WIDGETS = ["verdicts", "rebuys", "budget", "skip", "shelf", "watch"];
 const AGENT_ID = "looklook";
 const RUN_LIMIT_MS = 150_000;
 const CACHE_KEY = "looklook.waits-widget.v1";
@@ -58,54 +59,65 @@ function sources(payload: StudioPayload) {
   }));
 }
 
-// Canvas rows are 20px. The shelf grid is tall enough for every row, so it never cuts off mid-list.
+// Canvas rows are 20px. The shelf table is tall enough for every row, so it never cuts off mid-list.
 const TRACK_PX = 20;
-const shelfSpan = (rows: number) => Math.max(10, Math.ceil((rows * 26 + 96) / TRACK_PX));
-const watchSpan = (rows: number) => (rows ? Math.max(8, Math.ceil((rows * 26 + 96) / TRACK_PX)) : 6);
+const shelfSpan = (rows: number) => Math.max(10, Math.ceil((rows * 34 + 110) / TRACK_PX));
+const watchSpan = (rows: number) => (rows ? Math.max(8, Math.ceil((rows * 34 + 110) / TRACK_PX)) : 8);
 
-/** About how many 20px tracks the verdict list needs: its heading, each card by kind (measured at 1440), then the rebuys. */
-function verdictTracks(p: StudioPayload): number {
-  const CARD_PX: Record<string, number> = { Skip: 250, Wait: 270, Buy: 285, "Check this": 235, Bought: 220 };
-  const cards = p.tables.verdicts.reduce((n, r) => n + (r.status === "Bought" ? CARD_PX.Bought : (CARD_PX[String(r.verdict)] ?? 270)), 0);
-  return Math.ceil((70 + cards + 90 + p.tables.rebuys.length * 165) / TRACK_PX);
+/** Measured card heights by kind: at 1440 (two columns, cards about 350px wide) and at 390 (one column). */
+const CARD_PX: Record<string, number> = { Skip: 225, Wait: 262, Buy: 275, "Check this": 212, Bought: 212 };
+const PHONE_CARD_PX: Record<string, number> = { Skip: 245, Wait: 266, Buy: 285, "Check this": 230, Bought: 228 };
+const cardPx = (r: Row, px: Record<string, number>) => (r.status === "Bought" ? px.Bought : (px[String(r.verdict)] ?? px.Wait));
+
+/** About how many 20px tracks the verdict list needs: its heading, then its cards in one or two columns. */
+function verdictTracks(p: StudioPayload, columns: 1 | 2): number {
+  const px = p.tables.verdicts.map((r) => cardPx(r, columns === 2 ? CARD_PX : PHONE_CARD_PX));
+  let body = 0;
+  for (let i = 0; i < px.length; i += columns) body += Math.max(...px.slice(i, i + columns)) + 10;
+  return Math.ceil((80 + body) / TRACK_PX);
 }
 
+/** The rebuys widget: its heading, then one card per rebuy (or a line when nothing is due). */
+const rebuyTracks = (p: StudioPayload, cardPx: number) => Math.ceil((80 + Math.max(1, p.tables.rebuys.length) * cardPx) / TRACK_PX);
+
 function layouts(p: StudioPayload, narrow = false) {
+  const shelf = shelfSpan(p.tables.shelf.length);
+  const watch = watchSpan(p.tables.watchlist.length);
   if (narrow) {
     // One column on a phone: each widget keeps its own height, the verdict list grows to fit its
     // (taller, narrower) cards, and the shelf rows wrap to two lines.
-    const v = Math.ceil(verdictTracks(p) * 1.12);
-    const shelfRows = Math.ceil((p.tables.shelf.length * 50 + 70) / TRACK_PX);
+    const v = verdictTracks(p, 1);
+    const r = rebuyTracks(p, 175);
+    const shelfRows = Math.ceil((p.tables.shelf.length * 58 + 80) / TRACK_PX);
     const watchRows = p.tables.watchlist.length ? Math.ceil((p.tables.watchlist.length * 50 + 70) / TRACK_PX) : 8;
     const base = {
       verdicts: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: v },
-      budget: { xTrack: 0, yTrack: v, xSpan: 24, ySpan: 12 },
-      skip: { xTrack: 0, yTrack: v + 12, xSpan: 24, ySpan: 10 },
-      shelf: { xTrack: 0, yTrack: v + 22, xSpan: 24, ySpan: shelfRows },
-      watch: { xTrack: 0, yTrack: v + 22 + shelfRows, xSpan: 24, ySpan: watchRows },
+      rebuys: { xTrack: 0, yTrack: v, xSpan: 24, ySpan: r },
+      budget: { xTrack: 0, yTrack: v + r, xSpan: 24, ySpan: 12 },
+      skip: { xTrack: 0, yTrack: v + r + 12, xSpan: 24, ySpan: 10 },
+      shelf: { xTrack: 0, yTrack: v + r + 22, xSpan: 24, ySpan: shelfRows },
+      watch: { xTrack: 0, yTrack: v + r + 22 + shelfRows, xSpan: 24, ySpan: watchRows },
     };
-    return { base, withWaits: { ...base, waits: { xTrack: 0, yTrack: v + 22 + shelfRows + watchRows, xSpan: 24, ySpan: 10 } }, tracks: v + 22 + shelfRows + watchRows };
+    const end = v + r + 22 + shelfRows + watchRows;
+    return { base, withWaits: { ...base, waits: { xTrack: 0, yTrack: end, xSpan: 24, ySpan: 10 } }, tracks: end };
   }
-  const shelf = shelfSpan(p.tables.shelf.length);
-  const watch = watchSpan(p.tables.watchlist.length);
-  // The verdict column grows to fit every card, so its last card is never cut off.
-  const cards = verdictTracks(p);
-  const base = {
-    budget: { xTrack: 8, yTrack: 0, xSpan: 9, ySpan: 12 },
-    skip: { xTrack: 17, yTrack: 0, xSpan: 7, ySpan: 12 },
-    shelf: { xTrack: 8, yTrack: 12, xSpan: 16, ySpan: shelf },
-    watch: { xTrack: 8, yTrack: 12 + shelf, xSpan: 16, ySpan: watch },
-    verdicts: { xTrack: 0, yTrack: 0, xSpan: 8, ySpan: Math.max(12 + shelf + watch, cards) },
-  };
-  // With the waits table: it takes the slot under the figures, the grids move down.
-  const withWaits = {
-    ...base,
-    waits: { xTrack: 8, yTrack: 12, xSpan: 16, ySpan: 10 },
-    shelf: { ...base.shelf, yTrack: 22 },
-    watch: { ...base.watch, yTrack: 22 + shelf },
-    verdicts: { ...base.verdicts, ySpan: Math.max(22 + shelf + watch, cards) },
-  };
-  return { base, withWaits, tracks: Math.max(12 + shelf + watch, cards) };
+  // Two columns that end on the same line: the verdicts as a two-column card grid on the left;
+  // the budget, the rebuys and the skip figure on the right, the cobalt skip figure stretching to meet the verdicts.
+  // The shelf and the price watches run full width underneath.
+  const rebuys = rebuyTracks(p, 155);
+  const top = Math.max(verdictTracks(p, 2), 12 + rebuys + 11);
+  const at = (y: number) => ({
+    verdicts: { xTrack: 0, yTrack: y, xSpan: 16, ySpan: top },
+    budget: { xTrack: 16, yTrack: y, xSpan: 8, ySpan: 12 },
+    rebuys: { xTrack: 16, yTrack: y + 12, xSpan: 8, ySpan: rebuys },
+    skip: { xTrack: 16, yTrack: y + 12 + rebuys, xSpan: 8, ySpan: top - 12 - rebuys },
+    shelf: { xTrack: 0, yTrack: y + top, xSpan: 24, ySpan: shelf },
+    watch: { xTrack: 0, yTrack: y + top + shelf, xSpan: 24, ySpan: watch },
+  });
+  const base = at(0);
+  // With the waits table: it runs full width at the top, right under the header, and the rest moves down.
+  const withWaits = { ...at(10), waits: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 10 } };
+  return { base, withWaits, tracks: top + shelf + watch };
 }
 
 const FOLDED_PANELS = { ai: { collapsed: true }, data: { collapsed: true } };
@@ -119,15 +131,10 @@ function initialState(p: StudioPayload, narrow: boolean): AgReportState {
         name: "Decisions",
         widgets: {
           verdicts: { type: "verdictList", dataMapping: {} },
+          rebuys: { type: "rebuyList", dataMapping: {} },
           budget: { type: "budgetFigure", dataMapping: {} },
           skip: { type: "skipFigure", dataMapping: {} },
-          shelf: narrow
-            ? { type: "shelfList", dataMapping: {} }
-            : {
-                type: "grid",
-                format: { title: { enabled: true, text: "Shelf" } },
-                dataMapping: { cols: [{ id: "shelf.product" }, { id: "shelf.runOutDate" }, { id: "shelf.daysLeft" }, { id: "shelf.price" }] },
-              },
+          shelf: narrow ? { type: "shelfList", dataMapping: {} } : { type: "shelfTable", dataMapping: {} },
           watch:
             narrow || p.tables.watchlist.length === 0
               ? { type: "watchList", dataMapping: {} }
@@ -355,7 +362,16 @@ export default function Workspace({ initial, narrow }: Props) {
             comp: VerdictWidget,
             defaultSize: { width: 420, height: 640 },
             minSize: { width: 260, height: 220 },
-            ai: { description: `${APP_NAME} verdicts: one card per checked product (skip, wait, buy) with its reason, evidence links and a pay button on buys, then rebuys waiting for the shopper's yes. Reads the verdicts and rebuys tables; needs no field mapping.` },
+            ai: { description: `${APP_NAME} verdicts: one card per checked product (skip, wait, buy) with its reason, evidence links and a pay button on buys. Reads the verdicts table; needs no field mapping.` },
+          },
+          {
+            id: "rebuyList",
+            label: "Needs your yes",
+            form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
+            comp: RebuyWidget,
+            defaultSize: { width: 320, height: 480 },
+            minSize: { width: 220, height: 160 },
+            ai: { description: "Staples running out and price drops waiting for the shopper's yes, each with a pay button. Reads the rebuys table; needs no field mapping." },
           },
           {
             id: "budgetFigure",
@@ -385,6 +401,15 @@ export default function Workspace({ initial, narrow }: Props) {
             ai: { description: "The shopper's shelf as stacked rows: product, when it runs out and days left. Reads the shelf table; needs no field mapping." },
           },
           {
+            id: "shelfTable",
+            label: "Shelf table",
+            form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
+            comp: ShelfTableWidget,
+            defaultSize: { width: 640, height: 480 },
+            minSize: { width: 320, height: 160 },
+            ai: { description: "The shopper's shelf as a table: product, run-out date, days left (a pink pill within six days) and last price. Reads the shelf table; needs no field mapping." },
+          },
+          {
             id: "watchList",
             label: "Price watches",
             form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
@@ -394,7 +419,7 @@ export default function Workspace({ initial, narrow }: Props) {
             ai: { description: "Items watched for a price drop as stacked rows, or a short note when nothing is watched. Reads the watch list table; needs no field mapping." },
           },
         ],
-        menu: [...base.menu, { label: APP_NAME, widgetIds: ["verdictList", "budgetFigure", "skipFigure", "shelfList", "watchList"] }],
+        menu: [...base.menu, { label: APP_NAME, widgetIds: ["verdictList", "rebuyList", "budgetFigure", "skipFigure", "shelfTable", "shelfList", "watchList"] }],
       } as never),
     [],
   );
@@ -546,7 +571,9 @@ export default function Workspace({ initial, narrow }: Props) {
         {payload.sample && <SampleWeekNote />}
         {payload.dayOffset > 0 && (
           <p className="simdate" data-testid="studio-simdate">
-            <span className="chip sim">Simulated date: {formatDay(payload.today)}</span>
+            <Eyebrow as="span" icon="clock">
+              Simulated date: {formatDay(payload.today)}
+            </Eyebrow>
           </p>
         )}
         {narrow && (
