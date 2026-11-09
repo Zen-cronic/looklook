@@ -9,7 +9,7 @@ import { budgetGroupOf } from "@/lib/shelf/categories";
 import { Eyebrow } from "../../components/Eyebrow";
 import { Lotion } from "../../components/stage/MaterialStage";
 import { CONSENT_TEMPLATE, SELLER_OF_RECORD, defaultCapCents } from "@/lib/app/payments";
-import { currentSession } from "@/lib/app/session";
+import { displaySession } from "@/lib/filming/server";
 import { CheckoutPanel } from "../../components/CheckoutPanel";
 
 export const metadata = { title: "Checkout" };
@@ -26,7 +26,7 @@ export default function CheckoutPage(props: PageProps<"/checkout/[id]">) {
 
 async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["params"] }) {
   const { id } = await params;
-  const { state, today } = await currentSession();
+  const { state, today } = await displaySession();
   const intent = state.intents.find((i) => i.id === id);
   if (!intent) notFound();
   if (intent.receiptId) redirect(`/receipts/${intent.receiptId}`);

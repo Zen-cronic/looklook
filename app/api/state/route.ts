@@ -6,6 +6,7 @@ import { handle, sessionIdOrThrow } from "@/lib/app/http";
 import { dueStaples } from "@/lib/app/payments";
 import { remainingBudgets } from "@/lib/app/budgets";
 import { loadSession } from "@/lib/app/store";
+import { displayJson, filmOn } from "@/lib/filming/server";
 import { skipFigure, studioPayload, type SkipFigure } from "@/lib/studio/tables";
 
 // The held-out result is a committed record and the development set and engine are fixed in a build, so once per process is enough.
@@ -23,7 +24,8 @@ export async function GET() {
     const s = loadSession(sid);
     const today = appToday(s.dayOffset);
     skip ??= skipFigure(heldOutResult(), runSkipEval());
-    return Response.json({
+    // Filming mode answers with generic names (the Decisions workspace shows these records).
+    return displayJson({
       today,
       dayOffset: s.dayOffset,
       shelf: s.shelf,
@@ -36,7 +38,7 @@ export async function GET() {
       declines: s.declines,
       notices: s.notices,
       demo: s.demo,
-      studio: { ...studioPayload(s, today), skip },
+      studio: { ...studioPayload(s, today), skip, ...((await filmOn()) ? { film: true } : {}) },
     });
   });
 }

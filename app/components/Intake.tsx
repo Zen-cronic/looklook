@@ -12,7 +12,7 @@ const STEPS = ["Reading the post", "Finding it in the catalogue", "Checking your
  * ?text=…, ?shared=…): a link or a shared screenshot is checked at once,
  * with the same request, limits and error messages as the form.
  */
-export function Intake({ samples, shared }: { samples: Sample[]; shared?: SharedInput }) {
+export function Intake({ samples, shared, linkExample = "https://www.ulta.com/p/…" }: { samples: Sample[]; shared?: SharedInput; linkExample?: string }) {
   const router = useRouter();
   const autoStart = shared && shared.kind !== "error" ? shared : undefined;
   const [busy, setBusy] = useState(Boolean(autoStart));
@@ -122,7 +122,7 @@ export function Intake({ samples, shared }: { samples: Sample[]; shared?: Shared
           void send(f);
         }}
       >
-        <input type="url" inputMode="url" placeholder="https://www.ulta.com/p/…" value={url} onChange={(e) => setUrl(e.target.value)} aria-label="Store link" required />
+        <input type="url" inputMode="url" placeholder={linkExample} value={url} onChange={(e) => setUrl(e.target.value)} aria-label="Store link" required />
         <button className="btn" type="submit">
           Check
         </button>
@@ -142,7 +142,7 @@ export function Intake({ samples, shared }: { samples: Sample[]; shared?: Shared
               }}
             >
               {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={`/samples/${s.file}`} alt={s.alt} />
+              <img src={s.image ?? `/samples/${s.file}`} alt={s.alt} />
               <span>{s.label}</span>
             </button>
           ))}

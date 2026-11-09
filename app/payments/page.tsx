@@ -1,7 +1,7 @@
 import { Suspense } from "react";
 import { formatTime } from "@/lib/app/dates";
 import { formatCents } from "@/lib/app/money";
-import { currentSession } from "@/lib/app/session";
+import { displaySession } from "@/lib/filming/server";
 import { MethodControls, RetryRemoval } from "../components/MethodControls";
 import { Eyebrow } from "../components/Eyebrow";
 import { Lotion } from "../components/stage/MaterialStage";
@@ -23,7 +23,7 @@ export default function PaymentsPage() {
 }
 
 async function Methods() {
-  const { state } = await currentSession();
+  const { state } = await displaySession({ shortIds: true });
   const methods = [...state.methods].reverse();
   if (!methods.length) {
     return (

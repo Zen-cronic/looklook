@@ -4,7 +4,8 @@ import { BUDGET_LABELS, remainingBudgets } from "@/lib/app/budgets";
 import { formatDay, formatTime, realToday } from "@/lib/app/dates";
 import { formatCents, formatDollars } from "@/lib/app/money";
 import { chargeKind, receiptStatusLabel, repeatsLine, SELLER_OF_RECORD } from "@/lib/app/payments";
-import { currentSession } from "@/lib/app/session";
+import { shortId } from "@/lib/filming/neutral";
+import { displaySession } from "@/lib/filming/server";
 import { budgetGroupOf } from "@/lib/shelf/categories";
 import { ReceiptActions } from "../../components/ReceiptActions";
 import { Eyebrow } from "../../components/Eyebrow";
@@ -24,7 +25,7 @@ export default function ReceiptPage(props: PageProps<"/receipts/[id]">) {
 
 async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["params"] }) {
   const { id } = await params;
-  const { state, today } = await currentSession();
+  const { state, today, film } = await displaySession({ shortIds: true });
   const r = state.receipts.find((x) => x.id === id);
   if (!r) notFound();
   const method = r.savedMethodId ? state.methods.find((m) => m.id === r.savedMethodId) : undefined;
@@ -46,7 +47,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <div className="receipt-title">{r.title}</div>
           <div className="small receipt-status">
             {chargeKind(r)}
-            {simulatedOn ? `, counted on the simulated date ${formatDay(simulatedOn)}` : ""}
+            {simulatedOn ? (film ? `, counted on ${formatDay(simulatedOn)} (simulated)` : `, counted on the simulated date ${formatDay(simulatedOn)}`) : ""}
           </div>
         </div>
         <dl className="receipt-lines">
@@ -62,7 +63,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
             <>
               <dt>Refund</dt>
               <dd>
-                {r.refund.id} ({r.refund.status}){r.refund.at ? `, ${formatTime(r.refund.at)} ET` : ""}
+                {film ? shortId(r.refund.id) : r.refund.id} ({r.refund.status}){r.refund.at ? `, ${formatTime(r.refund.at)} ET` : ""}
               </dd>
             </>
           )}

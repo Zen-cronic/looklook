@@ -4,6 +4,8 @@ import { formatTime } from "@/lib/app/dates";
 import { listEvents } from "@/lib/app/store";
 import type { EventLogEntry } from "@/lib/app/types";
 import { Eyebrow } from "../components/Eyebrow";
+import { filmOn } from "@/lib/filming/server";
+import { neutralDeep } from "@/lib/filming/view";
 
 export const metadata = { title: "Webhook events" };
 
@@ -59,7 +61,9 @@ function VerificationChip({ e }: { e: EventLogEntry }) {
 
 async function Events() {
   await connection();
-  const events = listEvents(100);
+  const all = listEvents(100);
+  // Filming mode: generic product names in "What it did", PayPal ids shortened.
+  const events = (await filmOn()) ? neutralDeep(all, { shortIds: true }) : all;
   if (!events.length) {
     return (
       <div className="empty-frame">

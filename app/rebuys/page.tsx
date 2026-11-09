@@ -5,7 +5,7 @@ import { formatDay, formatTime, realToday } from "@/lib/app/dates";
 import { formatCents, formatDollars } from "@/lib/app/money";
 import { activeMethod, chargeKind, dueStaples, openDecline } from "@/lib/app/payments";
 import { dueReminders, upcomingReminders, watchBudgetHold } from "@/lib/app/reminders";
-import { currentSession } from "@/lib/app/session";
+import { displaySession } from "@/lib/filming/server";
 import type { Notice, PurchaseSource, SavedMethod, SessionState } from "@/lib/app/types";
 import { negativeTestingEnabled } from "@/lib/paypal/config";
 import { SIMULATED } from "@/lib/app/when";
@@ -63,9 +63,9 @@ function NoticeItem({ n }: { n: Notice }) {
 }
 
 async function Rebuys() {
-  const { state, today } = await currentSession();
+  const { state, today, film } = await displaySession({ shortIds: true });
   // Days counted from the shopper's today say so while the simulated date is on.
-  const countedDay = (date: string) => (state.dayOffset > 0 ? `${formatDay(date)} (${SIMULATED})` : formatDay(date));
+  const countedDay = (date: string) => (state.dayOffset > 0 ? (film ? `${formatDay(date)} (simulated)` : `${formatDay(date)} (${SIMULATED})`) : formatDay(date));
   const method = activeMethod(state);
   const due = dueStaples(state, today);
   const open = state.watch.filter((w) => !w.closedAt);
@@ -94,7 +94,7 @@ async function Rebuys() {
               </Eyebrow>
               <span className="date">{formatDay(today)}</span>
               <span className="small muted">
-                {state.dayOffset} {state.dayOffset === 1 ? "day" : "days"} ahead of today ({formatDay(realToday())}). Run-out dates and budgets use it; charge times are real.
+                {film ? `${state.dayOffset} ${state.dayOffset === 1 ? "day" : "days"} ahead. Charge times are real.` : `${state.dayOffset} ${state.dayOffset === 1 ? "day" : "days"} ahead of today (${formatDay(realToday())}). Run-out dates and budgets use it; charge times are real.`}
               </span>
             </>
           )}
@@ -273,7 +273,7 @@ async function Rebuys() {
                         {r.status === "refunded" ? ", refunded" : r.status === "partly-refunded" ? ", partly refunded" : r.status === "failed" ? ", failed (not charged)" : r.refund?.status === "PENDING" ? ", refund pending" : ""}
                       </span>
                       <span className="small muted" style={{ display: "block" }}>
-                        {formatTime(r.createdAt)} ET{r.on !== realToday(new Date(r.createdAt)) ? `, simulated date ${formatDay(r.on)}` : ""}
+                        {formatTime(r.createdAt)} ET{r.on !== realToday(new Date(r.createdAt)) ? (film ? `, ${formatDay(r.on)} (simulated)` : `, simulated date ${formatDay(r.on)}`) : ""}
                       </span>
                     </span>
                     <span className="row-end">

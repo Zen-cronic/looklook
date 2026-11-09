@@ -143,8 +143,8 @@ export interface SkipFigure {
  * A field's column name. Dates counted from the shopper's today say so while
  * the simulated date is on; event times are real and keep their name.
  */
-export function fieldName(f: Pick<FieldSpec, "name" | "kind">, dayOffset: number): string {
-  return f.kind === "date" && dayOffset > 0 ? `${f.name} (simulated date)` : f.name;
+export function fieldName(f: Pick<FieldSpec, "name" | "kind">, dayOffset: number, film = false): string {
+  return f.kind === "date" && dayOffset > 0 ? `${f.name} (${film ? "simulated" : "simulated date"})` : f.name;
 }
 
 export interface StudioPayload {
@@ -157,6 +157,8 @@ export interface StudioPayload {
   budget: { left: number; limit: number; spent: number };
   waits: WaitCounts;
   skip?: SkipFigure;
+  /** Filming mode: the records are already generic; dates counted from the simulated date say "(simulated)". */
+  film?: boolean;
 }
 
 export interface WaitCounts {

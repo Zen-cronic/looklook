@@ -4,6 +4,8 @@ export interface Sample {
   file: string;
   label: string;
   alt: string;
+  /** Shown instead of /samples/<file> (an unbranded copy in filming mode). */
+  image?: string;
 }
 
 export const SAMPLES: Sample[] = [

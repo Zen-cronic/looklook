@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Suspense } from "react";
-import { currentSession } from "@/lib/app/session";
+import { FILM_SAMPLES } from "@/lib/filming/neutral";
+import { displaySession, filmOn } from "@/lib/filming/server";
 import { SAMPLES } from "@/lib/app/samples";
 import { sharedInput } from "@/lib/app/share";
 import { formatDollars } from "@/lib/app/money";
@@ -28,7 +29,7 @@ export default function CheckPage({ searchParams }: PageProps<"/check">) {
           <LatestCheck />
         </Suspense>
         <div className="lead">
-          <Suspense fallback={<Intake samples={SAMPLES} />}>
+          <Suspense fallback={<div className="skeleton" />}>
             <SharedIntake searchParams={searchParams} />
           </Suspense>
         </div>
@@ -40,14 +41,19 @@ export default function CheckPage({ searchParams }: PageProps<"/check">) {
   );
 }
 
-/** Opened from a phone's share sheet: check the shared link or screenshot straight away. */
+/**
+ * The check form with the sample posts. Opened from a phone's share sheet, it
+ * checks the shared link or screenshot straight away. Filming mode shows
+ * unbranded copies of the posts (the check still reads the real one).
+ */
 async function SharedIntake({ searchParams }: { searchParams: PageProps<"/check">["searchParams"] }) {
   const shared = sharedInput(await searchParams);
-  return <Intake samples={SAMPLES} shared={shared} />;
+  const film = await filmOn();
+  return film ? <Intake samples={SAMPLES.map((x) => ({ ...x, ...FILM_SAMPLES[x.id] }))} shared={shared} linkExample="https://store.example/p/…" /> : <Intake samples={SAMPLES} shared={shared} />;
 }
 
 async function RecentChecks() {
-  const { state } = await currentSession();
+  const { state } = await displaySession();
   const recent = [...state.checks].reverse().slice(1, 7);
   if (!recent.length) return null;
   return (
@@ -79,7 +85,7 @@ async function RecentChecks() {
 
 /** The most recent verdict, floating on the material panel, before anything else to do. */
 async function LatestCheck() {
-  const { state } = await currentSession();
+  const { state } = await displaySession();
   const c = state.checks.at(-1);
   if (!c) return null;
   const link = shelfLink(c, state.shelf);

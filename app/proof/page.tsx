@@ -8,6 +8,8 @@ import type { RuleId } from "@/lib/verdict/types";
 import { RerunEval } from "../components/RerunEval";
 import { VERDICT_WORD } from "../components/VerdictChip";
 import { APP_NAME } from "@/lib/brand";
+import { filmOn } from "@/lib/filming/server";
+import { neutralDeep } from "@/lib/filming/view";
 import l from "../landing.module.css";
 import { Eyebrow } from "../components/Eyebrow";
 
@@ -42,7 +44,9 @@ export default function ProofPage() {
           {heldOutHeadline(held)}
         </p>
       </div>
-      <HeldOut />
+      <Suspense fallback={<div className="skeleton" />}>
+        <HeldOut />
+      </Suspense>
       <Suspense fallback={<div className="skeleton" />}>
         <DevelopmentSet />
       </Suspense>
@@ -104,8 +108,10 @@ function Row({ summary, children, testId }: { summary: string; children: React.R
   );
 }
 
-function HeldOut() {
-  const r = heldOutResult();
+async function HeldOut() {
+  // Filming mode lists the products and stores by generic names; the results are the same.
+  const film = await filmOn();
+  const r = film ? neutralDeep(heldOutResult()) : heldOutResult();
   const o = r.order;
   const bars = [
     { label: APP_NAME, value: r.skipCorrect, mine: true },
@@ -200,7 +206,7 @@ function HeldOut() {
             </p>
           </Row>
         )}
-        <Corrections />
+        <Corrections film={film} />
         <Row summary="How the test was built">
           <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
             <li>
@@ -219,9 +225,9 @@ function HeldOut() {
 }
 
 /** Inputs found wrong after a run: what was wrong, the commits that fixed it (input first, then the expected answers), and the numbers before and after. */
-function Corrections() {
-  const held = heldOutResult();
-  const dev = devCorrections();
+function Corrections({ film }: { film: boolean }) {
+  const held = film ? neutralDeep(heldOutResult()) : heldOutResult();
+  const dev = film ? neutralDeep(devCorrections()) : devCorrections();
   if (!held.corrections.length && !dev.length) return null;
   return (
     <Row summary={`Corrections (${dev.length})`} testId="corrections">
@@ -295,7 +301,7 @@ function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
 
 async function DevelopmentSet() {
   await connection();
-  const r = runSkipEval();
+  const r = (await filmOn()) ? neutralDeep(runSkipEval()) : runSkipEval();
   const p = r.provenance;
   const runs = devSetRuns(p);
   return (

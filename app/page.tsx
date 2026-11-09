@@ -4,6 +4,7 @@ import { landingSample } from "@/lib/app/landing";
 import { SELLER_OF_RECORD } from "@/lib/app/payments";
 import { APP_NAME } from "@/lib/brand";
 import { Eyebrow } from "./components/Eyebrow";
+import { productImage } from "@/lib/filming/neutral";
 import { HeroObject } from "./components/hero-object/HeroObject";
 import { Lotion } from "./components/stage/MaterialStage";
 import { CountUp, LandingMotion } from "./components/landing/LandingMotion";
@@ -19,9 +20,10 @@ const YES_POINTS = [
   { title: "Charged once", lines: ["Tap yes twice and you are charged once."] },
 ];
 
-export default function LandingPage() {
+/** The landing page. `film` shows it as filming mode does: generic names and images (served at /filming). */
+export default function LandingPage({ film = false }: { film?: boolean }) {
   const held = heldOutResult();
-  const x = landingSample();
+  const x = landingSample(film);
   const bars = [
     { label: APP_NAME, value: held.skipCorrect, mine: true },
     { label: "Skipping anything in a category you own", value: baselineScore(held, "same-category") },
@@ -49,7 +51,7 @@ export default function LandingPage() {
           </div>
         </div>
         <div className={s.heroSlot}>
-          <HeroObject />
+          <HeroObject film={film} />
         </div>
       </section>
 
@@ -100,7 +102,7 @@ export default function LandingPage() {
               <div className={s.stepCard} aria-hidden="true">
                 <div className={s.post}>
                   {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img src="/samples/spf-cvs.png" alt="" width={600} height={900} loading="lazy" />
+                  <img src={film ? productImage("/samples/spf-cvs.png") : "/samples/spf-cvs.png"} alt="" width={600} height={900} loading="lazy" />
                 </div>
               </div>
               <h3>Send the post</h3>
@@ -116,7 +118,7 @@ export default function LandingPage() {
                   <dl className="evidence">
                     <dt>On your shelf</dt>
                     <dd>
-                      {x.shelf.brand} {x.shelf.name}: {x.shelf.relation} (match {x.shelf.matchPercent}%).
+                      {film ? x.shelf.name : `${x.shelf.brand} ${x.shelf.name}`}: {x.shelf.relation} (match {x.shelf.matchPercent}%).
                     </dd>
                     {x.returns && (
                       <>

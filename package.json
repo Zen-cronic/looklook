@@ -22,7 +22,8 @@
     "eval:skip:bands": "tsx scripts/skip-set/price-bands.ts",
     "eval:holdout": "tsx eval/holdout/run.ts",
     "smoke:vision": "tsx scripts/smoke-vision.ts",
-    "sample-week:trends": "tsx scripts/sample-week-trends.ts"
+    "sample-week:trends": "tsx scripts/sample-week-trends.ts",
+    "film:check": "tsx scripts/film-check.ts"
   },
   "dependencies": {
     "@anthropic-ai/sdk": "^1.6.0",

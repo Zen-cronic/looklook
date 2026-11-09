@@ -2,7 +2,8 @@ import { Suspense } from "react";
 import { BUDGET_GROUPS, BUDGET_LABELS, remainingBudgets, spentIn } from "@/lib/app/budgets";
 import { daysBetween } from "@/lib/app/dates";
 import { formatDollars } from "@/lib/app/money";
-import { currentSession } from "@/lib/app/session";
+import { compactSimulated } from "@/lib/filming/neutral";
+import { displaySession } from "@/lib/filming/server";
 import { CATEGORY_LABELS } from "@/lib/app/shelf-ui";
 import { countedDate, restockedLabel } from "@/lib/app/when";
 import { budgetGroupOf } from "@/lib/shelf/categories";
@@ -39,8 +40,13 @@ function dueFor(item: ShelfItem, today: string, dayOffset: number): DueLabel {
   return { kind: "later", label: `${left} days left`, title };
 }
 
+/** The same due label with the simulated date said the short way (filming mode). */
+function filmDue(due: ReturnType<typeof dueFor>): ReturnType<typeof dueFor> {
+  return "title" in due && due.title ? { ...due, title: compactSimulated(due.title) } : due;
+}
+
 async function Shelf() {
-  const { state, today } = await currentSession();
+  const { state, today, film } = await displaySession();
   const remaining = remainingBudgets(state.budgets, today);
   const maxLimit = Math.max(1, ...BUDGET_GROUPS.map((g) => state.budgets.limits[g] ?? 0));
   // Items running out (within a week, or already out) are framed on the panel; the rest is a quiet list by budget.
@@ -57,10 +63,10 @@ async function Shelf() {
         kind={CATEGORY_LABELS[item.category].toLowerCase()}
         glyph={glyphFor(item.category)}
         name={item.name}
-        sub={[item.opened ? "" : "Unopened", item.price ? `${formatDollars(item.price)} last time` : "", item.lastRestockedOn ? `restocked ${restockedLabel(state, item)}` : ""].filter(Boolean).join(", ").replace(/^./, (c) => c.toUpperCase())}
+        sub={[item.opened ? "" : "Unopened", item.price ? `${formatDollars(item.price)} last time` : "", item.lastRestockedOn ? `restocked ${film ? compactSimulated(restockedLabel(state, item)) : restockedLabel(state, item)}` : ""].filter(Boolean).join(", ").replace(/^./, (c) => c.toUpperCase())}
         opened={item.opened}
         runOutDate={item.runOutDate}
-        due={dueFor(item, today, state.dayOffset)}
+        due={film ? filmDue(dueFor(item, today, state.dayOffset)) : dueFor(item, today, state.dayOffset)}
       />
     </li>
   );
@@ -68,7 +74,7 @@ async function Shelf() {
     <div className="shelf-grid">
       <section className="stack">
         <div className="shelf-meta">
-          <SimDate today={today} dayOffset={state.dayOffset} />
+          <SimDate today={today} dayOffset={state.dayOffset} film={film} />
           <p className="small muted">{state.shelf.length} items</p>
         </div>
         <AddShelfItem />

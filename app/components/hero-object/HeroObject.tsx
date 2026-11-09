@@ -21,8 +21,8 @@ const MATERIAL = {
   sizes: "(min-width: 960px) 36rem, 100vw",
 };
 
-export function HeroObject() {
-  const x = landingSample();
+export function HeroObject({ film = false }: { film?: boolean }) {
+  const x = landingSample(film);
   preload("/media/lotion-1200.avif", { as: "image", type: "image/avif", imageSrcSet: MATERIAL.avif, imageSizes: MATERIAL.sizes, fetchPriority: "high" });
   return (
     <div className={s.object}>

@@ -1,6 +1,7 @@
 import { handle, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
 import { parseApproved, payWithSavedMethod } from "@/lib/app/pay";
 import { parseSource } from "@/lib/app/sources";
+import { displayJson } from "@/lib/filming/server";
 import { getPayPalClient } from "@/lib/paypal";
 
 /**
@@ -12,6 +13,6 @@ export async function POST(request: Request) {
     const sid = await sessionIdOrThrow();
     const body = await readJsonBody<{ source?: unknown; methodId?: string; approved?: unknown }>(request);
     const source = parseSource(body.source);
-    return Response.json(await payWithSavedMethod(sid, { source, methodId: body.methodId, approved: parseApproved(body.approved) }, { client: getPayPalClient }));
+    return displayJson(await payWithSavedMethod(sid, { source, methodId: body.methodId, approved: parseApproved(body.approved) }, { client: getPayPalClient }));
   });
 }

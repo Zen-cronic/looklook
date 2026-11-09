@@ -49,7 +49,7 @@ function sources(payload: StudioPayload) {
     data: toCells(t.id, payload.tables[t.id]),
     fields: t.fields.map((f) => ({
       id: f.id,
-      name: fieldName(f, payload.dayOffset),
+      name: fieldName(f, payload.dayOffset, payload.film),
       description: f.description,
       hide: f.hide,
       blankValue: "",
@@ -345,8 +345,8 @@ export default function Workspace({ initial, narrow }: Props) {
   );
 
   const context = useMemo<WorkspaceContext>(
-    () => ({ approve, checkout, skip: payload.skip, hasMethod: payload.method !== null, capLabel: payload.method ? usd.format(payload.method.capCents / 100) : undefined, simulated: payload.dayOffset > 0 }),
-    [approve, checkout, payload.skip, payload.method, payload.dayOffset],
+    () => ({ approve, checkout, skip: payload.skip, hasMethod: payload.method !== null, capLabel: payload.method ? usd.format(payload.method.capCents / 100) : undefined, simulated: payload.dayOffset > 0, film: payload.film }),
+    [approve, checkout, payload.skip, payload.method, payload.dayOffset, payload.film],
   );
 
   const data = useMemo(() => ({ sources: sources(initial) }), [initial]);
@@ -574,7 +574,7 @@ export default function Workspace({ initial, narrow }: Props) {
         {payload.dayOffset > 0 && (
           <p className="simdate" data-testid="studio-simdate">
             <Eyebrow as="span" icon="clock">
-              Simulated date: {formatDay(payload.today)}
+              {payload.film ? `${formatDay(payload.today)} (simulated)` : `Simulated date: ${formatDay(payload.today)}`}
             </Eyebrow>
           </p>
         )}

@@ -9,7 +9,8 @@ import { offerLines } from "@/lib/app/offers";
 import { activeMethod, SELLER_OF_RECORD } from "@/lib/app/payments";
 import { waitAction } from "@/lib/app/reminders";
 import { cachedOffers } from "@/lib/app/services";
-import { currentSession } from "@/lib/app/session";
+import { compactSimulated, storeLabel as neutralStore, uniqueStoreLabels } from "@/lib/filming/neutral";
+import { displaySession } from "@/lib/filming/server";
 import type { CheckRecord, StoreOffer } from "@/lib/app/types";
 import { attributeWord, shelfLink } from "@/lib/app/shelf-link";
 import { targetFor } from "@/lib/app/watch";
@@ -48,7 +49,7 @@ async function offersFor(check: CheckRecord): Promise<StoreOffer[]> {
 
 async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }) {
   const { id } = await params;
-  const { state, today } = await currentSession();
+  const { state, today, film } = await displaySession();
   const check = state.checks.find((c) => c.id === id);
   if (!check) notFound();
   const d = check.decision;
@@ -61,12 +62,17 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
   const product = check.product;
   const wait = waitAction(check, today);
   // Days counted from the shopper's today say so while the simulated date is on.
-  const countedDay = (date: string) => (state.dayOffset > 0 ? `${formatDay(date)} (${SIMULATED})` : formatDay(date));
+  const sim = (text: string) => (film ? compactSimulated(text) : text);
+  const countedDay = (date: string) => (state.dayOffset > 0 ? sim(`${formatDay(date)} (${SIMULATED})`) : formatDay(date));
   const reminderOn = check.reminder && !check.reminder.doneAt ? countedDay(check.reminder.on) : undefined;
   const bought = Boolean(check.purchasedReceiptId);
   const receipt = boughtReceipt(state, check);
   const target = price !== null && product ? targetFor(check) : null;
-  const offers = d.verdict === "ask" ? [] : offerLines(await offersFor(check), check.facts.category);
+  const lines = d.verdict === "ask" ? [] : offerLines(await offersFor(check), check.facts.category);
+  // Filming mode names each store by its kind; the policy behind each line is the real store's.
+  const filmStores = film ? uniqueStoreLabels(lines.map((o) => neutralStore(o.domain))) : [];
+  const offers = film ? lines.map((o, i) => ({ ...o, store: filmStores[i] })) : lines;
+  const candidates = film ? check.candidates.map((c) => ({ ...c, product: { ...c.product, offerDomain: c.product.offerDomain && neutralStore(c.product.offerDomain) } })) : check.candidates;
   const shelfItem = e.shelf ? state.shelf.find((i) => i.id === e.shelf!.itemId) : undefined;
   const link = shelfLink(check, state.shelf);
 
@@ -109,7 +115,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                       {e.shelf.brand} {e.shelf.name}: {relationText(e.shelf.relation)}
                       {e.shelf.relation !== "same-product" && <> ({Math.round(e.shelf.score * 100)}% match)</>}
                       {e.shelf.matched.length > 0 && <>, same {e.shelf.matched.map(attributeWord).join(", ")}</>}. {(shelfItem?.opened ?? e.shelf.opened) ? "Opened" : "Unopened"}
-                      {shelfItem?.runOutDate ? `, runs out ${countedDate(shelfItem.runOutDate, state.dayOffset)}` : ""}.
+                      {shelfItem?.runOutDate ? `, runs out ${sim(countedDate(shelfItem.runOutDate, state.dayOffset))}` : ""}.
                     </dd>
                   </>
                 )}
@@ -117,7 +123,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                   <>
                     <dt>Replaces</dt>
                     <dd>
-                      {e.replaces.brand} {e.replaces.name}, {daysText(e.replaces.daysLeft)} ({countedDate(e.replaces.runOutDate!, state.dayOffset)}).
+                      {e.replaces.brand} {e.replaces.name}, {daysText(e.replaces.daysLeft)} ({sim(countedDate(e.replaces.runOutDate!, state.dayOffset))}).
                     </dd>
                   </>
                 )}
@@ -154,7 +160,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 {e.waitUntil && (
                   <>
                     <dt>Look again</dt>
-                    <dd>{countedDate(e.waitUntil, state.dayOffset)}</dd>
+                    <dd>{sim(countedDate(e.waitUntil, state.dayOffset))}</dd>
                   </>
                 )}
                 <dt>Read from</dt>
@@ -165,7 +171,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                   <>
                     <dt>Matched to</dt>
                     <dd>
-                      {product.brand} {product.title}
+                      {film ? product.title : `${product.brand} ${product.title}`}
                       {check.candidates[0] && !check.facts.identityConfirmed ? ` (${Math.round(check.candidates[0].confidence * 100)}% sure)` : check.facts.identityConfirmed ? " (you confirmed it)" : ""}
                     </dd>
                   </>
@@ -197,7 +203,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 </section>
               )}
             </details>
-            <VerdictActions checkId={check.id} verdict={d.verdict} rule={d.rule} price={price} priceLabel={price !== null ? formatDollars(price) : null} savedMethod={method ? { id: method.id, label: method.label, capLabel: formatDollars(method.capCents / 100), withinCap: price !== null && toCentsSafe(price) <= method.capCents } : null} watch={watch ? { target: formatDollars(watch.targetPrice) } : null} wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? formatDay(wait.on).replace(/^\w+, /, "") : undefined, reminderOn } : null} sellerLabel={SELLER_OF_RECORD} targetLabel={target !== null ? formatDollars(target) : null} shelfItemId={e.shelf?.itemId ?? null} purchasedReceiptId={check.purchasedReceiptId ?? null} candidates={check.candidates} needsConfirmation={check.needsConfirmation} />
+            <VerdictActions checkId={check.id} verdict={d.verdict} rule={d.rule} price={price} priceLabel={price !== null ? formatDollars(price) : null} savedMethod={method ? { id: method.id, label: method.label, capLabel: formatDollars(method.capCents / 100), withinCap: price !== null && toCentsSafe(price) <= method.capCents } : null} watch={watch ? { target: formatDollars(watch.targetPrice) } : null} wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? formatDay(wait.on).replace(/^\w+, /, "") : undefined, reminderOn } : null} sellerLabel={SELLER_OF_RECORD} targetLabel={target !== null ? formatDollars(target) : null} shelfItemId={e.shelf?.itemId ?? null} purchasedReceiptId={check.purchasedReceiptId ?? null} candidates={candidates} needsConfirmation={check.needsConfirmation} />
           </article>
         </Frames>
         {link && <ShelfLink label={link.label} brand={link.brand} name={link.name} note={link.note} href={`/shelf#${link.id}`} />}
@@ -234,7 +240,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
         </section>
       )}
       <div className="status-strip">
-        <SimDate today={today} dayOffset={state.dayOffset} />
+        <SimDate today={today} dayOffset={state.dayOffset} film={film} />
         {check.input.kind === "screenshot" && isSampleWeekCheck(check.input.sample) && <SampleWeekNote />}
       </div>
       </div>

@@ -22,6 +22,8 @@ export interface WorkspaceContext {
   capLabel?: string;
   /** The date control is ahead of today: dates counted from it say so. */
   simulated?: boolean;
+  /** Filming mode: the simulated date is said the short way. */
+  film?: boolean;
 }
 
 type Rows = Array<Record<string, Cell | Date>>;
@@ -75,9 +77,9 @@ const money = (n: Cell | Date | undefined) => (typeof n === "number" ? new Intl.
 const fullDay = (d: Cell | Date | undefined) => (d instanceof Date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric", year: "numeric" }).format(d) : typeof d === "string" && d ? d : "");
 const plainDay = (d: Cell | Date | undefined) => (d instanceof Date ? new Intl.DateTimeFormat("en-US", { month: "short", day: "numeric" }).format(d) : typeof d === "string" && d ? d : "");
 /** A date counted from the shopper's today, labelled while the simulated date is on. */
-const countedDay = (d: Cell | Date | undefined, simulated?: boolean) => {
+const countedDay = (d: Cell | Date | undefined, simulated?: boolean, film?: boolean) => {
   const text = plainDay(d);
-  return text && simulated ? `${text} (simulated date)` : text;
+  return text && simulated ? `${text} (${film ? "simulated" : "simulated date"})` : text;
 };
 const verdictClass: Record<string, string> = { Skip: "skip", Wait: "wait", Buy: "buy", "Check this": "ask" };
 
@@ -174,7 +176,7 @@ export function VerdictWidget(params: AgWidgetParams) {
               <p className="small muted">
                 Waiting for: {String(r.waitingFor).toLowerCase()}
                 {r.buyAt ? `, buy at ${money(r.buyAt)} or less` : ""}
-                {r.lookAgain ? `, look again ${countedDay(r.lookAgain, ctx.simulated)}` : ""}
+                {r.lookAgain ? `, look again ${countedDay(r.lookAgain, ctx.simulated, ctx.film)}` : ""}
               </p>
             ) : null}
             {r.returns ? <p className="decision-returns small">{String(r.returns)}</p> : null}
@@ -219,7 +221,7 @@ export function RebuyWidget(params: AgWidgetParams) {
             </div>
             <h3>{String(r.product)}</h3>
             <p className="small muted">
-              {days === null ? "At or under your target price." : days < 0 ? `Ran out ${-days} days ago.` : days === 0 ? "Runs out today." : `Runs out in ${days} ${days === 1 ? "day" : "days"} (${plainDay(r.runOutDate)}${ctx.simulated ? ", simulated date" : ""}).`}
+              {days === null ? "At or under your target price." : days < 0 ? `Ran out ${-days} days ago.` : days === 0 ? "Runs out today." : `Runs out in ${days} ${days === 1 ? "day" : "days"} (${plainDay(r.runOutDate)}${ctx.simulated ? (ctx.film ? ", simulated" : ", simulated date") : ""}).`}
               {r.store ? ` Last bought at ${String(r.store)}.` : ""}
             </p>
             {r.declined ? <p className="decision-error">{String(r.declined)}. Nothing was charged.</p> : null}
@@ -336,7 +338,7 @@ export function ShelfListWidget(params: AgWidgetParams) {
             <li key={String(r.id)}>
               <span className="name-line">{String(r.product)}</span>
               <span className="small muted">
-                {days === null ? "No run-out date" : days < 0 ? `Ran out ${-days} days ago` : days === 0 ? "Runs out today" : `${days} ${days === 1 ? "day" : "days"} left, runs out ${countedDay(r.runOutDate, ctx.simulated)}`}
+                {days === null ? "No run-out date" : days < 0 ? `Ran out ${-days} days ago` : days === 0 ? "Runs out today" : `${days} ${days === 1 ? "day" : "days"} left, runs out ${countedDay(r.runOutDate, ctx.simulated, ctx.film)}`}
                 {r.price ? `. ${money(r.price)} last time` : ""}
               </span>
             </li>
