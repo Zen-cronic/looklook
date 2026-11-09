@@ -93,7 +93,7 @@ describe("README numbers match the data and code", () => {
     const after = held.afterChanges[0];
     expect(after.commit).toBe(skipProvenanceChange("c0d3b0d").commit);
     expect(README).toContain(
-      `the held-out set scores ${after.skipCorrect} of ${after.n} (saying skip to everything ${baselineScore(after, "always-skip")}; same category ${baselineScore(after, "same-category")}`,
+      `the held-out set scores ${after.skipCorrect} of ${after.n} (same category ${baselineScore(after, "same-category")}, now that the shopper's lip balm and hair oil stay on her shelf; saying skip to everything ${baselineScore(after, "always-skip")})`,
     );
     expect(README).toContain(`(commit \`${after.commit.slice(0, 7)}\`, ${easternStamp(after.at)})`);
     expect(README).toContain(`the headline stays ${held.skipCorrect} of ${held.n}`);
@@ -102,7 +102,7 @@ describe("README numbers match the data and code", () => {
   it("states the development set's score and baselines as re-run now, and its committed results agree", () => {
     const r = runSkipEval();
     expect(DEV_SET_SIZE).toBe(r.n);
-    expect(README).toContain(`${r.skipCorrect} of ${r.n} there (saying skip to everything gets ${baselineScore(r, "always-skip")}; same category gets ${baselineScore(r, "same-category")})`);
+    expect(README).toContain(`${r.skipCorrect} of ${r.n} there (same category gets ${baselineScore(r, "same-category")}; saying skip to everything gets ${baselineScore(r, "always-skip")})`);
     expect(README).toContain(`then re-runs the ${r.n}-product development set`);
     expect(README).toContain(`The ${r.n} products the matching was developed on`);
     // The committed results file and its RESULTS.md are the same run as the code gives now.
@@ -402,7 +402,7 @@ describe("judge kit", () => {
     const r = runSkipEval();
     const b = badges();
     expect(b.get("skip on held-out products")).toBe(`${held.skipCorrect} of ${held.n}`);
-    expect(b.get("held-out baselines")).toBe(`skip everything ${baselineScore(held, "always-skip")}, same category ${baselineScore(held, "same-category")}`);
+    expect(b.get("held-out baselines")).toBe(`same category ${baselineScore(held, "same-category")}, skip everything ${baselineScore(held, "always-skip")}`);
     expect(b.get("skip precision on held-out products")).toBe(pct(held.precision));
     expect(b.get("skip on the development set")).toBe(`${r.skipCorrect} of ${r.n}`);
     expect([...b.keys()].sort()).toEqual(["held-out baselines", "skip on held-out products", "skip on the development set", "skip precision on held-out products", "store return rules", "unit tests"]);
