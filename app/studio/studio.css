@@ -119,8 +119,10 @@
 }
 
 .decision-head h2 {
+  font-family: var(--font-display);
   font-size: var(--step-1);
-  letter-spacing: -0.015em;
+  font-weight: 800;
+  letter-spacing: -0.04em;
 }
 
 /* Stacked rows: the shelf and price watches on a phone */
@@ -222,6 +224,7 @@
 
 /* Figure widgets */
 .figure-widget {
+  container-type: inline-size;
   height: 100%;
   overflow: auto;
   padding: 1rem 1.1rem;
@@ -245,7 +248,9 @@
 
 .figure-big {
   font-family: var(--font-display);
-  font-size: var(--step-3);
+  /* Scales with the widget, and never wraps a number */
+  font-size: clamp(1.25rem, 13cqi, var(--step-3));
+  white-space: nowrap;
   font-weight: 800;
   letter-spacing: -0.045em;
   line-height: 1.05;
@@ -281,7 +286,7 @@
 
 .budget-bars li {
   display: grid;
-  grid-template-columns: 6rem 1fr auto;
+  grid-template-columns: minmax(4.5rem, 6rem) minmax(2rem, 1fr) auto;
   align-items: center;
   gap: 0.5rem;
 }
@@ -291,7 +296,7 @@
   white-space: nowrap;
 }
 
-.budget-bars .bar {
+.budget-bars .meter {
   grid-column: auto;
 }
 
@@ -333,4 +338,37 @@
 
 .workspace:not(.editing) .workspace-canvas .ag-studio-layout-canvas {
   background: transparent;
+}
+
+/* The store's returns line on a verdict: plain text after a small drawn icon, not a link */
+.decision-returns {
+  display: flex;
+  gap: 0.45rem;
+  align-items: flex-start;
+  color: var(--ink-2);
+}
+
+.decision-returns::before {
+  content: "";
+  flex: none;
+  width: 0.95rem;
+  height: 0.95rem;
+  margin-top: 0.1rem;
+  border-radius: 50%;
+  background: var(--ink) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M4.6 3.4L2.8 5.2l1.8 1.8M3 5.2h4.2a2 2 0 010 4H5.8' fill='none' stroke='white' stroke-width='1.4' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E") center / 0.7rem no-repeat;
+}
+
+/* Widgets keep a readable width; below it they scroll inside the canvas instead of wrapping word by word */
+.decision-list > *,
+.figure-widget > * {
+  min-width: 12rem;
+}
+
+/* Customizing: the page widens to give the canvas room beside the panels */
+body:has(.workspace.editing) .studio-page {
+  max-width: 96rem;
+}
+
+.workspace.editing .workspace-canvas {
+  overflow-x: auto;
 }

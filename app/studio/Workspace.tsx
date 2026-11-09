@@ -63,6 +63,13 @@ const TRACK_PX = 20;
 const shelfSpan = (rows: number) => Math.max(10, Math.ceil((rows * 26 + 96) / TRACK_PX));
 const watchSpan = (rows: number) => (rows ? Math.max(8, Math.ceil((rows * 26 + 96) / TRACK_PX)) : 6);
 
+/** About how many 20px tracks the verdict list needs: its heading, each card by kind (measured at 1440), then the rebuys. */
+function verdictTracks(p: StudioPayload): number {
+  const CARD_PX: Record<string, number> = { Skip: 250, Wait: 270, Buy: 285, "Check this": 235, Bought: 220 };
+  const cards = p.tables.verdicts.reduce((n, r) => n + (r.status === "Bought" ? CARD_PX.Bought : (CARD_PX[String(r.verdict)] ?? 270)), 0);
+  return Math.ceil((70 + cards + 90 + p.tables.rebuys.length * 165) / TRACK_PX);
+}
+
 function layouts(p: StudioPayload, narrow = false) {
   if (narrow) {
     // One column on a phone: each widget keeps its own height, and the shelf rows wrap to two lines.
@@ -79,12 +86,14 @@ function layouts(p: StudioPayload, narrow = false) {
   }
   const shelf = shelfSpan(p.tables.shelf.length);
   const watch = watchSpan(p.tables.watchlist.length);
+  // The verdict column grows to fit every card, so its last card is never cut off.
+  const cards = verdictTracks(p);
   const base = {
     budget: { xTrack: 8, yTrack: 0, xSpan: 9, ySpan: 12 },
     skip: { xTrack: 17, yTrack: 0, xSpan: 7, ySpan: 12 },
     shelf: { xTrack: 8, yTrack: 12, xSpan: 16, ySpan: shelf },
     watch: { xTrack: 8, yTrack: 12 + shelf, xSpan: 16, ySpan: watch },
-    verdicts: { xTrack: 0, yTrack: 0, xSpan: 8, ySpan: 12 + shelf + watch },
+    verdicts: { xTrack: 0, yTrack: 0, xSpan: 8, ySpan: Math.max(12 + shelf + watch, cards) },
   };
   // With the waits table: it takes the slot under the figures, the grids move down.
   const withWaits = {
@@ -92,10 +101,12 @@ function layouts(p: StudioPayload, narrow = false) {
     waits: { xTrack: 8, yTrack: 12, xSpan: 16, ySpan: 10 },
     shelf: { ...base.shelf, yTrack: 22 },
     watch: { ...base.watch, yTrack: 22 + shelf },
-    verdicts: { ...base.verdicts, ySpan: 22 + shelf + watch },
+    verdicts: { ...base.verdicts, ySpan: Math.max(22 + shelf + watch, cards) },
   };
-  return { base, withWaits, tracks: 12 + shelf + watch };
+  return { base, withWaits, tracks: Math.max(12 + shelf + watch, cards) };
 }
+
+const FOLDED_PANELS = { ai: { collapsed: true }, data: { collapsed: true } };
 
 /** The page as it opens: grids on a wide screen, stacked lists on a phone, and a plain card when nothing is watched. */
 function initialState(p: StudioPayload, narrow: boolean): AgReportState {
@@ -128,8 +139,17 @@ function initialState(p: StudioPayload, narrow: boolean): AgReportState {
       },
     ],
     selectedPageId: PAGE_ID,
+    // In the editor the assistant and the field list start as narrow rails, so the canvas keeps its width.
+    panels: FOLDED_PANELS,
   } as unknown as AgReportState;
 }
+
+/** Suggestions in an empty assistant: each sends a precise request to LookLook's agent. */
+const PROMPT_STARTERS = [
+  { label: "Group my waits", prompt: "Group my waits: the shopper wants to see what each Wait verdict is waiting for, a price drop or next month's budget." },
+  { label: "Chart what's left per budget", prompt: "Add one bar chart to the current page that reads the budgets table: group on the x axis, money left as the bar. Leave every other widget as it is." },
+  { label: "Show only my skips", prompt: "Add one grid widget to the current page titled 'Skips', reading the verdicts table with the columns product, price, reason and store, with a widget filter verdict equals 'Skip'. Leave every other widget as it is." },
+];
 
 const STEP_WORDS: Record<string, string> = {
   delegate_to: "Handing the request to Studio's lead agent",
@@ -192,7 +212,20 @@ function themeFromTokens() {
     studioPopupTitleBarFontFamily: font,
     studioCanvasRowHeight: "20px",
     studioMinWidth: 0,
+    // Charts the agents add use the product's colours only: cobalt, ink, the pink highlighter, then grey.
+    ...chartPalette([v("--signature"), v("--ink"), v("--accent"), v("--line-strong")]),
   } as Parameters<typeof studioTheme.withParams>[0]);
+}
+
+/** The chart palette params: the given colours, and every other slot cleared so no default colour returns. */
+function chartPalette(colors: string[]): Record<string, string> {
+  const out: Record<string, string> = {};
+  for (let i = 1; i <= 20; i++) {
+    const c = colors[i - 1] ?? "#00000000";
+    out[`chartPaletteFills${i}Color`] = c;
+    out[`chartPaletteStrokes${i}Color`] = c;
+  }
+  return out;
 }
 
 function readCache(): WaitsWidget | null {
@@ -395,7 +428,7 @@ export default function Workspace({ initial, narrow }: Props) {
             tools: () => [tools.delegateTo(["lead"]), report],
           } as never);
           const builtIns = Object.values(builtIn).map((d) => directLlmRunner({ ...(d as object), adapter } as never));
-          return { agents: [looklook, ...builtIns], primary: AGENT_ID } as never;
+          return { agents: [looklook, ...builtIns], primary: AGENT_ID, promptStarters: PROMPT_STARTERS } as never;
         });
         harnessRef.current = harness;
         return harness;
@@ -473,6 +506,22 @@ export default function Workspace({ initial, narrow }: Props) {
   const canvasHeight = `${Math.max(tracks, 34) * TRACK_PX + (narrow ? 80 : 24)}px`;
   const editing = mode === "edit" && !narrow;
 
+  // The editor's panels are created when it first opens, after the page state was applied, so the
+  // assistant and the field list are folded to rails then, with their own headers. Later opens keep
+  // whatever the shopper chose.
+  const foldedOnce = useRef(false);
+  useEffect(() => {
+    if (!editing || foldedOnce.current) return;
+    foldedOnce.current = true;
+    let tries = 0;
+    const t = window.setInterval(() => {
+      const open = ["ai", "data"].map((id) => document.querySelector<HTMLElement>(`.workspace-canvas .ag-studio-${id}-panel:not(.ag-studio-panel-collapsed) .ag-studio-panel-header`));
+      open.forEach((h) => h?.click());
+      if (open.some(Boolean) || ++tries > 20) window.clearInterval(t);
+    }, 50);
+    return () => window.clearInterval(t);
+  }, [editing]);
+
   return (
     <AgStudioProvider licenseKey={LICENSE} modules={[AgStudioAiModule]}>
       <div className={`workspace${narrow ? " narrow" : ""}${editing ? " editing" : ""}`}>
@@ -543,7 +592,7 @@ export default function Workspace({ initial, narrow }: Props) {
             initialState={initial0}
             widgets={widgets as never}
             theme={theme}
-            layout={{ columns: 24, minWidth: 250 } as never}
+            layout={{ columns: 24, minWidth: editing ? 760 : 250 } as never}
             responsiveLayoutBreakpoints={[{ maxWidth: 760, layout: singleColumnLayout }] as never}
             context={context}
             panels={{ view: { left: [], right: [] }, edit: { left: ["ai"], right: ["edit", "data"] } }}

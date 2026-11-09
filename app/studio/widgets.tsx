@@ -173,17 +173,7 @@ export function VerdictWidget(params: AgWidgetParams) {
                 {r.lookAgain ? `, look again ${countedDay(r.lookAgain, ctx.simulated)}` : ""}
               </p>
             ) : null}
-            {r.returns ? (
-              <p className="small muted">
-                {r.policyUrl ? (
-                  <a href={String(r.policyUrl)} target="_blank" rel="noreferrer">
-                    {String(r.returns)}
-                  </a>
-                ) : (
-                  String(r.returns)
-                )}
-              </p>
-            ) : null}
+            {r.returns ? <p className="decision-returns small">{String(r.returns)}</p> : null}
             <div className="decision-links">
               <a className="btn small outline" href={`/check/${r.id}`}>
                 See why
@@ -261,11 +251,12 @@ export function BudgetWidget(params: AgWidgetParams) {
       <div className="small muted">of {money(limit)} across your budgets</div>
       <ul className="budget-bars">
         {rows.map((r) => {
-          const pct = Number(r.limit) > 0 ? Math.min(100, Math.round((Number(r.spent) / Number(r.limit)) * 100)) : 0;
+          // Filled = what's left, the same as the shelf's budgets.
+          const pct = Number(r.limit) > 0 ? Math.max(0, Math.min(100, Math.round((Number(r.left) / Number(r.limit)) * 100))) : 0;
           return (
             <li key={String(r.id)}>
               <span>{String(r.group)}</span>
-              <span className="bar" aria-hidden>
+              <span className="meter" aria-hidden>
                 <span style={{ width: `${pct}%` }} />
               </span>
               <span className="num small">{money(r.left)} left</span>
@@ -291,7 +282,7 @@ export function SkipWidget(params: AgWidgetParams) {
         {skip.right} of {skip.n}
       </div>
       <div className="small muted">
-        right on {skip.n} products it had never seen. Skip everything: {skip.alwaysSkip}. Same category: {skip.sameCategory}.
+        right on {skip.n} products it had never seen. Same category: {skip.sameCategory}. Skip everything: {skip.alwaysSkip}.
       </div>
       <a className="btn small outline" href="/proof">
         See every case
