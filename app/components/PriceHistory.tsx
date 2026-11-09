@@ -6,12 +6,14 @@ import { formatDollars } from "@/lib/app/money";
  */
 export function PriceHistory({ weekly, target, now }: { weekly: number[]; target: number; now: number }) {
   if (weekly.length < 2) return null;
-  const w = 320;
-  const h = 128;
+  const w = 336;
+  const h = 144;
   const left = 8;
-  const right = w - 110; // the labels at the line's end sit in this gutter
+  const right = w - 124; // the labels at the line's end sit in this gutter
   const top = 22;
-  const bottom = h - 36;
+  const bottom = 92;
+  // The low label sits under its point and above the baseline, 8px clear of both.
+  const axisY = bottom + 32;
   const lo = Math.min(...weekly, target, now);
   const hi = Math.max(...weekly, target, now);
   const span = hi - lo || 1;
@@ -26,13 +28,13 @@ export function PriceHistory({ weekly, target, now }: { weekly: number[]; target
   const apart = Math.abs(endY - targetY) < 20;
   const nowLabelY = apart && endY <= targetY ? targetY - 20 : endY;
   const targetLabelY = apart && endY > targetY ? endY - 20 : targetY;
-  // The low label goes just under its point, above the baseline.
-  const lowLabelY = y(low) + 15;
+  // Label baseline: the point's radius, 8px clearance, then the cap height.
+  const lowLabelY = y(low) + 3.5 + 8 + 9;
   const lowLabelX = Math.min(Math.max(x(lowAt), left + 34), right - 34);
   return (
     <figure className="pricehist">
       <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Price over the last 90 days: lowest ${formatDollars(low)}, now ${formatDollars(now)}; buy at ${formatDollars(target)} or less`}>
-        <line x1={left} x2={right} y1={bottom + 20} y2={bottom + 20} className="axis" />
+        <line x1={left} x2={right} y1={axisY} y2={axisY} className="axis" />
         <line x1={left} x2={right + 6} y1={targetY} y2={targetY} className="target" />
         <polyline points={points} className="series" />
         <circle cx={x(lowAt)} cy={y(low)} r="3.5" className="low-dot" />
@@ -46,10 +48,10 @@ export function PriceHistory({ weekly, target, now }: { weekly: number[]; target
         <text x={right + 12} y={targetLabelY + 4} className="label target-label">
           Buy at {formatDollars(target)}
         </text>
-        <text x={left} y={h - 3} className="label axis-label">
+        <text x={left} y={axisY + 16} className="label axis-label">
           90 days ago
         </text>
-        <text x={right} y={h - 3} textAnchor="end" className="label axis-label">
+        <text x={right} y={axisY + 16} textAnchor="end" className="label axis-label">
           This week
         </text>
       </svg>
