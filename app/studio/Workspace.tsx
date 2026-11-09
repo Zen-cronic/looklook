@@ -9,6 +9,7 @@ import { APP_NAME } from "@/lib/brand";
 import type { PurchaseSource } from "@/lib/app/types";
 import { formatDay } from "@/lib/app/dates";
 import { diffRows, fieldName, TABLES, waitCounts, type FieldKind, type Row, type StudioPayload, type TableId } from "@/lib/studio/schema";
+import { SampleWeekNote } from "../components/SampleWeek";
 import { claudeAdapter, type TurnInfo } from "./adapter";
 import { DEFAULT_WAITS_WIDGET, isWaitsWidget, type WaitsWidget } from "./waits";
 import { BudgetWidget, ShelfListWidget, SkipWidget, VerdictWidget, WatchListWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
@@ -491,6 +492,7 @@ export default function Workspace({ initial, narrow }: Props) {
             </div>
           )}
         </div>
+        {payload.sample && <SampleWeekNote />}
         {payload.dayOffset > 0 && (
           <p className="simdate" data-testid="studio-simdate">
             <span className="chip sim">Simulated date: {formatDay(payload.today)}</span>

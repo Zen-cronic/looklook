@@ -16,6 +16,7 @@ import { targetFor } from "@/lib/app/watch";
 import { isSampleWeekCheck } from "@/lib/app/sample-week";
 import { atTheTime, boughtReceipt, countedDate, eventTime, SIMULATED } from "@/lib/app/when";
 import { PriceHistory } from "../../components/PriceHistory";
+import { SampleWeekNote } from "../../components/SampleWeek";
 import { SimDate } from "../../components/SimDate";
 import { VerdictActions } from "../../components/VerdictActions";
 import { VerdictSummary } from "../../components/VerdictSummary";
@@ -209,6 +210,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
       </MaterialStage>
       <div className="status-strip">
         <SimDate today={today} dayOffset={state.dayOffset} />
+        {check.input.kind === "screenshot" && isSampleWeekCheck(check.input.sample) && <SampleWeekNote />}
       </div>
     </div>
   );
