@@ -2,7 +2,12 @@ import Link from "next/link";
 import { ProductGlyph } from "../../components/ProductGlyph";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
-import { formatCents } from "@/lib/app/money";
+import { BUDGET_LABELS, remainingBudgets } from "@/lib/app/budgets";
+import { returnsLine } from "@/lib/app/explain";
+import { formatCents, formatDollars } from "@/lib/app/money";
+import { budgetGroupOf } from "@/lib/shelf/categories";
+import { Eyebrow } from "../../components/Eyebrow";
+import { Lotion } from "../../components/stage/MaterialStage";
 import { CONSENT_TEMPLATE, SELLER_OF_RECORD, defaultCapCents } from "@/lib/app/payments";
 import { currentSession } from "@/lib/app/session";
 import { CheckoutPanel } from "../../components/CheckoutPanel";
@@ -21,20 +26,32 @@ export default function CheckoutPage(props: PageProps<"/checkout/[id]">) {
 
 async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["params"] }) {
   const { id } = await params;
-  const { state } = await currentSession();
+  const { state, today } = await currentSession();
   const intent = state.intents.find((i) => i.id === id);
   if (!intent) notFound();
   if (intent.receiptId) redirect(`/receipts/${intent.receiptId}`);
   const replaced = intent.replacesMethodId ? state.methods.find((m) => m.id === intent.replacesMethodId) : undefined;
   const clientId = process.env.PAYPAL_CLIENT_ID;
   const amount = formatCents(intent.amountCents, intent.currency);
+  // Context beside the payment: what's left in this budget, and the store's returns from the verdict.
+  const group = intent.category ? budgetGroupOf(intent.category) : undefined;
+  const left = group ? remainingBudgets(state.budgets, today)[group] : undefined;
+  const fromCheck = intent.source.kind === "check" ? state.checks.find((c) => intent.source.kind === "check" && c.id === intent.source.checkId) : undefined;
+  const returns = fromCheck && fromCheck.decision.verdict !== "ask" ? returnsLine(fromCheck.decision, fromCheck.store?.replace(/^https?:\/\//, "").replace(/^www\./, "")) : undefined;
   return (
     <div className="stack">
-      <div>
+      <div className="page-head">
         <h1>{replaced ? "Approve with another method" : "Checkout"}</h1>
         {replaced && <p className="lede">PayPal declined {replaced.label} for this rebuy. Nothing was charged. Pick another card or PayPal account below.</p>}
       </div>
-      <div className="card product-row" style={{ padding: "0.9rem 1rem" }}>
+      <div className="object-layout">
+      <div className="lead stack">
+      <section className="panel" aria-label="Order and payment">
+      <Lotion className="panel-material" eager sizes="(min-width: 960px) 40rem, 100vw" />
+      <Eyebrow icon="card">Order and payment</Eyebrow>
+      <div className="panel-frame">
+      <div className="checkout-card">
+      <div className="product-row">
         {intent.imageUrl ? (
           // eslint-disable-next-line @next/next/no-img-element
           <img className="thumb" src={intent.imageUrl} alt="" />
@@ -50,14 +67,34 @@ async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["param
         </div>
         <div className="price-line">{amount}</div>
       </div>
+      <div className="checkout-pay">
       {clientId ? (
         <CheckoutPanel intentId={intent.id} clientId={clientId} amountLabel={amount} defaultCapDollars={defaultCapCents(intent.amountCents) / 100} consentTemplate={CONSENT_TEMPLATE} />
       ) : (
         <p className="error">Payments are off: PAYPAL_CLIENT_ID is not set on the server.</p>
       )}
-      <Link className="btn outline" href="/check">
+      </div>
+      </div>
+      </div>
+      </section>
+      <Link className="btn outline" href="/check" style={{ width: "fit-content" }}>
         Cancel
       </Link>
+      </div>
+      {group && left !== undefined && (
+        <section className="context-frame" aria-label="Budget">
+          <Eyebrow icon="card">{BUDGET_LABELS[group]} budget</Eyebrow>
+          <p className="figure-line">{formatDollars(left)} left</p>
+          <p className="small">This month, before this purchase.</p>
+        </section>
+      )}
+      {returns && (
+        <section className="context-frame" aria-label="Returns">
+          <Eyebrow icon="receipt">Returns once opened</Eyebrow>
+          <p className={`returns ${returns.tone}`}>{returns.text}</p>
+        </section>
+      )}
+      </div>
     </div>
   );
 }

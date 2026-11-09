@@ -32,8 +32,8 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
   const group = r.category ? budgetGroupOf(r.category) : undefined;
   const left = group ? remainingBudgets(state.budgets, today)[group] : undefined;
   return (
-    <div className="stack">
-      <section className="panel" aria-label="Receipt">
+    <div className="object-layout">
+      <section className="panel lead" aria-label="Receipt">
       <Lotion className="panel-material" eager />
       <Eyebrow icon="receipt">Receipt</Eyebrow>
       <div className="panel-frame">
@@ -101,22 +101,28 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
             </p>
           )}
           {r.shelfNote && <p>{r.shelfNote}</p>}
-          {group && left !== undefined && (
-            <p>
-              {formatDollars(left)} left in {BUDGET_LABELS[group].toLowerCase()} this month.
-            </p>
-          )}
-          {method && (
-            <p>
-              Saved for rebuys: {method.label}, up to {formatCents(method.capCents, method.currency)} each, only after your yes.
-            </p>
-          )}
           {r.kind === "first-purchase" && !method && <p className="muted">This method was not saved.</p>}
           <p className="muted small">{r.webhook ? `PayPal confirmed it at ${formatTime(r.webhook.at)} ET.` : "Waiting for PayPal's confirmation."}</p>
         </div>
       </article>
       </div>
       </section>
+      {group && left !== undefined && (
+        <section className="context-frame" aria-label="Budget">
+          <Eyebrow icon="card">{BUDGET_LABELS[group]} budget</Eyebrow>
+          <p className="figure-line">{formatDollars(left)} left</p>
+          <p className="small">This month.</p>
+        </section>
+      )}
+      {method && (
+        <section className="context-frame" aria-label="Saved for rebuys">
+          <Eyebrow icon="yes">Saved for rebuys</Eyebrow>
+          <p className="figure-line">{formatCents(method.capCents, method.currency)} cap</p>
+          <p className="small">
+            {method.label}, charged only after your yes.
+          </p>
+        </section>
+      )}
       <ReceiptActions receiptId={r.id} source={r.source} amountCents={r.amountCents} canRepeat={r.kind === "saved-method" && (r.status === "completed" || r.status === "pending")} canRefund={!!r.captureId && (r.status === "completed" || r.status === "partly-refunded") && r.refund?.status !== "PENDING"} />
     </div>
   );

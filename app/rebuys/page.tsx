@@ -11,15 +11,15 @@ import { negativeTestingEnabled } from "@/lib/paypal/config";
 import { SIMULATED } from "@/lib/app/when";
 import { Chevron } from "../components/Chevron";
 import { Eyebrow } from "../components/Eyebrow";
-import { Lotion, ShelfLink } from "../components/stage/MaterialStage";
+import { Lotion } from "../components/stage/MaterialStage";
 import { ApprovalButtons, DateControls, DeclineToggle, ReminderDone, WatchControls } from "../components/RebuyControls";
 
 export const metadata = { title: "Rebuys" };
 
 export default function RebuysPage() {
   return (
-    <main className="page wide">
-      <div style={{ marginBottom: "1.5rem" }}>
+    <main className="page">
+      <div className="page-head">
         <h1>Rebuys</h1>
         <p className="lede">Staples that are running out and prices that dropped. Nothing is charged until you say yes.</p>
       </div>
@@ -77,18 +77,21 @@ async function Rebuys() {
   const testing = negativeTestingEnabled();
 
   return (
-    <div className="two-col">
-      <section className="stack">
+    <div className="object-layout">
         <div className="datebar">
           {state.dayOffset === 0 ? (
             <>
-              <span className="chip">Today</span>
+              <Eyebrow as="span" icon="clock">
+                Today
+              </Eyebrow>
               <span className="date">{formatDay(today)}</span>
               <span className="small muted">Move the date ahead to see staples come due.</span>
             </>
           ) : (
             <>
-              <span className="chip sim">Simulated date</span>
+              <Eyebrow as="span" icon="clock">
+                Simulated date
+              </Eyebrow>
               <span className="date">{formatDay(today)}</span>
               <span className="small muted">
                 {state.dayOffset} {state.dayOffset === 1 ? "day" : "days"} ahead of today ({formatDay(realToday())}). Run-out dates and budgets use it; charge times are real.
@@ -98,7 +101,7 @@ async function Rebuys() {
           <DateControls dayOffset={state.dayOffset} />
         </div>
 
-        <section className="panel stack" aria-labelledby="needs-yes">
+        <section className="panel stack lead" aria-labelledby="needs-yes">
           <Lotion className="panel-material" sizes="(min-width: 960px) 36rem, 100vw" />
           <h2 id="needs-yes" className="field-title">
             Needs your yes
@@ -135,25 +138,27 @@ async function Rebuys() {
           {due.map((d) => {
             const source: PurchaseSource = { kind: "staple", shelfItemId: d.item.id, cycle: d.cycle };
             const declined = declineFor(state, source);
-            const left = d.daysLeft < 0 ? `ran out ${-d.daysLeft} ${d.daysLeft === -1 ? "day" : "days"} ago` : d.daysLeft === 0 ? "runs out today" : `${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"} left`;
+            const left = d.daysLeft < 0 ? `Ran out ${-d.daysLeft} ${d.daysLeft === -1 ? "day" : "days"} ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`;
             return (
-              <div key={d.item.id}>
-              <div className="panel-frame">
+              <div key={d.item.id} className="panel-frame">
               <article className={`approval${declined ? " declined" : ""}`}>
                 <div className="approval-head">
                   <div>
+                    {/* The shelf item this rebuy replaces: its state as an eyebrow that opens it on the shelf */}
+                    <Link className="eyebrow-link" href={`/shelf#${d.item.id}`}>
+                      <Eyebrow as="span" icon="shelf">
+                        {left}
+                        {d.item.opened ? ", opened" : ""}
+                      </Eyebrow>
+                    </Link>
                     <div className="brand-line">{d.item.brand}</div>
                     <h3>{d.item.name}</h3>
-                    <p className="small muted">
-                      {d.daysLeft < 0 ? `Ran out ${-d.daysLeft} ${d.daysLeft === -1 ? "day" : "days"} ago` : d.daysLeft === 0 ? "Runs out today" : `Runs out in ${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"}`}. Last bought at {d.item.store ?? "a store"}.
-                    </p>
+                    <p className="small muted">Last bought at {d.item.store ?? "a store"}.</p>
                   </div>
                   <div className="amount">{formatCents(d.amountCents)}</div>
                 </div>
                 <ApprovalButtons source={source} amountCents={d.amountCents} version={d.cycle} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="rebuy" />
               </article>
-              </div>
-              <ShelfLink tag="On your shelf" label={left} brand={d.item.brand} name={d.item.name} note={d.item.opened ? "Opened, the one running out." : "The one running out."} href={`/shelf#${d.item.id}`} />
               </div>
             );
           })}
@@ -189,7 +194,8 @@ async function Rebuys() {
           })}
         </section>
 
-        <h2 style={{ marginTop: "2rem" }}>Watching for a drop</h2>
+        <section className="stack-sm">
+        <h2>Watching for a drop</h2>
         {open.length === 0 ? (
           <div className="empty-frame">
             <Eyebrow icon="chart">Nothing watched yet</Eyebrow>
@@ -211,10 +217,11 @@ async function Rebuys() {
             ))}
           </ul>
         )}
+        </section>
 
         {later.length > 0 && (
-          <>
-            <h2 style={{ marginTop: "2rem" }}>Reminders</h2>
+          <section className="stack-sm">
+            <h2>Reminders</h2>
             <ul className="list">
               {later.map((c) => (
                 <li key={c.id} className="split">
@@ -230,11 +237,9 @@ async function Rebuys() {
                 </li>
               ))}
             </ul>
-          </>
+          </section>
         )}
-      </section>
 
-      <section className="stack">
         {testing && (
           <div className="card stack-sm">
             <h2>Test a decline</h2>
@@ -281,7 +286,6 @@ async function Rebuys() {
             </ul>
           )}
         </div>
-      </section>
     </div>
   );
 }

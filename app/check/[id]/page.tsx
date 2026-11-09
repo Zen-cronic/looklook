@@ -20,6 +20,7 @@ import { SampleWeekNote } from "../../components/SampleWeek";
 import { SimDate } from "../../components/SimDate";
 import { VerdictActions } from "../../components/VerdictActions";
 import { VerdictSummary } from "../../components/VerdictSummary";
+import { Eyebrow } from "../../components/Eyebrow";
 import { Frames, MaterialStage, ShelfLink } from "../../components/stage/MaterialStage";
 
 export default function CheckResultPage(props: PageProps<"/check/[id]">) {
@@ -74,7 +75,8 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
       <Link href="/check" className="btn outline small" style={{ width: "fit-content" }}>
         Check another
       </Link>
-      <MaterialStage tag={sourceTag(check)} icon="post" label="Your verdict">
+      <div className="object-layout">
+      <MaterialStage tag={sourceTag(check)} icon="post" label="Your verdict" className="lead">
         <Frames>
           <article className={`verdict ${d.verdict}`}>
             <VerdictSummary
@@ -92,15 +94,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
               imageUrl={product?.imageUrl}
               storeName={storeName}
               priceLabel={price !== null ? formatDollars(price) : null}
-              returns={d.verdict !== "ask" ? returns : null}
             />
-            {d.verdict === "wait" && wait?.kind === "price" && target !== null && (
-              <div className="price-wait">
-                {check.band?.usable && check.band.weekly ? <PriceHistory weekly={check.band.weekly} target={target} now={price ?? target} /> : null}
-                <p className="small">{check.band?.usable ? `Last 90 days: usually ${formatDollars(check.band.typical)}, lowest ${formatDollars(check.band.low)}.` : `Not enough price history to judge, so we'd wait for ${formatDollars(target)} (10% under) or less.`}</p>
-              </div>
-            )}
-            {d.verdict === "wait" && wait?.kind === "budget" && e.budget && <p className="returns maybe">Budget starts again {countedDay(wait.on)}.</p>}
             <details className="why">
               <summary>{offers.length > 0 ? "See why, and other stores" : "See why"}</summary>
               <dl className="evidence">
@@ -208,9 +202,41 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
         </Frames>
         {link && <ShelfLink label={link.label} brand={link.brand} name={link.name} note={link.note} href={`/shelf#${link.id}`} />}
       </MaterialStage>
+      {d.verdict === "wait" && wait?.kind === "price" && target !== null && (
+        <section className="context-frame price-wait" aria-label="Price history">
+          <Eyebrow icon="chart">Price, last 90 days</Eyebrow>
+          {check.band?.usable && check.band.weekly ? <PriceHistory weekly={check.band.weekly} target={target} now={price ?? target} /> : null}
+          <p className="small">{check.band?.usable ? `Last 90 days: usually ${formatDollars(check.band.typical)}, lowest ${formatDollars(check.band.low)}.` : `Not enough price history to judge, so we'd wait for ${formatDollars(target)} (10% under) or less.`}</p>
+        </section>
+      )}
+      {e.budget && (
+        <section className="context-frame" aria-label="Budget">
+          <Eyebrow icon="card">{BUDGET_LABELS[e.budget.group]} budget</Eyebrow>
+          <p className="figure-line">{formatDollars(e.budget.remaining)} left</p>
+          <p className="small">
+            {bought ? "When you checked." : "This month."}
+            {d.verdict === "wait" && wait?.kind === "budget" ? ` Budget starts again ${countedDay(wait.on)}.` : ""}
+          </p>
+        </section>
+      )}
+      {d.verdict !== "ask" && returns && (
+        <section className="context-frame" aria-label="Returns">
+          <Eyebrow icon="receipt">Returns once opened</Eyebrow>
+          <p className={`returns ${returns.tone}`}>{returns.text}</p>
+          {e.policy?.sourceUrl && !e.policy.fallback && (
+            <p className="small muted">
+              <a href={e.policy.sourceUrl} target="_blank" rel="noreferrer">
+                {e.policy.retailerName} policy page
+              </a>
+              , checked {formatDate(e.policy.checkedOn)}.
+            </p>
+          )}
+        </section>
+      )}
       <div className="status-strip">
         <SimDate today={today} dayOffset={state.dayOffset} />
         {check.input.kind === "screenshot" && isSampleWeekCheck(check.input.sample) && <SampleWeekNote />}
+      </div>
       </div>
     </div>
   );

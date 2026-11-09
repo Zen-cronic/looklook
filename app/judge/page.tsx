@@ -20,8 +20,8 @@ export default function JudgePage() {
   const steps = startHereSteps({ heldOutRight: heldOut.skipCorrect, heldOutN: heldOut.n, devN: DEV_SET_SIZE, rebuyLeadDays: REBUY_LEAD_DAYS });
   const stepsWord = numberWord(steps.length).replace(/^./, (c) => c.toUpperCase());
   return (
-    <main className="page stack-lg">
-      <div>
+    <main className="page">
+      <div className="page-head">
         <h1>Start here</h1>
         <p className="lede">
           {APP_NAME} looks at a product you saw online and says skip, wait or buy, using what you already own, your budget, the price history and the store&apos;s return policy. {stepsWord} steps, about five minutes. Your browser gets its own sample shelf.
@@ -31,6 +31,7 @@ export default function JudgePage() {
         </p>
       </div>
 
+      <div className="object-layout">
       <section className="card signature stack-sm" data-testid="headline">
         <Eyebrow as="h2" icon="chart">
           How often skip is right
@@ -43,7 +44,7 @@ export default function JudgePage() {
         </div>
       </section>
 
-      <div className="panel">
+      <div className="panel lead">
       <ol className="steps" data-testid="start-here-steps">
         {steps.map((step, i) => (
           <li key={step.title}>
@@ -88,6 +89,7 @@ export default function JudgePage() {
           <li>Simulated, and labelled where shown: the Rebuys date control, the test price drop, the forced decline and the sample week (a made-up shopper; the products, stores and prices are real).</li>
         </ul>
       </details>
+      </div>
     </main>
   );
 }

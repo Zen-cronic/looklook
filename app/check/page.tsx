@@ -17,18 +17,22 @@ export const metadata = { title: "Check a post" };
 
 export default function CheckPage() {
   return (
-    <main className="page stack-lg">
-      <div>
+    <main className="page">
+      <div className="page-head">
         <h1>Saw it on your feed?</h1>
         <p className="lede">Send {APP_NAME} the post before you buy. It checks what you already own, your budget, the price history and whether the store takes it back once opened.</p>
       </div>
-      <Suspense fallback={null}>
-        <LatestCheck />
-      </Suspense>
-      <Intake samples={SAMPLES} />
-      <Suspense fallback={null}>
-        <RecentChecks />
-      </Suspense>
+      <div className="object-layout">
+        <Suspense fallback={null}>
+          <LatestCheck />
+        </Suspense>
+        <div className="lead">
+          <Intake samples={SAMPLES} />
+        </div>
+        <Suspense fallback={null}>
+          <RecentChecks />
+        </Suspense>
+      </div>
     </main>
   );
 }
@@ -72,7 +76,7 @@ async function LatestCheck() {
   const link = shelfLink(c, state.shelf);
   const price = c.facts.priceShown;
   return (
-    <>
+    <div className="stack">
       {state.sample?.kind === "week" && <SampleWeekNote />}
       <MaterialStage tag="Last check" icon="check" label="Your last check">
         <Frames>
@@ -86,6 +90,6 @@ async function LatestCheck() {
         </Frames>
         {link && <ShelfLink label={link.label} brand={link.brand} name={link.name} note={link.note} href={`/shelf#${link.id}`} />}
       </MaterialStage>
-    </>
+    </div>
   );
 }
