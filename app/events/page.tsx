@@ -31,13 +31,29 @@ export default function EventsPage() {
 function VerificationChip({ e }: { e: EventLogEntry }) {
   switch (e.verification) {
     case "verified":
-      return <span className="chip buy">{e.source === "paypal" ? "Verified with PayPal" : "Signature valid"}</span>;
+      return (
+        <Eyebrow as="span" icon="check">
+          {e.source === "paypal" ? "Verified with PayPal" : "Signature valid"}
+        </Eyebrow>
+      );
     case "simulated":
-      return <span className="chip sim">Test event from this app</span>;
+      return (
+        <Eyebrow as="span" icon="tag">
+          Test event from this app
+        </Eyebrow>
+      );
     case "not-configured":
-      return <span className="chip">Not set up</span>;
+      return (
+        <Eyebrow as="span" icon="clock">
+          Not set up
+        </Eyebrow>
+      );
     default:
-      return <span className="chip alert">Rejected{e.failureReason ? `: ${e.failureReason.replace(/-/g, " ")}` : ""}</span>;
+      return (
+        <Eyebrow as="span" icon="alert" className="eyebrow-alert">
+          Rejected{e.failureReason ? `: ${e.failureReason.replace(/-/g, " ")}` : ""}
+        </Eyebrow>
+      );
   }
 }
 
@@ -76,7 +92,14 @@ async function Events() {
                 {e.eventId && <div className="mono small muted">{e.eventId}</div>}
               </td>
               <td data-label="Verified">
-                <VerificationChip e={e} /> {e.duplicate && <span className="chip wait">Repeat, handled once</span>}
+                <span className="eyebrow-stack">
+                  <VerificationChip e={e} />
+                  {e.duplicate && (
+                    <Eyebrow as="span" icon="repeat">
+                      Repeat, handled once
+                    </Eyebrow>
+                  )}
+                </span>
               </td>
               <td data-label="What it did" className="small">{e.duplicate ? "Nothing: already handled." : e.state === "failed" ? "Not applied yet: waiting for the sender to retry." : e.state === "processing" && !e.effect ? "Being applied." : (e.effect ?? "")}</td>
             </tr>

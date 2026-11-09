@@ -1,12 +1,15 @@
 "use client";
 
 import { useState } from "react";
+import { Eyebrow } from "./Eyebrow";
 
 /** Says the data on screen is the sample week: a made-up shopper, real catalogue products. */
 export function SampleWeekNote() {
   return (
     <p className="sample-note" data-testid="sample-week-note">
-      <span className="chip sim">Sample week</span>{" "}
+      <Eyebrow as="span" icon="tag">
+        Sample week
+      </Eyebrow>{" "}
       <span className="small">Made-up shopper; real products, stores and prices.</span>
     </p>
   );

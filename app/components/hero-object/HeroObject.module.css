@@ -32,7 +32,7 @@
   padding-bottom: clamp(1.5rem, 0.8rem + 2.6vw, 2.75rem);
 }
 
-/* One hairline frame around the verdict card; inside the panel the card has no offset shadow */
+/* One hairline frame around the verdict card */
 .frame {
   padding: 0.6rem;
   border: 1px solid var(--hairline);
@@ -42,7 +42,6 @@
 
 .card {
   animation: none;
-  box-shadow: none;
 }
 
 .card :global(.verdict-word) {
@@ -116,7 +115,7 @@
 
 .shelfCard {
   background: var(--card);
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--hairline);
   border-radius: calc(var(--radius-sm) + 4px);
   padding: 0.85rem 1rem 0.95rem;
 }

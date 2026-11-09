@@ -21,6 +21,12 @@ const ICONS = {
   clock: <path d="M8 1.9a6.1 6.1 0 110 12.2A6.1 6.1 0 018 1.9zM8 4.6V8l2.3 1.5" />,
   // A flag on a pole: a step to take
   step: <path d="M4 14.25V1.75M4 2.5h8l-1.75 2.75L12 8H4" />,
+  // A price tag: a sample or a test
+  tag: <path d="M2 2.75v4.6l6.6 6.6a1 1 0 001.4 0l3.95-3.95a1 1 0 000-1.4L7.35 2H2.75A.75.75 0 002 2.75zM5 5.25h.01" />,
+  // A circle with a mark: something to look at
+  alert: <path d="M8 1.9a6.1 6.1 0 110 12.2A6.1 6.1 0 018 1.9zM8 4.75v3.9M8 11.1v.05" />,
+  // Two turning arrows: a repeat
+  repeat: <path d="M3 6.25a5 5 0 018.9-2.1M13 9.75a5 5 0 01-8.9 2.1M12 1.75v2.6H9.4M4 14.25v-2.6h2.6" />,
   // A card
   card: <path d="M2.75 3.75h10.5A1.25 1.25 0 0114.5 5v6a1.25 1.25 0 01-1.25 1.25H2.75A1.25 1.25 0 011.5 11V5a1.25 1.25 0 011.25-1.25zM1.5 6.5h13M4 10h3" />,
 } as const;

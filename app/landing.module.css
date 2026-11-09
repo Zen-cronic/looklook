@@ -1,8 +1,8 @@
 /* Landing page. Tokens only (app/globals.css :root). */
 .landing {
   --gutter: 1.25rem;
-  --wide: 72rem;
-  --hairline: color-mix(in srgb, var(--ink) 22%, transparent);
+  /* The app's one container: 72rem less its gutters, so the H1 sits under the wordmark */
+  --wide: 69.5rem;
   padding: 1rem var(--gutter) 4.5rem;
 }
 
@@ -362,7 +362,7 @@
 
 .post {
   border-radius: var(--radius);
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--hairline);
   overflow: hidden;
   background: var(--card);
   height: 15.5rem;
@@ -376,7 +376,7 @@
 }
 
 .evidenceCard {
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--hairline);
 }
 
 .evidenceCard :global(.evidence) {
@@ -388,7 +388,7 @@
 }
 
 .buyCard {
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--hairline);
 }
 
 .buyCard .fakeBtn {
@@ -490,11 +490,6 @@
   border: 1px solid var(--hairline);
   border-radius: calc(var(--radius) + 0.6rem);
   background: none;
-}
-
-/* Inside the panel the hairlines lead: no offset shadow on the card */
-.yesFrame :global(.approval) {
-  box-shadow: none;
 }
 
 .approvalActions {

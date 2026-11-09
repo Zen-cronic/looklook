@@ -37,11 +37,6 @@
   margin: 0 0 0.85rem 0.35rem;
 }
 
-/* Inside the panel the hairlines lead: one frame, and the card keeps its edge but drops the offset shadow */
-.inner :global(.verdict) {
-  box-shadow: none;
-}
-
 .frame {
   padding: 0.6rem;
   border: 1px solid var(--hairline);
@@ -96,7 +91,7 @@
   flex-direction: column;
   gap: 0.1rem;
   background: var(--card);
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--hairline);
   border-radius: calc(var(--radius-sm) + 4px);
   padding: 0.85rem 1rem 0.95rem;
   text-decoration: none;
