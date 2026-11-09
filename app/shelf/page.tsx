@@ -8,6 +8,8 @@ import { countedDate, restockedLabel } from "@/lib/app/when";
 import { budgetGroupOf } from "@/lib/shelf/categories";
 import type { ShelfItem } from "@/lib/shelf/types";
 import { AddShelfItem, BudgetEditor, ShelfRow, type DueLabel } from "../components/ShelfControls";
+import { Eyebrow } from "../components/Eyebrow";
+import { glyphFor } from "../components/ProductGlyph";
 import { SimDate } from "../components/SimDate";
 
 export const metadata = { title: "Shelf" };
@@ -32,7 +34,7 @@ function dueFor(item: ShelfItem, today: string, dayOffset: number): DueLabel {
   const title = `Runs out ${countedDate(item.runOutDate, dayOffset)}`;
   if (left < 0) return { kind: "out", label: `Ran out ${-left} ${left === -1 ? "day" : "days"} ago`, title };
   if (left === 0) return { kind: "out", label: "Runs out today", title };
-  if (left <= 7) return { kind: "soon", big: String(left), label: left === 1 ? "day left" : "days left", title };
+  if (left <= 7) return { kind: "soon", label: `${left} ${left === 1 ? "day" : "days"} left`, title };
   return { kind: "later", label: `${left} days left`, title };
 }
 
@@ -50,7 +52,9 @@ async function Shelf() {
         <AddShelfItem />
         {groups.map(({ group, items }) => (
           <div key={group}>
-            <h2 className="group-label">{BUDGET_LABELS[group]}</h2>
+            <Eyebrow as="h2" icon="shelf" className="group-label">
+              {BUDGET_LABELS[group]}
+            </Eyebrow>
             <ul className="list">
               {items.map((item) => (
                 <li key={item.id} id={item.id} className="shelf-item">
@@ -58,6 +62,7 @@ async function Shelf() {
                     id={item.id}
                     brand={item.brand}
                     kind={CATEGORY_LABELS[item.category].toLowerCase()}
+                    glyph={glyphFor(group)}
                     name={item.name}
                     sub={[item.opened ? "" : "Unopened", item.price ? `${formatDollars(item.price)} last time` : "", item.lastRestockedOn ? `restocked ${restockedLabel(state, item)}` : ""].filter(Boolean).join(", ").replace(/^./, (c) => c.toUpperCase())}
                     opened={item.opened}
@@ -78,7 +83,8 @@ async function Shelf() {
         {BUDGET_GROUPS.map((g) => {
           const limit = state.budgets.limits[g];
           const spent = spentIn(state.budgets, today, g);
-          const pct = limit ? Math.min(100, Math.round((spent / limit) * 100)) : 0;
+          // Filled = what's left, the same as the budget figure on Decisions.
+          const pct = limit ? Math.max(0, Math.min(100, Math.round(((remaining[g] ?? 0) / limit) * 100))) : 0;
           return (
             <div key={g} className="budget">
               <div>

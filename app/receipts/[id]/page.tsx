@@ -7,6 +7,8 @@ import { chargeKind, receiptStatusLabel, repeatsLine, SELLER_OF_RECORD } from "@
 import { currentSession } from "@/lib/app/session";
 import { budgetGroupOf } from "@/lib/shelf/categories";
 import { ReceiptActions } from "../../components/ReceiptActions";
+import { Eyebrow } from "../../components/Eyebrow";
+import { Lotion } from "../../components/stage/MaterialStage";
 
 export const metadata = { title: "Receipt" };
 
@@ -31,6 +33,10 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
   const left = group ? remainingBudgets(state.budgets, today)[group] : undefined;
   return (
     <div className="stack">
+      <section className="panel" aria-label="Receipt">
+      <Lotion className="panel-material" eager />
+      <Eyebrow icon="receipt">Receipt</Eyebrow>
+      <div className="panel-frame">
       <article className="receipt">
         <div className="receipt-head">
           <div className="small receipt-status">
@@ -109,6 +115,8 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <p className="muted small">{r.webhook ? `PayPal confirmed it at ${formatTime(r.webhook.at)} ET.` : "Waiting for PayPal's confirmation."}</p>
         </div>
       </article>
+      </div>
+      </section>
       <ReceiptActions receiptId={r.id} source={r.source} amountCents={r.amountCents} canRepeat={r.kind === "saved-method" && (r.status === "completed" || r.status === "pending")} canRefund={!!r.captureId && (r.status === "completed" || r.status === "partly-refunded") && r.refund?.status !== "PENDING"} />
     </div>
   );

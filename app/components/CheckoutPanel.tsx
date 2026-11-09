@@ -45,12 +45,13 @@ function loadSdk(clientId: string): Promise<PayPalNamespace> {
   });
 }
 
-// Card inputs match the app's own fields: a 2px ink edge and a 12px radius. The fields are PayPal's
-// iframes, which can't load the app's fonts, so they use a system face.
+// Card inputs match the app's own fields: an ink edge and a 12px radius, muted placeholders. The
+// fields are PayPal's iframes, which can't load the app's fonts, so they use a close system face.
 const FIELD_STYLE = {
-  input: { "font-size": "16px", "font-family": "Helvetica, Arial, sans-serif", padding: "13px 14px", color: "#0a0a0a", border: "2px solid #0a0a0a", "border-radius": "12px", "box-shadow": "none" },
-  "input:focus": { border: "2px solid #2b3bff", "box-shadow": "0 0 0 3px #e3e6ff" },
-  ".invalid": { color: "#a3001b", border: "2px solid #a3001b" },
+  input: { "font-size": "16px", "font-family": "Helvetica Neue, Helvetica, Arial, sans-serif", "font-weight": "500", padding: "13px 14px", color: "#0a0a0a", border: "1.5px solid #0a0a0a", "border-radius": "12px", "box-shadow": "none" },
+  "input::placeholder": { color: "#5c5c58" },
+  "input:focus": { border: "1.5px solid #2b3bff", "box-shadow": "0 0 0 3px #e3e6ff" },
+  ".invalid": { color: "#0a0a0a", border: "1.5px solid #0a0a0a", "box-shadow": "0 0 0 3px #ff8bc7" },
 };
 
 interface Props {
@@ -127,7 +128,7 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
         await paypal
           .Buttons({
             fundingSource: paypal.FUNDING.PAYPAL,
-            style: { layout: "vertical", color: "gold", shape: "rect", label: "paypal", height: 48 },
+            style: { layout: "vertical", color: "black", shape: "pill", label: "paypal", height: 48 },
             createOrder: () => createOrder("paypal"),
             onApprove: (data: { orderID: string }, actions: PayPalActions) => capture(data.orderID, actions),
             onCancel: () => setError("PayPal was closed before approving. Nothing was charged."),
@@ -213,7 +214,7 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
         </p>
       )}
 
-      <div className="stack-sm" style={{ pointerEvents: capValid && status !== "paying" ? "auto" : "none", opacity: capValid ? 1 : 0.5 }}>
+      <div className="pay-box stack-sm" style={{ pointerEvents: capValid && status !== "paying" ? "auto" : "none", opacity: capValid ? 1 : 0.5 }}>
         <div ref={buttonsEl} className="paypal-area" />
         {status === "loading" && <div className="skeleton" style={{ height: "3rem" }} />}
         <div className="or">or pay by card</div>

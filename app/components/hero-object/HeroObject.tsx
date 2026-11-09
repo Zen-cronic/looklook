@@ -1,5 +1,6 @@
 import { preload } from "react-dom";
 import { landingSample } from "@/lib/app/landing";
+import { Eyebrow } from "../Eyebrow";
 import { VerdictSummary } from "../VerdictSummary";
 import s from "./HeroObject.module.css";
 
@@ -10,19 +11,19 @@ import s from "./HeroObject.module.css";
  * and fill the slot the page gives it (`.hero-slot` in landing.module.css).
  *
  * Now: the real skip verdict card, from the sample shelf and the same engine,
- * in nested hairline frames over a cream texture, joined by a dotted line to
+ * in a hairline frame over a white lotion texture, joined by a dotted line to
  * the item already on the shelf.
  */
 const MATERIAL = {
-  avif: "/media/hero-cream-640.avif 640w, /media/hero-cream-1200.avif 1200w",
-  webp: "/media/hero-cream-640.webp 640w, /media/hero-cream-1200.webp 1200w",
-  jpg: "/media/hero-cream-1200.jpg",
+  avif: "/media/lotion-640.avif 640w, /media/lotion-1200.avif 1200w",
+  webp: "/media/lotion-640.webp 640w, /media/lotion-1200.webp 1200w",
+  jpg: "/media/lotion-1200.jpg",
   sizes: "(min-width: 960px) 36rem, 100vw",
 };
 
 export function HeroObject() {
   const x = landingSample();
-  preload("/media/hero-cream-1200.avif", { as: "image", type: "image/avif", imageSrcSet: MATERIAL.avif, imageSizes: MATERIAL.sizes, fetchPriority: "high" });
+  preload("/media/lotion-1200.avif", { as: "image", type: "image/avif", imageSrcSet: MATERIAL.avif, imageSizes: MATERIAL.sizes, fetchPriority: "high" });
   return (
     <div className={s.object}>
       <picture className={s.material}>
@@ -32,12 +33,10 @@ export function HeroObject() {
       </picture>
       <div className={s.stage}>
         <div className={s.verdictFloat}>
-          <div className={s.frameOuter}>
-            <div className={s.frameInner}>
-              <article className={`verdict ${x.verdict} ${s.card}`} aria-label="An example verdict">
-                <VerdictSummary verdict={x.verdict} reason={x.reason} brand={x.brand} name={x.name} imageUrl={x.imageUrl} storeName={x.storeName} priceLabel={x.priceLabel} />
-              </article>
-            </div>
+          <div className={s.frame}>
+            <article className={`verdict ${x.verdict} ${s.card}`} aria-label="An example verdict">
+              <VerdictSummary verdict={x.verdict} reason={x.reason} brand={x.brand} name={x.name} imageUrl={x.imageUrl} storeName={x.storeName} priceLabel={x.priceLabel} />
+            </article>
           </div>
         </div>
         <div className={s.shelfRow}>
@@ -49,10 +48,9 @@ export function HeroObject() {
           <div className={s.shelfFloat}>
             <div className={s.shelfFrame}>
               <div className={s.shelfCard}>
-                <p className={s.shelfTag}>
-                  <span className={s.dot} aria-hidden="true" />
+                <Eyebrow icon="shelf" className={s.shelfTag}>
                   Already on your shelf
-                </p>
+                </Eyebrow>
                 <div className="brand-line">{x.shelf.brand}</div>
                 <div className="name-line">{x.shelf.name}</div>
                 <p className="small muted">

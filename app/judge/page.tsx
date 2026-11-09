@@ -6,7 +6,12 @@ import { REBUY_LEAD_DAYS } from "@/lib/app/payments";
 import { numberWord, startHereSteps } from "@/lib/app/start-here";
 import { currentSession } from "@/lib/app/session";
 import { APP_NAME } from "@/lib/brand";
+import { Eyebrow, type EyebrowIcon } from "../components/Eyebrow";
 import { SampleWeekControls } from "../components/SampleWeek";
+import { Lotion } from "../components/stage/MaterialStage";
+
+/** One small drawn icon per step, in order: a post, a price chart, a card, a yes, the workspace, the checks. */
+const STEP_ICONS: EyebrowIcon[] = ["post", "chart", "card", "yes", "check", "receipt"];
 
 export const metadata = { title: "Start here" };
 
@@ -27,7 +32,9 @@ export default function JudgePage() {
       </div>
 
       <section className="card signature stack-sm" data-testid="headline">
-        <h2>How often skip is right</h2>
+        <Eyebrow as="h2" icon="chart">
+          How often skip is right
+        </Eyebrow>
         <p className="headline-text">{heldOutHeadline(heldOut)}</p>
         <div className="actions">
           <Link className="btn small outline" href="/proof">
@@ -36,10 +43,12 @@ export default function JudgePage() {
         </div>
       </section>
 
+      <div className="panel">
       <ol className="steps" data-testid="start-here-steps">
         {steps.map((step, i) => (
           <li key={step.title}>
             <div className="stack-sm">
+              <Eyebrow icon={STEP_ICONS[i % STEP_ICONS.length]}>Step {i + 1}</Eyebrow>
               <div className="step-head">
                 <h2>{step.title}</h2>
                 {step.links.length > 0 && (
@@ -68,6 +77,8 @@ export default function JudgePage() {
           </li>
         ))}
       </ol>
+      <Lotion className="panel-material" sizes="(min-width: 720px) 42rem, 100vw" />
+      </div>
 
       <details className="card disclosure">
         <summary>What&apos;s real and what&apos;s a test</summary>

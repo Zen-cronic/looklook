@@ -10,6 +10,8 @@ import type { Notice, PurchaseSource, SavedMethod, SessionState } from "@/lib/ap
 import { negativeTestingEnabled } from "@/lib/paypal/config";
 import { SIMULATED } from "@/lib/app/when";
 import { Chevron } from "../components/Chevron";
+import { Eyebrow } from "../components/Eyebrow";
+import { Lotion, ShelfLink } from "../components/stage/MaterialStage";
 import { ApprovalButtons, DateControls, DeclineToggle, ReminderDone, WatchControls } from "../components/RebuyControls";
 
 export const metadata = { title: "Rebuys" };
@@ -96,7 +98,8 @@ async function Rebuys() {
           <DateControls dayOffset={state.dayOffset} />
         </div>
 
-        <section className="cobalt-field stack" aria-labelledby="needs-yes">
+        <section className="panel stack" aria-labelledby="needs-yes">
+          <Lotion className="panel-material" sizes="(min-width: 960px) 36rem, 100vw" />
           <h2 id="needs-yes" className="field-title">
             Needs your yes
           </h2>
@@ -108,7 +111,8 @@ async function Rebuys() {
             </div>
           )}
           {reminders.map((c) => (
-            <article key={c.id} className="approval reminder">
+            <div key={c.id} className="panel-frame">
+            <article className="approval reminder">
               <div className="approval-head">
                 <div>
                   <p className="approval-tag">Reminder</p>
@@ -126,12 +130,16 @@ async function Rebuys() {
                 <ReminderDone checkId={c.id} />
               </div>
             </article>
+            </div>
           ))}
           {due.map((d) => {
             const source: PurchaseSource = { kind: "staple", shelfItemId: d.item.id, cycle: d.cycle };
             const declined = declineFor(state, source);
+            const left = d.daysLeft < 0 ? `ran out ${-d.daysLeft} ${d.daysLeft === -1 ? "day" : "days"} ago` : d.daysLeft === 0 ? "runs out today" : `${d.daysLeft} ${d.daysLeft === 1 ? "day" : "days"} left`;
             return (
-              <article key={d.item.id} className={`approval${declined ? " declined" : ""}`}>
+              <div key={d.item.id}>
+              <div className="panel-frame">
+              <article className={`approval${declined ? " declined" : ""}`}>
                 <div className="approval-head">
                   <div>
                     <div className="brand-line">{d.item.brand}</div>
@@ -144,6 +152,9 @@ async function Rebuys() {
                 </div>
                 <ApprovalButtons source={source} amountCents={d.amountCents} version={d.cycle} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="rebuy" />
               </article>
+              </div>
+              <ShelfLink tag="On your shelf" label={left} brand={d.item.brand} name={d.item.name} note={d.item.opened ? "Opened, the one running out." : "The one running out."} href={`/shelf#${d.item.id}`} />
+              </div>
             );
           })}
           {drops.map((w) => {
@@ -152,7 +163,8 @@ async function Rebuys() {
             const declined = declineFor(state, source);
             const hold = watchBudgetHold(state, w, today);
             return (
-              <article key={w.id} className={`approval price-drop${declined ? " declined" : ""}${hold ? " held" : ""}`}>
+              <div key={w.id} className="panel-frame">
+              <article className={`approval price-drop${declined ? " declined" : ""}${hold ? " held" : ""}`}>
                 <div className="approval-head">
                   <div>
                     <p className="approval-tag">Price drop</p>
@@ -172,13 +184,17 @@ async function Rebuys() {
                   <ApprovalButtons source={source} amountCents={cents} version={w.droppedAt ?? ""} amountLabel={formatCents(cents)} method={methodFor(method, cents)} declined={declined} verb="buy" />
                 )}
               </article>
+              </div>
             );
           })}
         </section>
 
         <h2 style={{ marginTop: "2rem" }}>Watching for a drop</h2>
         {open.length === 0 ? (
-          <p className="muted">Nothing watched yet. Tap Watch for a drop on a wait verdict.</p>
+          <div className="empty-frame">
+            <Eyebrow icon="chart">Nothing watched yet</Eyebrow>
+            <p className="small muted">Tap Watch for a drop on a wait verdict, and the price shows up here.</p>
+          </div>
         ) : (
           <ul className="list">
             {open.map((w) => (

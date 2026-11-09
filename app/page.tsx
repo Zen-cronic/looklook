@@ -3,7 +3,9 @@ import { baselineScore, heldOutHeadline, heldOutResult } from "@/lib/app/holdout
 import { landingSample } from "@/lib/app/landing";
 import { SELLER_OF_RECORD } from "@/lib/app/payments";
 import { APP_NAME } from "@/lib/brand";
+import { Eyebrow } from "./components/Eyebrow";
 import { HeroObject } from "./components/hero-object/HeroObject";
+import { Lotion } from "./components/stage/MaterialStage";
 import { CountUp, LandingMotion } from "./components/landing/LandingMotion";
 import s from "./landing.module.css";
 
@@ -32,10 +34,7 @@ export default function LandingPage() {
       {/* Hero */}
       <section className={s.hero}>
         <div className={s.heroCopy}>
-          <p className={s.eyebrow}>
-            <span className={s.eyebrowDot} aria-hidden="true" />
-            For skincare and makeup you saw on your feed
-          </p>
+          <Eyebrow icon="post">For skincare and makeup you saw on your feed</Eyebrow>
           <h1 className={s.title}>Already own one? Don&apos;t buy it twice.</h1>
           <p className={s.lede}>
             Send {APP_NAME} the post before you pay. It checks what&apos;s already on your shelf, your budget, the price history and the store&apos;s return policy, then tells you to skip it, wait or buy.
@@ -57,9 +56,9 @@ export default function LandingPage() {
       {/* Proof */}
       <section className={s.proof} aria-labelledby="proof-title" data-reveal>
         <div className={s.proofHead}>
-          <h2 id="proof-title" className={s.proofEyebrow}>
+          <Eyebrow as="h2" icon="chart" id="proof-title" className={s.proofEyebrow}>
             How often skip is right
-          </h2>
+          </Eyebrow>
           <p className={s.proofFigure} aria-hidden="true">
             <CountUp value={held.skipCorrect} />
             <span className={s.proofOf}>/{held.n}</span>
@@ -81,6 +80,10 @@ export default function LandingPage() {
               </span>
             </li>
           ))}
+          <li className={s.scale} aria-hidden="true">
+            <span>0</span>
+            <span>{held.n} products</span>
+          </li>
         </ul>
       </section>
 
@@ -89,55 +92,61 @@ export default function LandingPage() {
         <h2 id="how-title" className={s.sectionTitle}>
           How it works
         </h2>
-        <ol className={s.steps}>
-          <li className={s.step} data-reveal>
-            <div className={s.stepCard} aria-hidden="true">
-              <div className={s.post}>
-                {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src="/samples/spf-cvs.png" alt="" width={600} height={900} loading="lazy" />
+        <div className={s.chainPanel}>
+          <Lotion className={s.chainMaterial} sizes="(min-width: 960px) 72rem, 100vw" />
+          <ol className={s.steps}>
+            <li className={s.step} data-reveal>
+              <Eyebrow icon="post">The post</Eyebrow>
+              <div className={s.stepCard} aria-hidden="true">
+                <div className={s.post}>
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img src="/samples/spf-cvs.png" alt="" width={600} height={900} loading="lazy" />
+                </div>
               </div>
-            </div>
-            <h3>1. Send the post</h3>
-            <p>Upload a screenshot of the post or paste the store link.</p>
-          </li>
-          <li className={s.step} data-reveal>
-            <div className={s.stepCard} aria-hidden="true">
-              <div className={`card ${s.evidenceCard}`}>
-                <dl className="evidence">
-                  <dt>On your shelf</dt>
-                  <dd>
-                    {x.shelf.brand} {x.shelf.name}: {x.shelf.relation} (match {x.shelf.matchPercent}%).
-                  </dd>
-                  {x.returns && (
-                    <>
-                      <dt>Returns</dt>
-                      <dd>{x.returns}</dd>
-                    </>
-                  )}
-                  <dt>Price</dt>
-                  <dd>{x.priceLine}</dd>
-                </dl>
-                <p className={s.miniVerdict}>
-                  <span className="chip skip">Skip</span>
-                </p>
+              <h3>Send the post</h3>
+              <p>Upload a screenshot of the post or paste the store link.</p>
+            </li>
+            <li className={s.step} data-reveal>
+              <Eyebrow icon="check">The verdict</Eyebrow>
+              <div className={s.stepCard} aria-hidden="true">
+                <div className={`card ${s.evidenceCard}`}>
+                  <p className={s.miniVerdict}>
+                    <span className="chip skip">Skip</span>
+                  </p>
+                  <dl className="evidence">
+                    <dt>On your shelf</dt>
+                    <dd>
+                      {x.shelf.brand} {x.shelf.name}: {x.shelf.relation} (match {x.shelf.matchPercent}%).
+                    </dd>
+                    {x.returns && (
+                      <>
+                        <dt>Returns</dt>
+                        <dd>{x.returns}</dd>
+                      </>
+                    )}
+                    <dt>Price</dt>
+                    <dd>{x.priceLine}</dd>
+                  </dl>
+                </div>
               </div>
-            </div>
-            <h3>2. It checks, then answers</h3>
-            <p>Your shelf, your budget, the price history and the store&apos;s return policy decide skip, wait or buy, with the reason in one line.</p>
-          </li>
-          <li className={s.step} data-reveal>
-            <div className={s.stepCard} aria-hidden="true">
-              <div className={`card ${s.buyCard}`}>
-                <div className="brand-line">{x.buy.brand}</div>
-                <div className="name-line">{x.buy.name}</div>
-                <span className={`btn block ${s.fakeBtn}`}>Buy for {x.buy.priceLabel} with PayPal</span>
-                <p className="small muted">Sold by {SELLER_OF_RECORD}.</p>
+              <h3>It checks, then answers</h3>
+              <p>Your shelf, your budget, the price history and the store&apos;s return policy decide skip, wait or buy, with the reason in one line.</p>
+            </li>
+            <li className={s.step} data-reveal>
+              <Eyebrow icon="yes">Your yes</Eyebrow>
+              <div className={s.stepCard} aria-hidden="true">
+                <div className={`card ${s.buyCard}`}>
+                  <div className="brand-line">{x.buy.brand}</div>
+                  <div className="name-line">{x.buy.name}</div>
+                  <span className={`btn block ${s.fakeBtn}`}>Buy for {x.buy.priceLabel} with PayPal</span>
+                  <p className="small muted">Sold by {SELLER_OF_RECORD}.</p>
+                </div>
               </div>
-            </div>
-            <h3>3. You decide</h3>
-            <p>Skip it, wait for a better price or next month&apos;s budget, or buy it with PayPal.</p>
-          </li>
-        </ol>
+              <h3>You decide</h3>
+              <p>Skip it, wait for a better price or next month&apos;s budget, or buy it with PayPal.</p>
+            </li>
+          </ol>
+        </div>
         <div className={s.studio} data-reveal>
           <p>
             <strong>On a laptop:</strong> Decisions puts your verdicts, rebuys, shelf and budgets in one AG Studio workspace, and pays a due rebuy from inside it.
@@ -169,11 +178,7 @@ export default function LandingPage() {
           </ul>
         </div>
         <div className={s.yesPanel} data-reveal>
-          <picture className={s.yesMaterial}>
-            <source type="image/avif" srcSet="/media/yes-gel-640.avif 640w, /media/yes-gel-1200.avif 1200w" sizes="(min-width: 960px) 32rem, 100vw" />
-            <source type="image/webp" srcSet="/media/yes-gel-640.webp 640w, /media/yes-gel-1200.webp 1200w" sizes="(min-width: 960px) 32rem, 100vw" />
-            <img src="/media/yes-gel-1200.jpg" alt="" width={1200} height={1490} loading="lazy" decoding="async" />
-          </picture>
+          <Lotion className={s.yesMaterial} sizes="(min-width: 960px) 32rem, 100vw" />
           <div className={s.yesFrame} aria-hidden="true">
             <article className={`approval ${s.approval}`}>
               <div className="approval-head">

@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { ProductGlyph } from "../../components/ProductGlyph";
 import { notFound, redirect } from "next/navigation";
 import { Suspense } from "react";
 import { formatCents } from "@/lib/app/money";
@@ -38,7 +39,9 @@ async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["param
           // eslint-disable-next-line @next/next/no-img-element
           <img className="thumb" src={intent.imageUrl} alt="" />
         ) : (
-          <span className="thumb empty" />
+          <span className="thumb empty">
+            <ProductGlyph shape="bottle" letter={intent.brand} />
+          </span>
         )}
         <div className="meta">
           <div className="brand-line">{intent.brand}</div>

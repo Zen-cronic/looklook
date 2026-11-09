@@ -1,3 +1,34 @@
+.due {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  white-space: nowrap;
+  font-size: var(--step--1);
+  color: var(--muted);
+  font-weight: 600;
+}
+
+/* Due soon or out: one style, a pink-dot pill with the words at the row's size */
+.due.soon,
+.due.out {
+  padding: 0.3rem 0.7rem 0.3rem 0.55rem;
+  border-radius: var(--radius-pill);
+  box-shadow: inset 0 0 0 1px var(--ink);
+  background: var(--card);
+  color: var(--ink);
+  font-weight: 800;
+}
+
+.due.soon::before,
+.due.out::before {
+  content: "";
+  width: 0.55rem;
+  height: 0.55rem;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 1.5px var(--ink);
+}
+
 /* Tokens */
 :root {
   /* Neutral base */
@@ -34,11 +65,11 @@
   /* Edges: action cards get the ink edge and hard shadow; records get a hairline */
   --rule: 0.5px solid var(--ink);
 
-  /* Errors, declines and refused events */
-  --alert: #e0102d;
+  /* Errors, declines and refused events: ink, with the pink highlighter for the mark. No red. */
+  --alert: #0a0a0a;
   --alert-ink: #ffffff;
-  --alert-tint: #ffe1e5;
-  --alert-deep: #a3001b;
+  --alert-tint: #ffe0f0;
+  --alert-deep: #0a0a0a;
 
   /* Shape */
   --radius: 20px;
@@ -194,10 +225,6 @@ img {
   color: var(--ink);
 }
 
-.mainnav .nav-short {
-  display: none;
-}
-
 .mainnav a[aria-current="page"] {
   background: var(--ink);
   color: var(--card);
@@ -258,14 +285,6 @@ img {
     justify-content: space-between;
   }
 
-  .mainnav .nav-long {
-    display: none;
-  }
-
-  .mainnav .nav-short {
-    display: inline;
-  }
-
   .mainnav a {
     flex: 1;
     text-align: center;
@@ -295,10 +314,12 @@ h1 {
   text-wrap: balance;
 }
 
+/* Secondary headings: the display face at a smaller size */
 h2 {
+  font-family: var(--font-display);
   font-size: var(--step-1);
   line-height: 1.2;
-  letter-spacing: -0.015em;
+  letter-spacing: -0.04em;
   font-weight: 800;
 }
 
@@ -434,14 +455,14 @@ h3 {
 
 .btn.danger {
   background: transparent;
-  color: var(--alert-deep);
+  color: var(--ink);
   border-color: var(--ink);
 }
 
 .btn.danger:hover {
-  background: var(--alert);
-  border-color: var(--alert);
-  color: var(--alert-ink);
+  background: var(--ink);
+  border-color: var(--ink);
+  color: var(--card);
 }
 
 /* A drawn chevron for "go" affordances, in the same stroke as the disclosure chevron */
@@ -547,12 +568,29 @@ select:focus-visible {
   flex: none;
 }
 
-.error {
-  background: var(--alert-tint);
-  color: var(--alert-deep);
+.error,
+.decline-box {
+  position: relative;
+  background: var(--card);
+  color: var(--ink);
+  border: var(--rule);
   border-radius: var(--radius-sm);
-  padding: 0.75rem 1rem;
+  padding: 0.75rem 1rem 0.75rem 2.6rem;
   font-weight: 700;
+}
+
+/* The pink "!" marks the problem; the words carry it */
+.error::before,
+.decline-box::before {
+  content: "";
+  position: absolute;
+  left: 0.95rem;
+  top: 0.85rem;
+  width: 1.05rem;
+  height: 1.05rem;
+  border-radius: 50%;
+  background: var(--accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M6 2.8v3.8' stroke='%230a0a0a' stroke-width='1.8' stroke-linecap='round'/%3E%3Ccircle cx='6' cy='8.9' r='1' fill='%230a0a0a'/%3E%3C/svg%3E") center / 0.7rem no-repeat;
+  box-shadow: inset 0 0 0 1.5px var(--ink);
 }
 
 /* Status chips: solid stickers */
@@ -696,7 +734,8 @@ select:focus-visible {
   padding: 1.4rem 1.3rem 1.5rem;
 }
 
-.cobalt-field .field-title {
+.cobalt-field .field-title,
+.panel .field-title {
   font-family: var(--font-display);
   font-size: var(--step-2);
   font-weight: 800;
@@ -736,18 +775,10 @@ select:focus-visible {
 }
 
 .cobalt-field .bar {
-  background: color-mix(in srgb, var(--signature-ink) 22%, transparent);
+  --meter-track: color-mix(in srgb, var(--signature-ink) 55%, transparent);
+  --meter-fill: var(--signature-ink);
 }
 
-.cobalt-field .bar > span {
-  background: var(--signature-ink);
-}
-
-.cobalt-field .bar.over > span {
-  background: var(--accent);
-}
-
-.cobalt-field .card,
 .cobalt-field .approval {
   color: var(--ink);
 }
@@ -943,7 +974,10 @@ select:focus-visible {
 }
 
 .thumb.empty {
-  background: var(--shade);
+  display: grid;
+  place-items: center;
+  padding: 0.35rem;
+  background: var(--paper);
 }
 
 .product-row .meta {
@@ -1149,7 +1183,6 @@ select:focus-visible {
 
   .returns,
   .why,
-  .offers,
   .price-wait {
     margin-left: 1.1rem;
     margin-right: 1.1rem;
@@ -1238,15 +1271,30 @@ select:focus-visible {
 .swatch {
   width: 2.5rem;
   height: 2.5rem;
-  border-radius: 50%;
+  border-radius: var(--radius-sm);
   display: grid;
   place-items: center;
   background: var(--paper);
-  border: var(--rule);
+}
+
+/* A small line drawing for a product with no photo */
+.glyph {
+  width: 100%;
+  height: 100%;
+  fill: none;
+  stroke: var(--ink);
+  stroke-width: 1.4;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+.glyph text {
+  fill: var(--signature);
+  stroke: none;
   font-family: var(--font-display);
   font-weight: 800;
-  font-size: 1rem;
-  letter-spacing: -0.03em;
+  font-size: 10px;
+  letter-spacing: -0.04em;
 }
 
 .shelf-text {
@@ -1361,11 +1409,7 @@ select:focus-visible {
 .days.out { background: var(--ink); color: var(--card); }
 
 .group-label {
-  font-size: var(--step--1);
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
-  color: var(--ink);
-  font-weight: 800;
+  display: flex;
   margin: 1.75rem 0 0.6rem;
 }
 
@@ -1376,25 +1420,35 @@ select:focus-visible {
   align-items: center;
 }
 
-.bar {
+.bar,
+.meter {
   grid-column: 1 / -1;
-  height: 0.75rem;
-  border-radius: var(--radius-pill);
-  background: var(--shade);
-  overflow: hidden;
+  display: block;
+  position: relative;
+  height: 0.4rem;
+  /* A hairline track with a solid fill sitting on it: a meter, not a pill */
+  background: linear-gradient(var(--meter-track, color-mix(in srgb, var(--ink) 30%, transparent)), var(--meter-track, color-mix(in srgb, var(--ink) 30%, transparent))) left center / 100% 1px no-repeat;
 }
 
-.bar > span {
+.bar > span,
+.meter > span {
   display: block;
   height: 100%;
-  border-radius: var(--radius-pill);
-  background: var(--signature);
+  background: var(--meter-fill, var(--ink));
   transform-origin: left center;
   animation: bar-fill var(--dur-3) var(--ease-out) both;
 }
 
-.bar.over > span {
-  background: var(--alert);
+/* The track ends in a short tick, so an empty meter still shows its full length */
+.bar::after,
+.meter::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  width: 1px;
+  background: var(--meter-track, color-mix(in srgb, var(--ink) 30%, transparent));
 }
 
 /* Rebuys */
@@ -1470,12 +1524,7 @@ select:focus-visible {
   margin-top: 0.1rem;
 }
 
-.decline-box {
-  background: var(--alert-tint);
-  color: var(--alert-deep);
-  border-radius: var(--radius-sm);
-  padding: 0.8rem 1rem;
-}
+
 
 .notice {
   background: var(--card);
@@ -1675,42 +1724,28 @@ tr:last-child td {
   margin-top: 0.35rem;
 }
 
-/* Start here */
+/* Start here: the steps as one chain of cards on the lotion panel, joined by a dotted line */
 .steps {
   list-style: none;
-  counter-reset: step;
   display: grid;
-  gap: 0.85rem;
+  gap: 1.75rem;
 }
 
 .steps > li {
-  counter-increment: step;
-  display: grid;
-  grid-template-columns: 2.75rem 1fr;
-  gap: 1rem;
+  position: relative;
   background: var(--card);
   border-radius: var(--radius);
-  padding: 1.2rem 1.25rem;
+  border: 1px solid var(--hairline);
+  padding: 1.1rem 1.25rem 1.2rem;
 }
 
-.steps > li::before {
-  content: counter(step);
-  font-family: var(--font-display);
-  font-weight: 800;
-  font-size: var(--step-1);
-  width: 2.75rem;
-  height: 2.75rem;
-  border-radius: 50%;
-  background: var(--signature);
-  color: var(--signature-ink);
-  display: grid;
-  place-items: center;
-}
-
-.steps > li:first-child::before {
-  background: var(--accent);
-  color: var(--accent-ink);
-  box-shadow: 0 0 0 2px var(--ink);
+.steps > li:not(:last-child)::after {
+  content: "";
+  position: absolute;
+  left: 1.85rem;
+  top: calc(100% + 1px);
+  height: 1.75rem;
+  border-left: 2px dotted var(--ink);
 }
 
 .two-col {
@@ -1729,6 +1764,14 @@ tr:last-child td {
   height: 8rem;
   border-radius: var(--radius);
   background: var(--shade);
+}
+
+/* PayPal and the card form share one bordered card */
+.pay-box {
+  background: var(--card);
+  border: var(--edge);
+  border-radius: var(--radius);
+  padding: 1.25rem 1.25rem 1.35rem;
 }
 
 /* PayPal's button first and full width; card fields keep their height while PayPal loads them */
@@ -1845,14 +1888,15 @@ tr:last-child td {
 .pricehist svg {
   display: block;
   width: 100%;
-  max-width: 22rem;
+  max-width: 26rem;
   height: auto;
+  overflow: visible;
 }
 
 .pricehist .series {
   fill: none;
   stroke: var(--ink);
-  stroke-width: 2.5;
+  stroke-width: 2.25;
   stroke-linejoin: round;
   stroke-linecap: round;
 }
@@ -1861,36 +1905,51 @@ tr:last-child td {
   fill: var(--ink);
 }
 
+.pricehist .low-dot {
+  fill: var(--card);
+  stroke: var(--ink);
+  stroke-width: 1.75;
+}
+
 .pricehist .target {
   stroke: var(--signature);
-  stroke-width: 2;
+  stroke-width: 1.75;
   stroke-dasharray: 5 4;
 }
 
-.pricehist figcaption {
-  display: flex;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 0.3rem;
+.pricehist .axis {
+  stroke: color-mix(in srgb, var(--ink) 30%, transparent);
+  stroke-width: 1;
 }
 
-.pricehist .key {
-  display: inline-block;
-  width: 1rem;
-  height: 0;
-  border-top: 2.5px solid var(--ink);
+.pricehist .label {
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  font-size: 11px;
+  font-weight: 600;
+  fill: var(--ink-2);
 }
 
-.pricehist .target-key {
-  border-top: 2px dashed var(--signature);
-  margin-left: 0.6rem;
+.pricehist .label.strong {
+  font-weight: 800;
+  fill: var(--ink);
+}
+
+.pricehist .target-label {
+  font-weight: 800;
+  fill: var(--signature);
+}
+
+.pricehist .axis-label {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  fill: var(--muted);
 }
 
 /* Same product at other stores */
 .offers {
-  margin: 1rem 1.4rem 0;
   border-top: 1px solid var(--line);
-  padding-top: 0.95rem;
+  padding: 0.95rem 0 1.1rem;
 }
 
 .offers h3 {
@@ -2120,12 +2179,12 @@ tr:last-child td {
 }
 
 .headline-text {
-  font-family: var(--font-display);
-  font-weight: 700;
-  font-size: var(--step-2);
-  letter-spacing: -0.035em;
-  line-height: 1.2;
-  text-wrap: balance;
+  font-family: var(--font-ui);
+  font-weight: 800;
+  font-size: var(--step-1);
+  letter-spacing: -0.01em;
+  line-height: 1.35;
+  max-width: 34rem;
 }
 
 /* Motion: keyframes. Every end state is the element's resting style. */
@@ -2375,4 +2434,121 @@ html[data-still]::view-transition-new(*) {
   .receipt-ids {
     margin: 0 1.1rem;
   }
+}
+
+/* A lotion panel behind a page's main records, with hairline frames: Start here, Rebuys, a receipt */
+:root {
+  --hairline: color-mix(in srgb, var(--ink) 22%, transparent);
+}
+
+.panel {
+  position: relative;
+  border-radius: 32px;
+  overflow: hidden;
+  isolation: isolate;
+  background: var(--shade);
+  padding: clamp(1rem, 0.5rem + 2vw, 2rem);
+}
+
+.panel-material,
+.panel-material img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.panel-material {
+  z-index: -1;
+}
+
+.panel-material img {
+  object-fit: cover;
+  object-position: 50% 40%;
+}
+
+.panel-frame {
+  padding: 0.5rem;
+  border: 1px solid var(--hairline);
+  border-radius: calc(var(--radius) + 0.5rem);
+  background: none;
+}
+
+.panel > .eyebrow {
+  margin: 0 0 0.85rem 0.35rem;
+}
+
+/* Inside a panel the hairlines lead: cards drop the offset shadow */
+.panel :is(.approval, .receipt, .verdict) {
+  box-shadow: none;
+}
+
+/* On a phone a panel runs edge to edge; cards keep a 16px gutter and lose the frame ring */
+@media (max-width: 640px) {
+  .panel {
+    border-radius: 0;
+    margin-inline: -1rem;
+    padding: 1rem;
+  }
+
+  .panel-frame {
+    padding: 0;
+    border: 0;
+    background: none;
+  }
+}
+
+/* Eyebrow: a tiny drawn icon in the signature colour, then a short label. No pill. */
+.eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  font-family: var(--font-ui);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  line-height: 1.2;
+  color: var(--ink);
+}
+
+.eyebrow-icon {
+  width: 1rem;
+  height: 1rem;
+  flex: none;
+  fill: none;
+  stroke: var(--signature);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+/* On the cobalt field the icon and label go white */
+.cobalt-field .eyebrow,
+.card.signature .eyebrow {
+  color: var(--signature-ink);
+}
+
+.cobalt-field .eyebrow-icon,
+.card.signature .eyebrow-icon {
+  stroke: var(--signature-ink);
+}
+
+/* Secondary headings: the display face at a smaller size */
+.sub-head {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  line-height: 1.15;
+}
+
+/* An empty state: a shaped hairline frame with one line */
+.empty-frame {
+  display: grid;
+  gap: 0.35rem;
+  padding: 1.25rem 1.3rem;
+  border: 1px solid color-mix(in srgb, var(--ink) 22%, transparent);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) 55%, transparent);
 }

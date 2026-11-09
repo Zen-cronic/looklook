@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import type { Verdict } from "@/lib/verdict/types";
+import { ProductGlyph } from "./ProductGlyph";
 import { VERDICT_WORD } from "./VerdictChip";
 
 /**
@@ -30,7 +31,9 @@ export function VerdictSummary(props: {
           // eslint-disable-next-line @next/next/no-img-element
           <img className="thumb" src={props.imageUrl} alt="" />
         ) : (
-          <span className="thumb empty" />
+          <span className="thumb empty">
+            <ProductGlyph shape="bottle" letter={props.brand} />
+          </span>
         )}
         <div className="meta">
           <div className="brand-line">{props.brand || "Brand not shown"}</div>

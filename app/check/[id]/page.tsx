@@ -74,7 +74,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
       <Link href="/check" className="btn outline small" style={{ width: "fit-content" }}>
         Check another
       </Link>
-      <MaterialStage tag={sourceTag(check)} label="Your verdict">
+      <MaterialStage tag={sourceTag(check)} icon="post" label="Your verdict">
         <Frames>
           <article className={`verdict ${d.verdict}`}>
             <VerdictSummary
@@ -102,7 +102,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
             )}
             {d.verdict === "wait" && wait?.kind === "budget" && e.budget && <p className="returns maybe">Budget starts again {countedDay(wait.on)}.</p>}
             <details className="why">
-              <summary>See why</summary>
+              <summary>{offers.length > 0 ? "See why, and other stores" : "See why"}</summary>
               <dl className="evidence">
                 <dt>Rule</dt>
                 <dd>
@@ -179,30 +179,30 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 <dt>Checked</dt>
                 <dd>{formatTime(check.createdAt)} ET</dd>
               </dl>
+              {offers.length > 0 && (
+                <section className="offers">
+                  <h3>Same product at other stores</h3>
+                  <ul>
+                    {offers.map((o) => (
+                      <li key={o.domain} className={`offer ${o.returns}`}>
+                        <span>
+                          {o.url ? (
+                            <a href={o.url} target="_blank" rel="noreferrer sponsored">
+                              {o.store}
+                            </a>
+                          ) : (
+                            o.store
+                          )}
+                          <span className="small muted">, {o.returnsText}</span>
+                        </span>
+                        <span className="price-line small-price">{formatDollars(o.price)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="commission">We may earn a commission when you buy through them.</p>
+                </section>
+              )}
             </details>
-            {offers.length > 0 && (
-              <section className="offers">
-                <h3>Same product at other stores</h3>
-                <ul>
-                  {offers.map((o) => (
-                    <li key={o.domain} className={`offer ${o.returns}`}>
-                      <span>
-                        {o.url ? (
-                          <a href={o.url} target="_blank" rel="noreferrer sponsored">
-                            {o.store}
-                          </a>
-                        ) : (
-                          o.store
-                        )}
-                        <span className="small muted">, {o.returnsText}</span>
-                      </span>
-                      <span className="price-line small-price">{formatDollars(o.price)}</span>
-                    </li>
-                  ))}
-                </ul>
-                <p className="commission">We may earn a commission when you buy through them.</p>
-              </section>
-            )}
             <VerdictActions checkId={check.id} verdict={d.verdict} rule={d.rule} price={price} priceLabel={price !== null ? formatDollars(price) : null} savedMethod={method ? { id: method.id, label: method.label, capLabel: formatDollars(method.capCents / 100), withinCap: price !== null && toCentsSafe(price) <= method.capCents } : null} watch={watch ? { target: formatDollars(watch.targetPrice) } : null} wait={wait ? { kind: wait.kind, onLabel: "on" in wait ? formatDay(wait.on).replace(/^\w+, /, "") : undefined, reminderOn } : null} sellerLabel={SELLER_OF_RECORD} targetLabel={target !== null ? formatDollars(target) : null} shelfItemId={e.shelf?.itemId ?? null} purchasedReceiptId={check.purchasedReceiptId ?? null} candidates={check.candidates} needsConfirmation={check.needsConfirmation} />
           </article>
         </Frames>

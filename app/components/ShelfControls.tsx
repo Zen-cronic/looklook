@@ -4,25 +4,25 @@ import { useState } from "react";
 import { CATEGORY_LABELS, KEY_DETAIL, kebab } from "@/lib/app/shelf-ui";
 import { CATEGORIES, type Category } from "@/lib/shelf/categories";
 import { leave } from "./motion";
+import { ProductGlyph, type GlyphShape } from "./ProductGlyph";
 import { useApi } from "./useApi";
 
-/** How soon an item runs out, as the row shows it: a big numeral when it is due soon. */
+/** How soon an item runs out, as the row shows it: a pink-dot pill when it is due soon or out. */
 export interface DueLabel {
   kind: "soon" | "out" | "later" | "none";
-  big?: string;
   label: string;
   title?: string;
 }
 
 /** One shelf item: the whole row opens its edit controls. */
-export function ShelfRow(props: { id: string; brand: string; kind: string; name: string; sub: string; opened: boolean; runOutDate: string | null; due: DueLabel }) {
+export function ShelfRow(props: { id: string; brand: string; kind: string; glyph: GlyphShape; name: string; sub: string; opened: boolean; runOutDate: string | null; due: DueLabel }) {
   const [editing, setEditing] = useState(false);
-  const dueText = [props.due.big, props.due.label].filter(Boolean).join(" ");
+  const dueText = props.due.label;
   return (
     <>
       <button type="button" className="shelf-row" aria-expanded={editing} aria-label={`Edit ${props.name}${dueText ? `, ${dueText}` : ""}`} onClick={() => setEditing((e) => !e)}>
         <span className="swatch" aria-hidden="true">
-          {props.brand.replace(/[^A-Za-z0-9]/g, "").charAt(0) || "?"}
+          <ProductGlyph shape={props.glyph} />
         </span>
         <span className="shelf-text">
           <span className="sub">
@@ -32,7 +32,6 @@ export function ShelfRow(props: { id: string; brand: string; kind: string; name:
           {props.sub && <span className="sub">{props.sub}</span>}
         </span>
         <span className={`due ${props.due.kind}`} title={props.due.title}>
-          {props.due.big && <strong>{props.due.big}</strong>}
           {props.due.label && <span>{props.due.label}</span>}
         </span>
         <svg className="go row-go" viewBox="0 0 16 16" aria-hidden="true" focusable="false">

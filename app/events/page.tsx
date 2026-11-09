@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { formatTime } from "@/lib/app/dates";
 import { listEvents } from "@/lib/app/store";
 import type { EventLogEntry } from "@/lib/app/types";
+import { Eyebrow } from "../components/Eyebrow";
 
 export const metadata = { title: "Webhook events" };
 
@@ -45,8 +46,8 @@ async function Events() {
   const events = listEvents(100);
   if (!events.length) {
     return (
-      <div className="card">
-        <p>No events yet.</p>
+      <div className="empty-frame">
+        <Eyebrow icon="receipt">No events yet</Eyebrow>
         <p className="small muted">They appear here when PayPal confirms a payment or a saved method, or Channel3 reports a price change on something you watch.</p>
       </div>
     );

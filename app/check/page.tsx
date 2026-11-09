@@ -74,7 +74,7 @@ async function LatestCheck() {
   return (
     <>
       {state.sample?.kind === "week" && <SampleWeekNote />}
-      <MaterialStage tag="Last check" label="Your last check">
+      <MaterialStage tag="Last check" icon="check" label="Your last check">
         <Frames>
           <Link href={`/check/${c.id}`} className={`verdict compact ${c.decision.verdict}`}>
             <VerdictSummary verdict={c.decision.verdict} reason={c.purchasedReceiptId ? `Bought. ${atTheTime(c.reason.text)}` : c.reason.text} brand={c.facts.brand} name={c.facts.name} imageUrl={c.product?.imageUrl} priceLabel={price !== null ? formatDollars(price) : null} />

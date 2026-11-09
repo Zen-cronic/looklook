@@ -2,7 +2,7 @@
 .landing {
   --gutter: 1.25rem;
   --wide: 72rem;
-  --hairline: color-mix(in srgb, var(--ink) 14%, transparent);
+  --hairline: color-mix(in srgb, var(--ink) 22%, transparent);
   padding: 1rem var(--gutter) 4.5rem;
 }
 
@@ -29,28 +29,6 @@
     gap: 3.5rem;
     padding-top: 1.5rem;
   }
-}
-
-.eyebrow {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.35rem 0.85rem 0.35rem 0.7rem;
-  border-radius: var(--radius-pill);
-  background: var(--card);
-  border: 1px solid var(--hairline);
-  font-size: var(--step--1);
-  font-weight: 700;
-  color: var(--ink-2);
-}
-
-.eyebrowDot {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 1.5px var(--ink);
-  flex: none;
 }
 
 .title {
@@ -109,10 +87,23 @@
 }
 
 .proofEyebrow {
-  font-size: var(--step--1);
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
+  color: var(--signature-ink);
+}
+
+.proofEyebrow :global(.eyebrow-icon) {
+  stroke: var(--signature-ink);
+}
+
+/* The scale under the meters, in the mono face */
+.bars li.scale {
+  display: flex;
+  justify-content: space-between;
+  margin-top: -0.35rem;
+  font-family: var(--font-mono);
+  font-stretch: 87.5%;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  opacity: 0.85;
 }
 
 .proofFigure {
@@ -188,20 +179,29 @@
   font-variant-numeric: tabular-nums;
 }
 
+/* A meter: a hairline track with a square solid fill sitting on it, and a tick at the end */
 .barTrack {
   grid-area: track;
+  position: relative;
   display: block;
-  height: 1.1rem;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--signature-ink) 16%, transparent);
-  overflow: hidden;
+  height: 0.5rem;
+  background: linear-gradient(color-mix(in srgb, var(--signature-ink) 50%, transparent), color-mix(in srgb, var(--signature-ink) 50%, transparent)) left center / 100% 1px no-repeat;
+}
+
+.barTrack::after {
+  content: "";
+  position: absolute;
+  right: 0;
+  top: -0.2rem;
+  bottom: -0.2rem;
+  width: 1px;
+  background: color-mix(in srgb, var(--signature-ink) 50%, transparent);
 }
 
 .barFill {
   display: block;
   height: 100%;
-  border-radius: var(--radius-pill);
-  background: color-mix(in srgb, var(--signature-ink) 55%, transparent);
+  background: color-mix(in srgb, var(--signature-ink) 60%, transparent);
   transform-origin: 0 50%;
   transition: transform 900ms var(--ease-out) 150ms;
 }
@@ -213,7 +213,7 @@
 }
 
 .barMine .barTrack {
-  height: 1.6rem;
+  height: 0.85rem;
 }
 
 .barMine .barFill {
@@ -233,24 +233,113 @@
   font-weight: 800;
 }
 
+/* One chain on the lotion panel: the post, the verdict, your yes, joined by a dotted line */
+.chainPanel {
+  position: relative;
+  margin-top: 2rem;
+  border-radius: 32px;
+  overflow: hidden;
+  isolation: isolate;
+  padding: clamp(1.25rem, 0.5rem + 3vw, 3rem);
+  background: var(--shade);
+}
+
+.chainMaterial,
+.chainMaterial img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.chainMaterial {
+  z-index: -1;
+}
+
+.chainMaterial img {
+  object-fit: cover;
+  object-position: 50% 60%;
+}
+
 .steps {
+  --gap: 3.5rem;
+  --drop: 3rem;
+  --anchor: 6rem;
   list-style: none;
   display: grid;
-  gap: 2.5rem;
-  margin-top: 2rem;
+  gap: 2.75rem;
+}
+
+.step {
+  position: relative;
+}
+
+.step :global(.eyebrow) {
+  margin-bottom: 0.7rem;
 }
 
 @media (min-width: 900px) {
   .steps {
     grid-template-columns: 0.8fr 1.2fr 1fr;
-    gap: 2rem;
+    column-gap: var(--gap);
     align-items: start;
   }
+
+  /* Each step sits a little lower than the last: the chain reads left to right, top to bottom */
+  .steps > .step:nth-child(2) {
+    margin-top: var(--drop);
+  }
+
+  .steps > .step:nth-child(3) {
+    margin-top: calc(var(--drop) * 2);
+  }
+
+  /* The dotted line: out of this card, down one step, into the next card */
+  .step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 100%;
+    top: var(--anchor);
+    width: calc(var(--gap) / 2);
+    height: var(--drop);
+    border-top: 2px dotted var(--ink);
+    border-right: 2px dotted var(--ink);
+    border-top-right-radius: 0.9rem;
+  }
+
+  .step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: calc(100% + var(--gap) / 2 - 2px);
+    top: calc(var(--anchor) + var(--drop) - 0.9rem + 2px);
+    width: calc(var(--gap) / 2 + 2px);
+    height: 0.9rem;
+    border-left: 2px dotted var(--ink);
+    border-bottom: 2px dotted var(--ink);
+    border-bottom-left-radius: 0.9rem;
+  }
+
+}
+
+
+/* On a phone the line runs straight down between the cards */
+@media (max-width: 899px) {
+  .step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: 1.5rem;
+    top: calc(100% + 0.25rem);
+    height: 2.25rem;
+    border-left: 2px dotted var(--ink);
+  }
+
 }
 
 .step h3 {
-  margin-top: 1.25rem;
+  margin-top: 1.1rem;
+  font-family: var(--font-display);
   font-size: var(--step-1);
+  letter-spacing: -0.04em;
 }
 
 .step > p {
@@ -259,32 +348,21 @@
   max-width: 24rem;
 }
 
-/* Each card floats in a hairline frame on the page */
+/* Each card floats in a hairline frame on the panel */
 .stepCard {
   position: relative;
   padding: 0.6rem;
   border: 1px solid var(--hairline);
   border-radius: calc(var(--radius) + 0.6rem);
+  background: none;
   min-height: 15.5rem;
   display: grid;
   align-items: center;
 }
 
-/* A dotted link from each card to the next */
-@media (min-width: 900px) {
-  .step:not(:last-child) .stepCard::after {
-    content: "";
-    position: absolute;
-    top: 50%;
-    right: calc(-2rem - 1px);
-    width: 2rem;
-    border-top: 3px dotted var(--ink);
-  }
-}
-
 .post {
   border-radius: var(--radius);
-  border: var(--edge);
+  border: 1.5px solid var(--ink);
   overflow: hidden;
   background: var(--card);
   height: 15.5rem;
@@ -298,8 +376,7 @@
 }
 
 .evidenceCard {
-  border: var(--edge);
-  box-shadow: var(--shadow-hard-sm);
+  border: 1.5px solid var(--ink);
 }
 
 .evidenceCard :global(.evidence) {
@@ -307,11 +384,11 @@
 }
 
 .miniVerdict {
-  margin-top: 0.85rem;
+  margin-bottom: 0.85rem;
 }
 
 .buyCard {
-  border: var(--edge);
+  border: 1.5px solid var(--ink);
 }
 
 .buyCard .fakeBtn {
@@ -410,9 +487,14 @@
 
 .yesFrame {
   padding: 0.6rem;
-  border: 1px solid color-mix(in srgb, var(--card) 80%, transparent);
+  border: 1px solid var(--hairline);
   border-radius: calc(var(--radius) + 0.6rem);
-  background: color-mix(in srgb, var(--card) 30%, transparent);
+  background: none;
+}
+
+/* Inside the panel the hairlines lead: no offset shadow on the card */
+.yesFrame :global(.approval) {
+  box-shadow: none;
 }
 
 .approvalActions {
@@ -446,11 +528,11 @@
   transform: translateX(-24px);
 }
 
-.step:nth-child(2) {
+.steps > .step:nth-child(2) {
   transition-delay: 140ms;
 }
 
-.step:nth-child(3) {
+.steps > .step:nth-child(3) {
   transition-delay: 280ms;
 }
 

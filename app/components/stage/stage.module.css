@@ -1,7 +1,7 @@
 /* A material panel: the page's main card floats on it in hairline frames */
 .stage {
-  --hairline: color-mix(in srgb, var(--card) 78%, transparent);
-  --veil: color-mix(in srgb, var(--card) 30%, transparent);
+  --hairline: color-mix(in srgb, var(--ink) 22%, transparent);
+  --veil: transparent;
   position: relative;
   border-radius: 32px;
   overflow: hidden;
@@ -32,36 +32,17 @@
   padding-bottom: clamp(1.25rem, 0.7rem + 2.2vw, 2.25rem);
 }
 
-/* The eyebrow tag: a white pill with a tiny pink dot */
-.tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 0.45rem;
-  margin-bottom: 0.85rem;
-  padding: 0.3rem 0.75rem 0.3rem 0.6rem;
-  border-radius: var(--radius-pill);
-  background: var(--card);
-  border: var(--rule);
-  font-size: 0.8125rem;
-  font-weight: 700;
+/* The eyebrow over the card */
+.inner > :global(.eyebrow) {
+  margin: 0 0 0.85rem 0.35rem;
 }
 
-.tagDot {
-  width: 0.6rem;
-  height: 0.6rem;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 1.5px var(--ink);
+/* Inside the panel the hairlines lead: one frame, and the card keeps its edge but drops the offset shadow */
+.inner :global(.verdict) {
+  box-shadow: none;
 }
 
-.frameOuter {
-  padding: 0.6rem;
-  border: 1px solid var(--hairline);
-  border-radius: calc(var(--radius) + 1.2rem);
-  background: var(--veil);
-}
-
-.frameInner {
+.frame {
   padding: 0.6rem;
   border: 1px solid var(--hairline);
   border-radius: calc(var(--radius) + 0.6rem);
@@ -82,8 +63,8 @@
   right: calc(100% - var(--indent) + 0.5rem);
   top: -3rem;
   bottom: calc(50% - 1.5px);
-  border-left: 3px dotted var(--ink);
-  border-bottom: 3px dotted var(--ink);
+  border-left: 2px dotted var(--ink);
+  border-bottom: 2px dotted var(--ink);
   border-bottom-left-radius: 1.25rem;
 }
 
@@ -100,6 +81,7 @@
   border-radius: var(--radius-pill);
   background: var(--card);
   color: var(--ink);
+  border: 1px solid var(--hairline);
 }
 
 .shelfFrame {
@@ -114,17 +96,15 @@
   flex-direction: column;
   gap: 0.1rem;
   background: var(--card);
-  border: var(--edge);
+  border: 1.5px solid var(--ink);
   border-radius: calc(var(--radius-sm) + 4px);
-  box-shadow: var(--shadow-hard-sm);
   padding: 0.85rem 1rem 0.95rem;
   text-decoration: none;
-  transition: transform var(--dur-1) var(--ease-out), box-shadow var(--dur-1) var(--ease-out);
+  transition: border-color var(--dur-1) var(--ease-out), background-color var(--dur-1) var(--ease-out);
 }
 
 .shelfCard:hover {
-  transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--ink);
+  background: var(--paper);
 }
 
 .shelfCard :global(.name-line) {
@@ -136,21 +116,7 @@
 }
 
 .shelfTag {
-  display: flex;
-  align-items: center;
-  gap: 0.4rem;
-  font-size: 0.75rem;
-  font-weight: 800;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.3rem;
-}
-
-.shelfDot {
-  width: 0.55rem;
-  height: 0.55rem;
-  border-radius: 50%;
-  background: var(--signature);
+  margin-bottom: 0.35rem;
 }
 
 /* Motion: the card floats in and settles, the shelf card follows, then the line draws */
@@ -206,24 +172,27 @@
   }
 }
 
+/* On a phone the panel runs edge to edge and the card keeps a 16px gutter: no frame ring */
 @media (max-width: 640px) {
   .stage {
-    border-radius: 24px;
-    margin-inline: -0.25rem;
+    border-radius: 0;
+    margin-inline: -1rem;
   }
 
   .inner {
-    padding: 0.75rem 0.6rem 1rem;
+    padding: 1rem 1rem 1.25rem;
   }
 
-  .frameOuter {
-    padding: 0.35rem;
-    border-radius: calc(var(--radius) + 0.7rem);
+  .frame {
+    padding: 0;
+    border: 0;
+    background: none;
   }
 
-  .frameInner {
-    padding: 0.35rem;
-    border-radius: calc(var(--radius) + 0.35rem);
+  .shelfFrame {
+    padding: 0;
+    border: 0;
+    background: none;
   }
 
   .shelfRow {

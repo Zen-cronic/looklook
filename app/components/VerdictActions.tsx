@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { ProductGlyph } from "./ProductGlyph";
 import { useState } from "react";
 import type { CheckCandidate } from "@/lib/app/types";
 import type { Verdict } from "@/lib/verdict/types";
@@ -64,7 +65,9 @@ export function VerdictActions(p: Props) {
                   // eslint-disable-next-line @next/next/no-img-element
                   <img className="thumb" src={c.product.imageUrl} alt="" />
                 ) : (
-                  <span className="thumb empty" />
+                  <span className="thumb empty">
+            <ProductGlyph shape="bottle" letter={c.product.brand} />
+          </span>
                 )}
                 <span className="meta">
                   <span className="brand-line">{c.product.brand}</span>
