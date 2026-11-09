@@ -530,8 +530,10 @@ export default function Workspace({ initial, narrow }: Props) {
   const [initial0] = useState(() => initialState(initial, narrow));
   // The canvas is as tall as its widgets, so the page scrolls, not the canvas. On a phone the widgets stack in one column.
   const tracks = layouts(initial, narrow).tracks + (run.kind !== "idle" ? 10 : 0);
-  const canvasHeight = `${Math.max(tracks, 34) * TRACK_PX + (narrow ? 80 : 24)}px`;
   const editing = mode === "edit" && !narrow;
+  // While customizing, the editor fits the window and the canvas scrolls inside it, so the assistant's
+  // suggestions and its message box stay in view beside the widgets.
+  const canvasHeight = editing ? "max(40rem, calc(100dvh - 1.5rem))" : `${Math.max(tracks, 34) * TRACK_PX + (narrow ? 80 : 24)}px`;
 
   // The editor's panels are created when it first opens, after the page state was applied, so the
   // assistant and the field list are folded to rails then, with their own headers. Later opens keep
