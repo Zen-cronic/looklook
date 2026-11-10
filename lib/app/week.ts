@@ -328,6 +328,14 @@ export function approveWeek(sid: string, runId: string, hash: string, deps: Appr
   });
 }
 
+/** A checkout may only return to a week of this browser: `/week?run=<id>`. */
+export function parseReturnTo(raw: unknown): { returnTo: string; runId: string } | undefined {
+  if (raw === undefined || raw === null || raw === "") return undefined;
+  const m = typeof raw === "string" ? /^\/week\?run=(wk_[a-z0-9]{12})$/.exec(raw) : null;
+  if (!m) throw new HttpError(400, "Checkout can only return to a week.");
+  return { returnTo: raw as string, runId: m[1] };
+}
+
 /** Note a line paid at checkout as part of this week (the first payment of a fresh session). */
 export function noteCheckoutLine(state: SessionState, runId: string, line: SlipLine): void {
   const run = findRun(state, runId);

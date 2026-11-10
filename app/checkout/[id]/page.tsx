@@ -26,7 +26,7 @@ export default function CheckoutPage(props: PageProps<"/checkout/[id]">) {
 
 async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["params"] }) {
   const { id } = await params;
-  const { state, today } = await displaySession();
+  const { state, raw, today } = await displaySession();
   const intent = state.intents.find((i) => i.id === id);
   if (!intent) notFound();
   if (intent.receiptId) redirect(`/receipts/${intent.receiptId}`);
@@ -69,7 +69,7 @@ async function Checkout({ params }: { params: PageProps<"/checkout/[id]">["param
       </div>
       <div className="checkout-pay">
       {clientId ? (
-        <CheckoutPanel intentId={intent.id} clientId={clientId} amountLabel={amount} defaultCapDollars={defaultCapCents(intent.amountCents) / 100} consentTemplate={CONSENT_TEMPLATE} />
+        <CheckoutPanel intentId={intent.id} clientId={clientId} amountLabel={amount} defaultCapDollars={defaultCapCents(intent.amountCents) / 100} consentTemplate={CONSENT_TEMPLATE} returnTo={raw.intents.find((i) => i.id === intent.id)?.returnTo} />
       ) : (
         <p className="error">Payments are off: PAYPAL_CLIENT_ID is not set on the server.</p>
       )}

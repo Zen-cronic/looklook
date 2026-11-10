@@ -127,6 +127,8 @@ export interface PurchaseIntent {
   approvalKey?: string;
   /** Re-approval after a decline replaces this saved method. */
   replacesMethodId?: string;
+  /** Where checkout returns after paying: the week this was the first payment of. */
+  returnTo?: string;
   /** Filled while PayPal checkout runs. */
   order?: { id: string; funding: MethodType; save: boolean; capCents: number };
   receiptId?: string;

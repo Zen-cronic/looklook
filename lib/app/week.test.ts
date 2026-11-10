@@ -204,3 +204,23 @@ describe("hand it your week: one yes", () => {
     expect(pp.requests).toHaveLength(0);
   });
 });
+
+describe("hand it your week: the first payment at checkout", () => {
+  it("returns only to a week of this browser, and notes the line on the week", async () => {
+    const { parseReturnTo, buildSlip, findRun, noteCheckoutLine, weekView } = await import("./week");
+    expect(parseReturnTo(undefined)).toBeUndefined();
+    expect(parseReturnTo("/week?run=wk_0123456789ab")).toEqual({ returnTo: "/week?run=wk_0123456789ab", runId: "wk_0123456789ab" });
+    for (const bad of ["https://example.com/week?run=wk_0123456789ab", "/receipts/x", "/week?run=wk_0123456789ab&next=//evil", 42]) {
+      expect(() => parseReturnTo(bad)).toThrow(HttpError);
+    }
+    const { sid, runId } = await week(() => {});
+    const { loadSession, updateSession } = await import("./store");
+    await updateSession(sid, (s) => {
+      const first = buildSlip(s, findRun(s, runId), appToday(s.dayOffset)).lines[0];
+      noteCheckoutLine(s, runId, first);
+    });
+    const s = loadSession(sid);
+    const view = weekView(s, findRun(s, runId));
+    expect(view.sent.map((l) => [l.why, l.status])).toEqual([["buy", "queued"]]);
+  });
+});

@@ -61,9 +61,11 @@ interface Props {
   defaultCapDollars: number;
   /** The agreement lines, with {cap} where the cap goes. */
   consentTemplate: string[];
+  /** After paying, go back here (a week) instead of to the receipt. */
+  returnTo?: string;
 }
 
-export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDollars, consentTemplate }: Props) {
+export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDollars, consentTemplate, returnTo }: Props) {
   const router = useRouter();
   const [save, setSave] = useState(false);
   const [cap, setCap] = useState(String(defaultCapDollars));
@@ -112,7 +114,7 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
       });
       const data = await res.json();
       if (res.ok) {
-        router.push(`/receipts/${data.receiptId}`);
+        router.push(returnTo ? `${returnTo}&paid=${data.receiptId}` : `/receipts/${data.receiptId}`);
         return;
       }
       setStatus("ready");
@@ -174,7 +176,7 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
     return () => {
       cancelled = true;
     };
-  }, [clientId, intentId, router]);
+  }, [clientId, intentId, router, returnTo]);
 
   const capValid = !save || (Number(cap) >= 1 && Number(cap) <= 1000);
   const capLabel = `$${Number(cap || 0).toFixed(2)}`;
