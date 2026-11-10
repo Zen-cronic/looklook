@@ -39,7 +39,13 @@ async function main() {
   // What a phone's share sheet opens; the page clears the query and checks in the browser.
   const share = ["/check?url=https%3A%2F%2Fwww.ulta.com%2Fp%2Fexample", "/check?text=Look%20https%3A%2F%2Fwww.sephora.com%2Fproduct%2Fexample", "/check?shared=aaaaaaaaaaaaaaaaaaaaaaaa.zz.bb", "/check?share_error=type"];
 
-  const pages = ["/", "/check", ...share, ...state.checks.map((c) => `/check/${c.id}`), ...checkout, "/shelf", "/rebuys", "/payments", "/events", "/proof", "/judge", "/studio", ...state.receipts.map((r) => `/receipts/${r.id}`)];
+  // A week handed over (the sample week's posts): its page and its JSON.
+  const weekRes = await fetch(`${base}/api/week`, { method: "POST", headers: { ...plain, "content-type": "application/json" }, body: JSON.stringify({ checkIds: ["week-spf", "week-vitc", "week-retinol", "week-peptide"] }) });
+  const weekId = ((await weekRes.json()) as { id?: string }).id;
+  if (!weekId) throw new Error(`couldn't hand over the sample week (${weekRes.status})`);
+  const week = ["/week", `/week?run=${weekId}`];
+
+  const pages = ["/", "/check", ...share, ...week, ...state.checks.map((c) => `/check/${c.id}`), ...checkout, "/shelf", "/rebuys", "/payments", "/events", "/proof", "/judge", "/studio", ...state.receipts.map((r) => `/receipts/${r.id}`)];
   const problems: string[] = [];
   for (const path of pages) {
     const html = await (await fetch(`${base}${path}${path.includes("?") ? "&" : "?"}film=1`, { headers: film })).text();
@@ -53,14 +59,17 @@ async function main() {
   const shown = stateJson.replace(/"[A-Za-z]*(Url|url|href)":"[^"]*"/g, "").replace(/"(domain|offerDomain|sample|id|productId|approvalKey|sourceRef)":"[^"]*"/g, "");
   const stateHit = namesABrand(shown);
   if (stateHit) problems.push(`/api/state: shows "${stateHit}"`);
+  const weekJson = await (await fetch(`${base}/api/week/${weekId}`, { headers: film })).text();
+  const weekHit = namesABrand(weekJson.replace(/"[A-Za-z]*(Url|url|href)":"[^"]*"/g, "").replace(/"(id|checkId|productId|approvalKey|shelfItemId|hash)":"[^"]*"/g, ""));
+  if (weekHit) problems.push(`/api/week: shows "${weekHit}"`);
 
   // Off by default: the same session without the switch shows the real names.
-  for (const path of ["/check/week-spf", ...checkout]) {
+  for (const path of ["/check/week-spf", `/week?run=${weekId}`, ...checkout]) {
     const real = visibleText(await (await fetch(`${base}${path}`, { headers: plain })).text());
     if (!namesABrand(real)) problems.push(`${path} without ?film=1 shows no real names: the mode looks on by default`);
   }
 
-  console.log(`${pages.length} pages and /api/state checked in filming mode`);
+  console.log(`${pages.length} pages, /api/state and /api/week checked in filming mode`);
   if (problems.length) {
     console.log(problems.join("\n"));
     process.exitCode = 1;

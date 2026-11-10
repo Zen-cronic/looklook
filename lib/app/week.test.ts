@@ -246,3 +246,20 @@ describe("hand it your week: watches", () => {
     expect(view.slip.watches).toHaveLength(0);
   });
 });
+
+describe("hand it your week: filming mode", () => {
+  it("shows the week with no brand, store or card network", async () => {
+    const { sid, runId } = await week();
+    const { weekView, findRun } = await import("./week");
+    const { loadSession } = await import("./store");
+    const { neutralDeep } = await import("../filming/view");
+    const { namesABrand } = await import("../filming/neutral");
+    const s = loadSession(sid);
+    const real = JSON.stringify(weekView(s, findRun(s, runId)));
+    expect(namesABrand(real)).toBeTruthy();
+    const shown = JSON.stringify(neutralDeep(weekView(s, findRun(s, runId)), { shortIds: true }))
+      .replace(/"[A-Za-z]*(Url|url|href)":"[^"]*"/g, "")
+      .replace(/"(id|checkId|productId|approvalKey|shelfItemId|hash)":"[^"]*"/g, "");
+    expect(namesABrand(shown)).toBeFalsy();
+  });
+});
