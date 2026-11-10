@@ -6,7 +6,8 @@ import { openDecline, sameSource } from "@/lib/app/payments";
 import { updateSession } from "@/lib/app/store";
 import { parseSource } from "@/lib/app/sources";
 import type { PurchaseIntent } from "@/lib/app/types";
-import { buildSlip, findRun, noteCheckoutLine, parseReturnTo } from "@/lib/app/week";
+import { startWatch } from "@/lib/app/watch-start";
+import { armWeekWatches, buildSlip, findRun, noteCheckoutLine, parseReturnTo } from "@/lib/app/week";
 
 /**
  * Start a purchase: fixes the item and the amount before PayPal is involved.
@@ -54,6 +55,8 @@ export async function POST(request: Request) {
       if (s.intents.length > 40) s.intents = s.intents.slice(-40);
       return created;
     });
+    // The week's yes starts its price watches before the first payment, as the slip says.
+    if (back) await armWeekWatches(sid, back.runId, startWatch);
     return Response.json({ id: intent.id });
   });
 }

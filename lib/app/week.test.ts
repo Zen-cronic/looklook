@@ -224,3 +224,25 @@ describe("hand it your week: the first payment at checkout", () => {
     expect(view.sent.map((l) => [l.why, l.status])).toEqual([["buy", "queued"]]);
   });
 });
+
+describe("hand it your week: watches", () => {
+  it("starts the watches with a first payment at checkout, and a watch tried once leaves the slip", async () => {
+    const { sid, runId } = await week(() => {});
+    const { armWeekWatches, weekView, findRun } = await import("./week");
+    const { loadSession } = await import("./store");
+    const pp = fakePayPal();
+    const w = watcher(pp);
+    await armWeekWatches(sid, runId, w.startWatch);
+    expect(w.log).toEqual(["watch:week-retinol@0"]);
+    expect((await slipOf(sid, runId)).watches).toHaveLength(0);
+    const refused = async () => {
+      throw new HttpError(409, "This one waits for your budget, not the price.");
+    };
+    const other = await week(() => {});
+    await armWeekWatches(other.sid, other.runId, refused);
+    const s = loadSession(other.sid);
+    const view = weekView(s, findRun(s, other.runId));
+    expect(view.run.watches.map((x) => x.status)).toEqual(["unavailable"]);
+    expect(view.slip.watches).toHaveLength(0);
+  });
+});

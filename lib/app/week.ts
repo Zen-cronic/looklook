@@ -22,6 +22,9 @@ import { loadSession, updateSession } from "./store";
 import type { CheckRecord, SessionState, SlipLine, WeekInput, WeekLineOutcome, WeekLineStatus, WeekRun } from "./types";
 import { targetFor } from "./watch";
 
+/** The one-line promise, on the landing page and the week page. */
+export const WEEK_TAGLINE = "A week of posts in. One yes, and it's done.";
+
 /** The sample week's posts, in the order a shopper would have seen them. */
 export const SAMPLE_WEEK_POSTS = ["week-spf", "week-vitc", "week-retinol", "week-peptide"];
 
@@ -188,7 +191,7 @@ export function buildSlip(state: SessionState, run: WeekRun, today: string): Wee
   }
 
   const watches = run.inputs
-    .filter((i) => i.group === "wait" && i.waitKind === "price" && i.targetPrice !== undefined && !run.watches.some((w) => w.checkId === i.checkId && w.status === "armed"))
+    .filter((i) => i.group === "wait" && i.waitKind === "price" && i.targetPrice !== undefined && !run.watches.some((w) => w.checkId === i.checkId))
     .map((i) => ({ checkId: i.checkId, title: i.title, brand: i.brand, category: i.category, productId: i.productId, targetPrice: i.targetPrice! }));
 
   const totalCents = lines.reduce((sum, l) => sum + l.amountCents, 0);
@@ -287,20 +290,7 @@ export function approveWeek(sid: string, runId: string, hash: string, deps: Appr
     });
 
     // Watches first: once a buy is paid, a price wait can turn into a budget wait.
-    for (const w of slip.watches) {
-      let entry: WeekRun["watches"][number];
-      try {
-        const res = await deps.startWatch(sid, w.checkId);
-        entry = res.subscription.status === "active" ? { checkId: w.checkId, watchId: res.watchId, status: "armed" } : { checkId: w.checkId, watchId: res.watchId, status: "unavailable", message: "The price feed didn't accept this product." };
-      } catch (e) {
-        entry = { checkId: w.checkId, status: "unavailable", message: e instanceof Error ? e.message : "Couldn't start the watch." };
-      }
-      await updateSession(sid, (s) => {
-        const r = findRun(s, runId);
-        r.watches = r.watches.filter((x) => x.checkId !== w.checkId);
-        r.watches.push(entry);
-      });
-    }
+    await armWeekWatches(sid, runId, deps.startWatch, slip.watches);
 
     for (let i = 0; i < slip.lines.length; i++) {
       const line = slip.lines[i];
@@ -328,6 +318,31 @@ export function approveWeek(sid: string, runId: string, hash: string, deps: Appr
   });
 }
 
+/**
+ * Start the week's price watches (each tried once). Runs with the yes, before
+ * any payment: the slip's own yes, or the week's first payment at checkout.
+ */
+export async function armWeekWatches(sid: string, runId: string, startWatch: ApproveDeps["startWatch"], watches?: WeekSlip["watches"]): Promise<void> {
+  const list = watches ?? (() => {
+    const s = loadSession(sid);
+    return buildSlip(s, findRun(s, runId), appToday(s.dayOffset)).watches;
+  })();
+  for (const w of list) {
+    let entry: WeekRun["watches"][number];
+    try {
+      const res = await startWatch(sid, w.checkId);
+      entry = res.subscription.status === "active" ? { checkId: w.checkId, watchId: res.watchId, status: "armed" } : { checkId: w.checkId, watchId: res.watchId, status: "unavailable", message: "The price feed didn't accept this product." };
+    } catch (e) {
+      entry = { checkId: w.checkId, status: "unavailable", message: e instanceof Error ? e.message : "Couldn't start the watch." };
+    }
+    await updateSession(sid, (s) => {
+      const r = findRun(s, runId);
+      r.watches = r.watches.filter((x) => x.checkId !== w.checkId);
+      r.watches.push(entry);
+    });
+  }
+}
+
 /** A checkout may only return to a week of this browser: `/week?run=<id>`. */
 export function parseReturnTo(raw: unknown): { returnTo: string; runId: string } | undefined {
   if (raw === undefined || raw === null || raw === "") return undefined;
@@ -342,3 +357,5 @@ export function noteCheckoutLine(state: SessionState, runId: string, line: SlipL
   run.sent = run.sent.filter((l) => l.approvalKey !== line.approvalKey);
   run.sent.push(line);
 }
+
+export type WeekView = ReturnType<typeof weekView>;
