@@ -1,43 +1,85 @@
-/* The hero object: a material panel with real product cards floating on it */
+/* The hero object: the toy shelf on the page itself, and the verdict it ends on */
 .object {
-  --hairline: color-mix(in srgb, var(--ink) 22%, transparent);
-  --veil: transparent;
   position: relative;
-  border-radius: 32px;
-  overflow: hidden;
-  background: var(--shade);
-  isolation: isolate;
 }
 
-.material,
-.material img {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-}
-
-.material img {
-  object-fit: cover;
-  object-position: 50% 40%;
-}
-
-.material {
-  z-index: -1;
-}
-
+/* The shelf's box is sized before anything loads, so nothing shifts */
 .stage {
   position: relative;
-  padding: clamp(1.25rem, 0.6rem + 2.4vw, 2.5rem);
-  padding-bottom: clamp(1.5rem, 0.8rem + 2.6vw, 2.75rem);
+  aspect-ratio: 16 / 10;
+  /* Feather the sides and the foot, so the shelf's soft shadow never ends on a hard edge */
+  mask-image: linear-gradient(to right, transparent, #000 4%, #000 96%, transparent), linear-gradient(to bottom, #000 82%, transparent);
+  mask-composite: intersect;
 }
 
-/* One hairline frame around the verdict card */
-.frame {
-  padding: 0.6rem;
-  border: 1px solid var(--hairline);
-  border-radius: calc(var(--radius) + 0.6rem);
-  background: var(--veil);
+.poster,
+.finalStill,
+.canvas {
+  position: absolute;
+  inset: 0;
+}
+
+.poster img,
+.finalStill img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+
+/* The finished-scene still only shows when the canvas won't play */
+.finalStill {
+  display: none;
+}
+
+.object[data-phase="final"] .finalStill {
+  display: block;
+}
+
+/* The canvas takes over from the poster once it has drawn its first frame (they match) */
+.canvas {
+  opacity: 0;
+}
+
+.object:is([data-phase="play"], [data-phase="done"], [data-phase="capture"]) .canvas {
+  opacity: 1;
+}
+
+.object:is([data-phase="play"], [data-phase="done"], [data-phase="capture"]) .poster {
+  visibility: hidden;
+}
+
+/* The verdict the shelf ends on */
+.caption {
+  position: relative;
+  /* Same side insets as the shelf in the wide framing (shelf 7.7 of 8.15 units across) */
+  margin: -1.25rem 2.75% 0;
+  transition:
+    opacity 350ms var(--ease-out),
+    transform 500ms var(--ease-spring);
+}
+
+/* While the shelf plays, the verdict waits; with reduced motion or capture-safe mode it is simply there */
+@media (prefers-reduced-motion: no-preference) {
+  :global(html:not([data-still])) .object:is([data-phase="poster"], [data-phase="play"]) .caption {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .finalStill {
+    display: block;
+  }
+}
+
+:global(html[data-still]) .finalStill {
+  display: block;
+}
+
+.object[data-phase="capture"] .caption,
+.object[data-phase="capture"] .finalStill {
+  visibility: hidden;
 }
 
 .card {
@@ -45,25 +87,29 @@
 }
 
 .card :global(.verdict-word) {
-  font-size: clamp(2.75rem, 2.1rem + 2.4vw, 4.25rem);
-  animation-delay: 380ms;
+  font-size: clamp(2.5rem, 2rem + 1.8vw, 3.5rem);
+  animation: none;
 }
 
 .card :global(.verdict-reason) {
-  font-size: var(--step-0);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-1);
+  letter-spacing: -0.02em;
+  line-height: 1.2;
 }
 
 .card :global(.verdict-head) {
-  padding: 1.15rem 1.2rem 1.1rem;
+  padding: 1rem 1.2rem 1.05rem;
 }
 
 .card :global(.product-row) {
-  padding: 0.9rem 1.2rem 1rem;
+  padding: 0.8rem 1.2rem 0.9rem;
 }
 
 .card :global(.thumb) {
-  width: 3.25rem;
-  height: 3.25rem;
+  width: 3rem;
+  height: 3rem;
   object-fit: cover;
 }
 
@@ -71,151 +117,27 @@
   font-size: var(--step-0);
 }
 
-/* The dotted line from the verdict to the item already owned */
-.shelfRow {
-  --indent: 22%;
-  position: relative;
-  margin-top: 3.25rem;
-  padding-left: var(--indent);
-}
-
-.wire {
-  position: absolute;
-  left: 2.6rem;
-  right: calc(100% - var(--indent) - 1px);
-  top: -3.25rem;
-  bottom: calc(50% - 1.5px);
-  border-left: 2px dotted var(--ink);
-  border-bottom: 2px dotted var(--ink);
-  border-bottom-left-radius: 1.25rem;
-}
-
-.wireLabel {
-  position: absolute;
-  left: 0.85rem;
-  top: 0.55rem;
-  white-space: nowrap;
+.match {
+  margin-top: 0.55rem;
   font-family: var(--font-mono);
   font-stretch: 87.5%;
   font-size: 0.75rem;
-  font-weight: 700;
-  padding: 0.2rem 0.55rem;
-  border-radius: var(--radius-pill);
-  background: var(--card);
-  color: var(--ink);
-  border: 1px solid var(--hairline);
-}
-
-.shelfFrame {
-  padding: 0.5rem;
-  border: 1px solid var(--hairline);
-  border-radius: calc(var(--radius-sm) + 0.5rem + 4px);
-  background: var(--veil);
-}
-
-.shelfCard {
-  background: var(--card);
-  border: 1px solid var(--hairline);
-  border-radius: calc(var(--radius-sm) + 4px);
-  padding: 0.85rem 1rem 0.95rem;
-}
-
-.shelfCard :global(.name-line) {
-  font-size: 0.9375rem;
-}
-
-.shelfCard p:last-child {
-  margin-top: 0.3rem;
-}
-
-.shelfTag {
-  margin-bottom: 0.35rem;
-}
-
-/* Motion: the cards float in and settle, then the line draws */
-.verdictFloat {
-  animation: float-in 700ms var(--ease-out) 80ms both;
-}
-
-.verdictFloat > .frame {
-  animation: drift 7s ease-in-out 1.2s infinite alternate;
-}
-
-.shelfFloat {
-  animation: float-in 700ms var(--ease-out) 420ms both;
-}
-
-.shelfFloat > .shelfFrame {
-  animation: drift 6s ease-in-out 1.6s infinite alternate-reverse;
-}
-
-.wire {
-  animation: draw 650ms var(--ease-out) 900ms both;
-}
-
-.wireLabel {
-  animation: label-in 300ms var(--ease-out) 1.4s both;
-}
-
-@keyframes float-in {
-  0% {
-    opacity: 0;
-    transform: translateY(28px);
-  }
-  70% {
-    opacity: 1;
-    transform: translateY(-3px);
-  }
-  100% {
-    opacity: 1;
-    transform: none;
-  }
-}
-
-@keyframes drift {
-  from {
-    transform: none;
-  }
-  to {
-    transform: translateY(-5px);
-  }
-}
-
-@keyframes draw {
-  from {
-    clip-path: inset(0 100% 100% 0);
-  }
-  50% {
-    clip-path: inset(0 calc(100% - 4px) 0 0);
-  }
-  99% {
-    clip-path: inset(0 -1rem 0 0);
-  }
-  /* Drawn: no clip, so the label on the line shows in full */
-  to {
-    clip-path: none;
-  }
-}
-
-@keyframes label-in {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  font-weight: 600;
+  line-height: 1.4;
+  opacity: 0.9;
 }
 
 @media (max-width: 640px) {
-  .object {
-    border-radius: 24px;
+  .stage {
+    aspect-ratio: 1 / 1;
   }
 
-  .shelfRow {
-    --indent: 14%;
+  .caption {
+    margin: -0.5rem 0 0;
   }
+}
 
-  .wire {
-    left: 1.6rem;
-  }
+/* Stills are rendered unfeathered; the stage feathers them like the canvas */
+.object[data-phase="capture"] .stage {
+  mask-image: none;
 }
