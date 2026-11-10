@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 309](https://img.shields.io/badge/unit%20tests-309-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 310](https://img.shields.io/badge/unit%20tests-310-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 
@@ -27,16 +27,15 @@ The things you do buy again (a cleanser, a moisturizer) come back as one-tap reb
 
 ## Try it
 
-Open `/judge` on the running app for six short steps. Sandbox PayPal buyer login and test card: see the testing instructions on the project's submission page.
+Open `/judge` on the running app for five short steps. Sandbox PayPal buyer login and test card: see the testing instructions on the project's submission page.
 
-1. **Load the sample week and check a post.** A fictional shopper's week of checks on real catalogue products; the newest, a sunscreen post, is a skip because she owns one that does the same job. Four sample posts (mock posts of real products) are also on the Check page (`/check`), or upload your own screenshot or paste a store link.
-2. **Wait for a lower price.** The retinol's wait verdict starts a real Channel3 price alert; a labelled test drop runs a price event through the same handler, and the item asks for your yes.
-3. **Buy once and save PayPal for rebuys.** The checkout shows the save-for-later agreement and a per-rebuy cap, then the PayPal buttons and card fields.
-4. **Rebuy with one yes, then a decline.** Staples due within five days ask for your yes, and a repeated yes charges once. A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.
-5. **See your decisions in AG Studio.** Decisions shows verdicts, rebuys, shelf and budgets in one AG Studio workspace; a rebuy is paid from inside it, and Group my waits has Studio's agents build a table of what each wait is waiting for.
-6. **See the webhooks and the accuracy test.** `/events` lists every webhook and whether it was verified; `/proof` leads with the result on products the app had never seen and lists every miss, then re-runs the 65-product development set the matching was built on.
+1. **Hand it your week.** The week page (`/week`) takes a fictional shopper's week of saved posts at once: a sunscreen and a vitamin C serum she already owns one of (skips, with the money kept), a retinol to wait on (its price watch starts with the yes) and a peptide serum to buy, plus a cleanser on her shelf that's running out. One slip lists the payments with their prices; the first opens PayPal checkout with the save box, and one yes pays the rest with the saved method.
+2. **Open the sunscreen skip.** On the Check page (`/check`), the sunscreen post is a skip because she owns one that does the same job; See why shows the rule, the shelf item and the store's return policy. Four sample posts (mock posts of real products) are there too, or upload your own screenshot or paste a store link.
+3. **Rebuy with one yes, then a decline.** Staples due within five days ask for your yes, and a repeated yes charges once. A labelled sandbox switch makes the next rebuy answer `INSTRUMENT_DECLINED`; the card asks you to approve another method.
+4. **See your decisions in AG Studio.** Decisions shows verdicts, rebuys, shelf and budgets in one AG Studio workspace; a rebuy is paid from inside it, and Group my waits has Studio's agents build a table of what each wait is waiting for.
+5. **See the webhooks and the accuracy test.** `/events` lists every webhook and whether it was verified; `/proof` leads with the result on products the app had never seen and lists every miss, then re-runs the 65-product development set the matching was built on.
 
-The price watch comes before the first purchase on purpose: buying the peptide serum spends this month's skincare budget, and the retinol then waits for next month's budget instead of a lower price.
+One yes on the week's slip pays each line at the price on that line, each as its own PayPal order. If a price on the slip moved, nothing is charged and the slip is shown again. A declined line doesn't stop the others, and a yes again never charges a paid line twice. The price watch starts before the first payment on purpose: buying the peptide serum spends this month's skincare budget, and the retinol would then wait for next month's budget instead of a lower price.
 
 From a phone, share a store link or a screenshot straight to LookLook: the "Look twice" Shortcut on iPhone, or the installed app in Android's share sheet. How to set it up: [docs/share-shortcut.md](docs/share-shortcut.md) (tested on desktop; phone test after deploy).
 

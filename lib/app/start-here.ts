@@ -41,28 +41,22 @@ export function numberWord(n: number): string {
 export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
   return [
     {
-      title: "Load the sample week and check a post",
-      body: "The week has two skips, four waits, a buy and a cleanser due for a rebuy. Open the sunscreen: skip, you own one already.",
-      more: "On Check, the newest entry is the sunscreen post. Open See why for the rule, the shelf item and the store's cited return policy, and see the same product at other stores.",
+      title: "Hand it your week",
+      body: "On the week page, tap Use the sample week: four posts are checked at once, and one slip lists what the week needs paid, the peptide serum and the cleanser that's running out. The first payment opens PayPal checkout: tick save and pay with the login or card in the testing instructions on the submission page. Back on the week, one yes pays the rest.",
+      more: "The two skips show what they kept, and the retinol's price watch starts with the yes. Each line is its own PayPal order, shown with its order ID and receipt. Tap yes again and nothing is charged twice.",
+      links: [{ href: "/week", label: "Open the week" }],
+    },
+    {
+      title: "Open the sunscreen skip",
+      body: "On Check, open the sunscreen post: skip, you own one that does the same job.",
+      more: "The sample week has two skips, four waits, a buy and a cleanser due for a rebuy; the week page hands over the four posts with screenshots. See why shows the rule, the shelf item and the store's cited return policy, and the same product at other stores. Four sample posts are on Check too, or upload your own screenshot or paste a store link.",
       links: [{ href: "/check", label: "Open Check" }],
       sampleWeek: true,
     },
     {
-      title: "Wait for a lower price",
-      body: "Open the retinol (a wait for a lower price) and tap Watch for a drop. Then, on Rebuys, tap Send a test price drop.",
-      more: "Channel3 sets a real price alert at the target. The test drop runs a price event through the same handler, and the retinol asks for your yes. Do this before step 3: buying the serum spends this month's skincare budget, and the retinol then waits for next month's budget instead.",
-      links: [{ href: "/rebuys", label: "Open Rebuys" }],
-    },
-    {
-      title: "Buy once and save PayPal for rebuys",
-      body: "Open the peptide serum, tap Buy for $32.00 with PayPal and tick the save box. Pay with the login or card in the testing instructions on the submission page.",
-      more: "Checkout shows what saving agrees to and a cap per rebuy. Pay with the PayPal button or the card fields.",
-      links: [{ href: "/check", label: "Open Check" }],
-    },
-    {
       title: "Rebuy with one yes, then a decline",
-      body: "On Rebuys, tap Yes on the cleanser to pay with the saved method. Then move a week ahead, tick Make the next rebuy decline and tap Yes again.",
-      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and the card asks you to approve another card or PayPal account.`,
+      body: "On Rebuys, move a week ahead: the next staples come due. Tap Yes on one to pay with the saved method. Then tick Make the next rebuy decline and tap Yes on the other.",
+      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and the card asks you to approve another card or PayPal account. The retinol's watch is on Rebuys too: Send a test price drop shows how a drop arrives, and with this month's skincare budget spent it waits for next month's.`,
       links: [{ href: "/rebuys", label: "Open Rebuys" }],
     },
     {

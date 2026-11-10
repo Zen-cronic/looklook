@@ -62,6 +62,14 @@ Every number and capability that the README, the landing page, `/proof`, `/judge
 | F56 | "You set a cap for each rebuy when you save PayPal or a card; a rebuy above it is refused." | `app/page.tsx` | `lib/paypal/paypal.test.ts` › "refuses a rebuy above the cap without calling PayPal"<br>`lib/app/app.test.ts` › "states the cap in the agreement" |
 | F57 | "Tap yes twice and you are charged once." | `app/page.tsx` | `lib/app/pay.test.ts` › "charges two taps on the same card once"<br>`lib/app/app.test.ts` › "applies a payment once; a repeat only counts the attempt" |
 
+## A week at once
+
+| # | Claim (exact wording) | Where | Checked by |
+|---|---|---|---|
+| F64 | "One yes on the week's slip pays each line at the price on that line, each as its own PayPal order." | `README.md`, /week | `lib/app/week.test.ts` › "pays each line once, as its own PayPal order, after starting the watch" |
+| F65 | "If a price on the slip moved, nothing is charged and the slip is shown again." | `README.md`, /week | `lib/app/week.test.ts` › "charges nothing when a price on the slip moved after it was shown"<br>`lib/app/week.test.ts` › "marks a line whose price moved while the week was being paid, and pays only the others" |
+| F66 | "A declined line doesn't stop the others, and a yes again never charges a paid line twice." | `README.md`, /week | `lib/app/week.test.ts` › "keeps paying the other lines when one is declined, and the paid one stays paid on a new yes"<br>`lib/app/week.test.ts` › "never charges a paid line again: the old slip is refused with no PayPal call" |
+
 ## Webhooks
 
 | # | Claim (exact wording) | Where | Checked by |
@@ -90,7 +98,7 @@ Every number and capability that the README, the landing page, `/proof`, `/judge
 
 | # | Claim (exact wording) | Where | Checked by |
 |---|---|---|---|
-| F48 | "Open `/judge` on the running app for six short steps." | `README.md`, /judge | `lib/facts/facts.test.ts` › "keeps the start-here path to six steps or fewer, the same in the README" |
+| F48 | "Open `/judge` on the running app for five short steps." | `README.md`, /judge | `lib/facts/facts.test.ts` › "keeps the start-here path to six steps or fewer, the same in the README" |
 | F49 | "see the testing instructions on the submission page" | `app/judge/page.tsx`, /judge | `lib/facts/facts.test.ts` › "keeps the start-here path to six steps or fewer, the same in the README" |
 | F50 | "unit tests" badge count | `README.md` | `lib/facts/facts.test.ts` › "states the unit test count" |
 | F51 | "store return rules" badge count | `README.md` | `lib/facts/facts.test.ts` › "gives every store return rule a source page and a check date, as FACTS.md lists them"<br>`lib/facts/facts.test.ts` › "shows only computed numbers on the README badges" |

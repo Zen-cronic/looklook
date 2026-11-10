@@ -3,6 +3,7 @@ import { baselineScore, heldOutHeadline, heldOutResult } from "@/lib/app/holdout
 import { landingSample } from "@/lib/app/landing";
 import { SELLER_OF_RECORD } from "@/lib/app/payments";
 import { APP_NAME } from "@/lib/brand";
+import { WEEK_TAGLINE } from "@/lib/app/week";
 import { Eyebrow } from "./components/Eyebrow";
 import { productImage } from "@/lib/filming/neutral";
 import { HeroObject } from "./components/hero-object/HeroObject";
@@ -42,13 +43,16 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
             Send {APP_NAME} the post before you pay. It checks what&apos;s already on your shelf, your budget, the price history and the store&apos;s return policy, then tells you to skip it, wait or buy.
           </p>
           <div className={s.ctas}>
-            <Link className="btn" href="/check">
+            <Link className="btn" href="/week">
+              Hand it your week
+            </Link>
+            <Link className="btn outline" href="/check">
               Check a post
             </Link>
-            <Link className="btn outline" href="/judge">
-              Start here
-            </Link>
           </div>
+          <p className={s.startHere}>
+            {WEEK_TAGLINE} New here? <Link href="/judge">Start here</Link>.
+          </p>
         </div>
         <div className={s.heroSlot}>
           <HeroObject film={film} />

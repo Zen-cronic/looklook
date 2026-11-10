@@ -313,9 +313,10 @@ describe("landing page", () => {
     expect(page).toContain('baselineScore(held, "same-category")');
     expect(page).toContain('baselineScore(held, "always-skip")');
     expect(page).not.toMatch(/value=\{\d/);
-    // Two ways in: Check a post, or Start here.
-    expect(page).toMatch(/className="btn" href="\/check"/);
-    expect(page).toMatch(/className="btn outline" href="\/judge"/);
+    // Ways in: the whole week, one post, or Start here.
+    expect(page).toMatch(/className="btn" href="\/week"/);
+    expect(page).toMatch(/className="btn outline" href="\/check"/);
+    expect(page).toContain('<Link href="/judge">Start here</Link>');
   });
 
   it("shows the sample shelf's sunscreen skip, decided by the engine, and the shelf item it matched", () => {
@@ -340,7 +341,8 @@ describe("landing page", () => {
     }
     const held = heldOutResult();
     const steps = startHereSteps({ heldOutRight: held.skipCorrect, heldOutN: held.n, devN: DEV_SET_SIZE, rebuyLeadDays: REBUY_LEAD_DAYS });
-    expect(steps[0].links).toEqual([{ href: "/check", label: "Open Check" }]);
+    expect(steps[0].links).toEqual([{ href: "/week", label: "Open the week" }]);
+    expect(steps[1].links).toEqual([{ href: "/check", label: "Open Check" }]);
   });
 });
 
@@ -373,7 +375,8 @@ describe("judge kit", () => {
     const count = (v: string) => s.checks.filter((c) => c.decision.verdict === v).length;
     expect([count("skip"), count("wait"), count("buy")]).toEqual([2, 4, 1]);
     expect(dueStaples(s, today).map((d) => d.item.id)).toEqual(["sh-cleanser"]);
-    expect(steps[0].body).toContain(`${numberWord(count("skip"))} skips, ${numberWord(count("wait"))} waits, a buy and a cleanser due for a rebuy`);
+    expect(steps[0].body).toContain("four posts are checked at once");
+    expect(steps[0].body).toContain("the peptide serum and the cleanser that's running out");
     expect(s.checks.find((c) => c.id === "week-spf")?.decision.verdict).toBe("skip");
     // Newest first on Check: the sunscreen is the newest entry.
     expect([...s.checks].sort((a, b) => b.createdAt.localeCompare(a.createdAt))[0].id).toBe("week-spf");
@@ -382,12 +385,13 @@ describe("judge kit", () => {
     expect(retinol()).toBe("above-usual-price");
     const peptide = s.checks.find((c) => c.id === "week-peptide")!;
     expect(peptide.decision.verdict).toBe("buy");
-    expect(steps[2].body).toContain(`tap Buy for ${formatDollars(peptide.facts.priceShown!)} with PayPal`);
+    expect(README).toContain(`a peptide serum to buy, plus a cleanser on her shelf that's running out`);
+    expect(formatDollars(peptide.facts.priceShown!)).toBe("$32.00");
     recordSpend(s.budgets, today, "skincare", peptide.facts.priceShown!);
     refreshChecks(s, today);
     expect(retinol()).toBe("over-budget");
-    const order = steps.map((x) => x.title);
-    expect(order.indexOf("Wait for a lower price")).toBeLessThan(order.indexOf("Buy once and save PayPal for rebuys"));
+    // So the week starts its price watch with the yes, before the first payment.
+    expect(read("lib/app/week.ts")).toContain("Watches first");
   });
 
   it("states the unit test count", () => {

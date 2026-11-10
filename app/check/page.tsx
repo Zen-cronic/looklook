@@ -23,6 +23,9 @@ export default function CheckPage({ searchParams }: PageProps<"/check">) {
       <div className="page-head">
         <h1>Saw it on your feed?</h1>
         <p className="lede">Send {APP_NAME} the post before you buy. It checks what you already own, your budget, the price history and whether the store takes it back once opened.</p>
+        <p className="small">
+          Saved a few this week? <Link href="/week">Hand it your week</Link> and say yes once.
+        </p>
       </div>
       <div className="object-layout">
         <Suspense fallback={null}>
