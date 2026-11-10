@@ -279,12 +279,12 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
 
       <aside className={s.side}>
         {done ? (
-          <section className={`card ${s.slip}`} aria-labelledby="week-done" data-testid="week-done">
+          <section className={`card ${s.slip} ${s.done}`} aria-labelledby="week-done" data-testid="week-done">
             <Eyebrow as="h2" icon="check" id="week-done">
-              Week done
+              One yes
             </Eyebrow>
             <p className={s.total}>
-              {paid.length} paid, {money(paidCents)}
+              Week done. {money(paidCents)} paid.
             </p>
             <ul className={s.doneList}>
               <li>

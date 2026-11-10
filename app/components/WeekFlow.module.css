@@ -106,10 +106,19 @@
   white-space: nowrap;
 }
 
+.state {
+  font-family: var(--font-ui);
+  font-stretch: normal;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* Paid is money that moved: ink on white, never the skip colour */
 .state[data-status="paid"] {
-  background: var(--signature);
-  border-color: var(--signature);
-  color: var(--signature-ink);
+  background: var(--card);
+  border-color: var(--ink);
+  box-shadow: inset 0 0 0 0.5px var(--ink);
+  color: var(--ink);
 }
 
 .state[data-status="declined"],
@@ -225,10 +234,37 @@
   background: var(--signature);
 }
 
-/* Phone: the slip follows the posts, and its yes stays in reach above the tab bar */
+/* The week done: the one loud card, like a verdict's head */
+.done {
+  background: var(--signature);
+  color: var(--signature-ink);
+  border-color: var(--signature);
+}
+
+.done :global(.eyebrow),
+.done :global(.eyebrow-icon) {
+  color: var(--signature-ink);
+  stroke: var(--signature-ink);
+}
+
+.done .total {
+  font-size: clamp(2rem, 1.6rem + 1.6vw, 2.75rem);
+  line-height: 1.05;
+}
+
+.done .doneList li::before {
+  background: var(--signature-ink);
+}
+
+.done :global(.btn.outline) {
+  color: var(--signature-ink);
+  border-color: var(--signature-ink);
+  background: transparent;
+}
+
+/* Phone: once the week is done, its result comes first */
 @media (max-width: 959px) {
-  .yes {
-    position: sticky;
-    bottom: calc(5.5rem + env(safe-area-inset-bottom));
+  .side:has(.done) {
+    order: -1;
   }
 }
