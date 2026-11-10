@@ -241,6 +241,68 @@ export interface SessionState {
   demo: { declineNextRebuy: boolean };
   /** Set when the shopper loaded the sample week (fictional data, labelled where it shows). */
   sample?: { kind: "week"; loadedAt: string };
+  /** "Hand it your week" runs, newest last (see lib/app/week.ts). */
+  weeks?: WeekRun[];
+}
+
+// A week handed over at once: posts in, one slip, one yes
+
+export type WeekGroup = "skip" | "wait" | "buy" | "ask";
+
+/** One post of the week as it was grouped (a snapshot: verdicts are decided again later). */
+export interface WeekInput {
+  checkId: string;
+  group: WeekGroup;
+  rule: string;
+  waitKind?: "budget" | "price" | "run-out" | "set-run-out";
+  waitUntil?: string;
+  priceCents?: number;
+  keptCents?: number;
+  targetPrice?: number;
+  title: string;
+  brand: string;
+  category?: Category;
+  imageUrl?: string;
+  productId?: string;
+  reason: string;
+}
+
+/** One payment on the week's slip. */
+export interface SlipLine {
+  source: PurchaseSource;
+  approvalKey: string;
+  amountCents: number;
+  version: string;
+  why: "buy" | "due";
+  daysLeft?: number;
+  title: string;
+  brand: string;
+  category?: Category;
+  imageUrl?: string;
+  productId?: string;
+}
+
+export type WeekLineStatus = "queued" | "paid" | "declined" | "price-changed" | "over-cap" | "over-budget" | "stale" | "needs-checkout" | "unconfirmed";
+
+export interface WeekLineOutcome {
+  status: Exclude<WeekLineStatus, "queued">;
+  receiptId?: string;
+  message?: string;
+  at: string;
+}
+
+export interface WeekRun {
+  id: string;
+  createdAt: string;
+  /** The (simulated) day the week was handed over. */
+  on: string;
+  from: "sample-week" | "posts";
+  inputs: WeekInput[];
+  /** Every line a yes was given for (on the slip or at checkout), newest status by approval key. */
+  sent: SlipLine[];
+  outcomes: Record<string, WeekLineOutcome>;
+  watches: Array<{ checkId: string; watchId?: string; status: "armed" | "unavailable"; message?: string }>;
+  approvedAt?: string;
 }
 
 export type EventSource = "paypal" | "channel3";

@@ -1,5 +1,6 @@
 /** Stand-ins shared by the payment tests (no network). */
 import type { PayPalRequest } from "../paypal/client";
+import { InstrumentDeclinedError, PayPalApiError } from "../paypal/errors";
 import type { SavedMethod } from "./types";
 
 /**
@@ -7,13 +8,18 @@ import type { SavedMethod } from "./types";
  * order with a completed capture; a repeated id returns the first order, as
  * the sandbox does for sequential repeats.
  */
-export function fakePayPal() {
+export function fakePayPal(opts: { onRequest?: (req: PayPalRequest) => void | Promise<void> } = {}) {
   const orders = new Map<string, { id: string; captureId: string; cents: number }>();
   const requests: PayPalRequest[] = [];
   const client = {
     request: async (req: PayPalRequest) => {
       requests.push(req);
+      await opts.onRequest?.(req);
       await new Promise((r) => setTimeout(r, 5));
+      // The sandbox's simulated decline (PayPal-Mock-Response), as the real client sends it.
+      if (req.mockApplicationCode === "INSTRUMENT_DECLINED") {
+        throw new InstrumentDeclinedError(new PayPalApiError(422, "UNPROCESSABLE_ENTITY", "The instrument presented was either declined by the processor or bank.", [{ issue: "INSTRUMENT_DECLINED" }], "DEBUG-1"));
+      }
       if (req.method === "POST" && req.path === "/v2/checkout/orders") {
         let o = orders.get(req.requestId!);
         if (!o) {
