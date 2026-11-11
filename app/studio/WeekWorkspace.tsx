@@ -82,7 +82,7 @@ function initialState(narrow: boolean): AgReportState {
           lines: {
             type: "grid",
             format: { title: { enabled: true, text: "Every line, and what happened to it" } },
-            dataMapping: { cols: [{ id: "slip.product" }, { id: "slip.why" }, { id: "slip.amount" }, { id: "slip.status" }, { id: "slip.orderId" }] },
+            dataMapping: { cols: [{ id: "slip.product" }, { id: "slip.amount" }, { id: "slip.status" }, { id: "slip.orderId" }] },
           },
         },
         widgetLayout: narrow
