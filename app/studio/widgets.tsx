@@ -3,7 +3,9 @@
 import type { AgWidgetParams } from "ag-studio";
 import { useEffect, useState } from "react";
 import type { PurchaseSource } from "@/lib/app/types";
+import { RULE_TEXT } from "@/lib/app/explain";
 import type { Cell, SkipFigure } from "@/lib/studio/schema";
+import type { RuleId } from "@/lib/verdict/types";
 import { Eyebrow } from "../components/Eyebrow";
 
 export interface ApproveRequest {
@@ -132,7 +134,7 @@ export function VerdictWidget(params: AgWidgetParams) {
   const sorted = [...verdicts].sort((a, b) => Number(isBought(a)) - Number(isBought(b)) || Number(a.rank) - Number(b.rank));
   const open = sorted.filter((r) => !isBought(r));
   const bought = sorted.length - open.length;
-  const counts = ["Skip", "Wait", "Buy"].map((v) => `${open.filter((r) => r.verdict === v).length} ${v.toLowerCase()}`);
+  const counts = ["Skip", "Wait", "Buy"].map((v) => `${open.filter((r) => r.verdict === v).length} ${verdictLabel(v).toLowerCase()}`);
   if (bought) counts.push(`${bought} bought`);
   return (
     <div className="decision-list">
@@ -167,7 +169,10 @@ export function VerdictWidget(params: AgWidgetParams) {
         return (
           <article key={String(r.id)} className={`decision ${cls}${r.payable ? " payable" : ""}`} data-testid={`verdict-${r.id}`}>
             <div className="decision-top">
-              <span className={`chip ${cls}`}>{String(r.verdict)}</span>
+              <span className="summary-verdict">
+                <span className={`chip ${cls}`}>{verdictLabel(r.verdict)}</span>
+                <span className="summary-reason">{shortReason(r.rule)}</span>
+              </span>
               <span className="decision-price num">{money(r.price)}</span>
             </div>
             <h3>{String(r.product)}</h3>
@@ -195,15 +200,102 @@ export function VerdictWidget(params: AgWidgetParams) {
   );
 }
 
+const VERDICT_ORDER = ["Skip", "Wait", "Buy", "Check this"] as const;
+/** The words shown for each verdict value in the table. Change a verdict's display word here only. */
+export const VERDICT_LABEL: Record<string, string> = { Skip: "Skip", Wait: "Wait", Buy: "Buy", "Check this": "Check this", Bought: "Bought" };
+const verdictLabel = (v: unknown) => VERDICT_LABEL[String(v)] ?? String(v);
+
+/** The short reason that goes right next to each verdict chip, per rule. The table carries the rule's full sentence. */
+export const SHORT_REASON: Record<RuleId, string> = {
+  "identity-unconfirmed": "Not sure which product",
+  "owns-unopened": "You have one unopened",
+  "run-out-unknown": "Run-out date not set",
+  "not-needed-yet": "Yours lasts two more weeks",
+  "owns-similar": "You already own one",
+  "overlap-non-returnable": "Overlaps, may not go back",
+  "price-unknown": "No price shown",
+  "over-budget": "Over this month's budget",
+  "no-price-history": "Not enough price history",
+  "above-usual-price": "Price is higher than usual",
+  "replacing-run-out": "Replaces one running out",
+  "clear-to-buy": "Worth it, within budget",
+};
+const BY_RULE_TEXT = new Map(Object.entries(RULE_TEXT).map(([id, text]) => [text, SHORT_REASON[id as RuleId]]));
+const shortReason = (rule: unknown) => BY_RULE_TEXT.get(String(rule ?? "")) ?? "";
+
+/** The verdicts at a glance: a count per verdict over one stacked bar, then one short row per product. A buy can be paid here. */
+export function VerdictSummaryWidget(params: AgWidgetParams) {
+  const ctx = params.context as WorkspaceContext;
+  const verdicts = useTable(params, "verdicts");
+  if (!verdicts) return <div className="decision-list loading">Loading verdicts…</div>;
+  const isBought = (r: Record<string, Cell | Date>) => r.status === "Bought";
+  const open = verdicts.filter((r) => !isBought(r)).sort((a, b) => VERDICT_ORDER.indexOf(String(a.verdict) as never) - VERDICT_ORDER.indexOf(String(b.verdict) as never) || Number(a.rank) - Number(b.rank));
+  const bought = verdicts.filter(isBought);
+  const counts = VERDICT_ORDER.map((v) => ({ v, n: open.filter((r) => r.verdict === v).length })).filter((c) => c.n > 0 || c.v !== "Check this");
+  const total = Math.max(1, open.length);
+  return (
+    <div className="decision-list summary-widget" data-testid="studio-verdicts">
+      <div className="decision-head">
+        <h2>Verdicts</h2>
+        <p className="small muted">{verdicts.length} products checked</p>
+      </div>
+      {verdicts.length === 0 ? (
+        <p className="muted">No checks yet. Check a post on the Check page.</p>
+      ) : (
+        <>
+          <div className="summary-figures">
+            {counts.map((c) => (
+              <div key={c.v} className={`summary-figure ${verdictClass[c.v]}`}>
+                <span className="figure-big num">{c.n}</span>
+                <span className="figure-label">
+                  <i aria-hidden />
+                  {verdictLabel(c.v)}
+                </span>
+              </div>
+            ))}
+            {bought.length > 0 && (
+              <div className="summary-figure bought">
+                <span className="figure-big num">{bought.length}</span>
+                <span className="figure-label">Bought</span>
+              </div>
+            )}
+          </div>
+          <div className="summary-bar" aria-hidden>
+            {counts.map((c) => (c.n ? <span key={c.v} className={verdictClass[c.v]} style={{ flexGrow: c.n / total }} /> : null))}
+          </div>
+          <ul className="summary-rows">
+            {[...open, ...bought].map((r) => {
+              const cls = isBought(r) ? "bought" : (verdictClass[String(r.verdict)] ?? "ask");
+              return (
+                <li key={String(r.id)} data-testid={`verdict-${r.id}`}>
+                  <span className="summary-verdict">
+                    <span className={`chip ${cls}`}>{verdictLabel(isBought(r) ? "Bought" : r.verdict)}</span>
+                    <span className="summary-reason">{isBought(r) ? "Paid" : shortReason(r.rule)}</span>
+                  </span>
+                  <a className="summary-name" href={`/check/${r.id}`}>
+                    {String(r.product)}
+                  </a>
+                  <span className="num">{money(r.price)}</span>
+                  {r.payable && !isBought(r) ? <ApproveButton ctx={ctx} label="Buy" req={{ source: { kind: "check", checkId: String(r.id) }, withinCap: Boolean(r.withinCap), amount: Number(r.price) }} /> : <span />}
+                </li>
+              );
+            })}
+          </ul>
+        </>
+      )}
+    </div>
+  );
+}
+
 /** Staples running out and price drops waiting for the shopper's yes, each payable here. */
 export function RebuyWidget(params: AgWidgetParams) {
   const ctx = params.context as WorkspaceContext;
   const rebuys = useTable(params, "rebuys");
-  if (!rebuys) return <div className="decision-list loading">Loading rebuys…</div>;
+  if (!rebuys) return <div className="decision-list loading">Loading reorders…</div>;
   return (
     <div className="decision-list">
       <div className="decision-head">
-        <h2>Needs your yes</h2>
+        <h2>Reorders</h2>
         <p className="small muted">{rebuys.length ? `${rebuys.length} waiting` : "Nothing due"}</p>
       </div>
       {rebuys.length === 0 && <p className="small muted">Staples show up five days before they run out, and watched items when the price drops to your target.</p>}
@@ -230,7 +322,7 @@ export function RebuyWidget(params: AgWidgetParams) {
             ) : r.declined ? (
               <ApproveReapprove ctx={ctx} source={source} />
             ) : (
-              <ApproveButton ctx={ctx} label={r.sourceKind === "watch" ? "Buy" : "Rebuy"} req={{ source, withinCap: Boolean(r.withinCap), amount: Number(r.price) }} />
+              <ApproveButton ctx={ctx} label={r.sourceKind === "watch" ? "Buy" : "Reorder"} req={{ source, withinCap: Boolean(r.withinCap), amount: Number(r.price) }} />
             )}
           </article>
         );
@@ -266,28 +358,26 @@ export function BudgetWidget(params: AgWidgetParams) {
   const left = rows.reduce((s, r) => s + Number(r.left ?? 0), 0);
   const limit = rows.reduce((s, r) => s + Number(r.limit ?? 0), 0);
   const maxCap = Math.max(1, ...rows.map((r) => Number(r.limit ?? 0)));
+  const whole = (n: number) => new Intl.NumberFormat("en-US", { style: "currency", currency: "USD", maximumFractionDigits: n % 1 ? 2 : 0 }).format(n);
   return (
-    <div className="figure-widget">
-      <div className="figure-label">Left this month</div>
-      <div className="figure-big num">{money(left)}</div>
-      <div className="small muted">of {money(limit)} across your budgets</div>
+    <div className="figure-widget budget-widget" data-testid="studio-budget">
+      <div className="figure-label">Budget left this month</div>
+      <div className="figure-big num">{whole(left)}</div>
+      <div className="small figure-gloss">of {whole(limit)}</div>
       <ul className="budget-bars">
         {rows.map((r) => {
-          // Spent against the cap, the same as the shelf's budgets: the track is as long as the cap
-          // (against the largest budget), the fill is what's spent.
+          // One bar per budget, as long as its monthly limit (against the largest), filled with what's left.
           const cap = Number(r.limit);
-          const spent = Math.max(0, cap - Number(r.left));
-          const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((spent / cap) * 100))) : 0;
+          const leftN = Math.max(0, Number(r.left));
+          const pct = cap > 0 ? Math.max(0, Math.min(100, Math.round((leftN / cap) * 100))) : 0;
           const length = cap > 0 ? Math.max(12, Math.round((cap / maxCap) * 100)) : 0;
           return (
             <li key={String(r.id)}>
-              <span>{String(r.group)}</span>
-              <span className="meter-slot">
-                <span className="meter" style={{ width: `${length}%` }} aria-hidden>
-                  <span style={{ width: `${pct}%` }} />
-                </span>
+              <span className="budget-name">{String(r.group)}</span>
+              <span className="budget-track" style={{ width: `${length}%` }} aria-hidden>
+                <span style={{ width: `${pct}%` }} />
               </span>
-              <span className="num small">{money(r.left)} left</span>
+              <span className="num">{whole(leftN)}</span>
             </li>
           );
         })}
@@ -402,32 +492,50 @@ export function ShelfTableWidget(params: AgWidgetParams) {
   );
 }
 
-/** Items watched for a price drop, or a plain card when there are none. */
+/** Items watched for a price drop. With none watched, the price waits instead: what each is waiting for. */
 export function WatchListWidget(params: AgWidgetParams) {
   const rows = useTable(params, "watchlist");
+  const verdicts = useTable(params, "verdicts");
   useEffect(() => {
     (params.widgetApi as unknown as WidgetApiLike).setDisplayState("displayed");
   }, [params]);
+  const watched = rows ?? [];
+  const priceWaits = (verdicts ?? []).filter((r) => r.verdict === "Wait" && typeof r.buyAt === "number" && r.status !== "Bought");
+  const list = watched.length
+    ? watched.map((r) => ({ id: String(r.id), product: String(r.product), now: r.currentPrice, target: r.targetPrice }))
+    : priceWaits.map((r) => ({ id: String(r.id), product: String(r.product), now: r.price, target: r.buyAt }));
   return (
-    <div className="decision-list">
+    <div className="decision-list watch-widget" data-testid="studio-watches">
       <div className="decision-head">
-        <h2>Price watches</h2>
+        <h2>{watched.length ? "Price watches" : "Waiting for a lower price"}</h2>
       </div>
-      {!rows || rows.length === 0 ? (
-        <div className="empty-card">
-          <p>Nothing watched yet.</p>
-          <p className="small muted">Tap Watch for a drop on a wait verdict, and the price shows up here.</p>
-        </div>
+      {list.length === 0 ? (
+        <p className="small muted">Nothing is waiting for a lower price.</p>
       ) : (
-        <ul className="stack-rows">
-          {rows.map((r) => (
-            <li key={String(r.id)}>
-              <span className="name-line">{String(r.product)}</span>
-              <span className="small muted">
-                Was {money(r.startPrice)}, now {money(r.currentPrice)}, buy at {money(r.targetPrice)}. {String(r.status ?? "")}
-              </span>
-            </li>
-          ))}
+        <ul className="watch-rows">
+          {list.map((r) => {
+            const now = Number(r.now);
+            const target = Number(r.target);
+            const pct = now > 0 ? Math.max(4, Math.min(100, Math.round((target / now) * 100))) : 0;
+            return (
+              <li key={r.id}>
+                <span className="name-line">{r.product}</span>
+                <span className="watch-figures">
+                  <span>
+                    <span className="figure-label">Buy at</span>
+                    <span className="watch-target num">{money(target)}</span>
+                  </span>
+                  <span>
+                    <span className="figure-label">Now</span>
+                    <span className="num">{money(now)}</span>
+                  </span>
+                </span>
+                <span className="watch-bar" aria-hidden>
+                  <span style={{ width: `${pct}%` }} />
+                </span>
+              </li>
+            );
+          })}
         </ul>
       )}
     </div>

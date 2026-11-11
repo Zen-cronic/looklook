@@ -12,11 +12,11 @@ import { diffRows, fieldName, TABLES, waitCounts, type FieldKind, type Row, type
 import { Eyebrow } from "../components/Eyebrow";
 import { claudeAdapter, type TurnInfo } from "./adapter";
 import { DEFAULT_WAITS_WIDGET, isWaitsWidget, type WaitsWidget } from "./waits";
-import { BudgetWidget, RebuyWidget, ShelfListWidget, ShelfTableWidget, SkipWidget, VerdictWidget, WatchListWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
+import { BudgetWidget, RebuyWidget, ShelfListWidget, ShelfTableWidget, SkipWidget, VerdictSummaryWidget, VerdictWidget, WatchListWidget, type ApproveResult, type WorkspaceContext } from "./widgets";
 
 const LICENSE = process.env.NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY;
 const PAGE_ID = "decisions";
-const BASE_WIDGETS = ["verdicts", "rebuys", "budget", "skip", "shelf", "watch"];
+const BASE_WIDGETS = ["verdicts", "budget", "watch"];
 const AGENT_ID = "looklook";
 const RUN_LIMIT_MS = 150_000;
 const CACHE_KEY = "looklook.waits-widget.v1";
@@ -58,65 +58,40 @@ function sources(payload: StudioPayload) {
   }));
 }
 
-// Canvas rows are 20px. The shelf table is tall enough for every row, so it never cuts off mid-list.
+// Canvas rows are 20px.
 const TRACK_PX = 20;
-const shelfSpan = (rows: number) => Math.max(10, Math.ceil((rows * 34 + 110) / TRACK_PX));
-const watchSpan = (rows: number) => (rows ? Math.max(8, Math.ceil((rows * 34 + 110) / TRACK_PX)) : 8);
 
-/** Measured card heights by kind: at 1440 (two columns, cards about 350px wide) and at 390 (one column). */
-const CARD_PX: Record<string, number> = { Skip: 225, Wait: 262, Buy: 275, "Check this": 212, Bought: 212 };
-const PHONE_CARD_PX: Record<string, number> = { Skip: 245, Wait: 266, Buy: 285, "Check this": 230, Bought: 228 };
-const cardPx = (r: Row, px: Record<string, number>) => (r.status === "Bought" ? px.Bought : (px[String(r.verdict)] ?? px.Wait));
+/** About how many 20px tracks the verdicts summary needs: heading, the figures, the bar, then one short row per product. */
+const summaryTracks = (p: StudioPayload, rowPx: number) => Math.ceil((200 + Math.max(1, p.tables.verdicts.length) * rowPx) / TRACK_PX);
+/** The price watches: a heading and a short note when empty, one row per watch otherwise. */
+const watchTracks = (p: StudioPayload) => Math.max(9, Math.ceil((70 + Math.max(1, p.tables.watchlist.length) * 110) / TRACK_PX));
+const BUDGET_TRACKS = 12;
+const WAITS_TRACKS = 9;
 
-/** About how many 20px tracks the verdict list needs: its heading, then its cards in one or two columns. */
-function verdictTracks(p: StudioPayload, columns: 1 | 2): number {
-  const px = p.tables.verdicts.map((r) => cardPx(r, columns === 2 ? CARD_PX : PHONE_CARD_PX));
-  let body = 0;
-  for (let i = 0; i < px.length; i += columns) body += Math.max(...px.slice(i, i + columns)) + 10;
-  return Math.ceil((80 + body) / TRACK_PX);
-}
-
-/** The rebuys widget: its heading, then one card per rebuy (or a line when nothing is due). */
-const rebuyTracks = (p: StudioPayload, cardPx: number) => Math.ceil((80 + Math.max(1, p.tables.rebuys.length) * cardPx) / TRACK_PX);
-
+/**
+ * Three widgets in one screen at 1440: the verdicts summary on the left, the budget left and the
+ * price watches stacked on the right, ending on the same line. The waits table that Group my waits
+ * builds runs full width on top, and the rest moves down. On a phone everything stacks.
+ */
 function layouts(p: StudioPayload, narrow = false) {
-  const shelf = shelfSpan(p.tables.shelf.length);
-  const watch = watchSpan(p.tables.watchlist.length);
   if (narrow) {
-    // One column on a phone: each widget keeps its own height, the verdict list grows to fit its
-    // (taller, narrower) cards, and the shelf rows wrap to two lines.
-    const v = verdictTracks(p, 1);
-    const r = rebuyTracks(p, 175);
-    const shelfRows = Math.ceil((p.tables.shelf.length * 58 + 80) / TRACK_PX);
-    const watchRows = p.tables.watchlist.length ? Math.ceil((p.tables.watchlist.length * 50 + 70) / TRACK_PX) : 8;
+    const v = summaryTracks(p, 56);
+    const w = watchTracks(p);
     const base = {
       verdicts: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: v },
-      rebuys: { xTrack: 0, yTrack: v, xSpan: 24, ySpan: r },
-      budget: { xTrack: 0, yTrack: v + r, xSpan: 24, ySpan: 12 },
-      skip: { xTrack: 0, yTrack: v + r + 12, xSpan: 24, ySpan: 10 },
-      shelf: { xTrack: 0, yTrack: v + r + 22, xSpan: 24, ySpan: shelfRows },
-      watch: { xTrack: 0, yTrack: v + r + 22 + shelfRows, xSpan: 24, ySpan: watchRows },
+      budget: { xTrack: 0, yTrack: v, xSpan: 24, ySpan: BUDGET_TRACKS },
+      watch: { xTrack: 0, yTrack: v + BUDGET_TRACKS, xSpan: 24, ySpan: w },
     };
-    const end = v + r + 22 + shelfRows + watchRows;
-    return { base, withWaits: { ...base, waits: { xTrack: 0, yTrack: end, xSpan: 24, ySpan: 10 } }, tracks: end };
+    const end = v + BUDGET_TRACKS + w;
+    return { base, withWaits: { ...base, waits: { xTrack: 0, yTrack: end, xSpan: 24, ySpan: WAITS_TRACKS } }, tracks: end };
   }
-  // Two columns that end on the same line: the verdicts as a two-column card grid on the left;
-  // the budget, the rebuys and the skip figure on the right, the cobalt skip figure stretching to meet the verdicts.
-  // The shelf and the price watches run full width underneath.
-  const rebuys = rebuyTracks(p, 155);
-  const top = Math.max(verdictTracks(p, 2), 12 + rebuys + 11);
+  const top = Math.max(summaryTracks(p, 40), BUDGET_TRACKS + watchTracks(p));
   const at = (y: number) => ({
     verdicts: { xTrack: 0, yTrack: y, xSpan: 16, ySpan: top },
-    budget: { xTrack: 16, yTrack: y, xSpan: 8, ySpan: 12 },
-    rebuys: { xTrack: 16, yTrack: y + 12, xSpan: 8, ySpan: rebuys },
-    skip: { xTrack: 16, yTrack: y + 12 + rebuys, xSpan: 8, ySpan: top - 12 - rebuys },
-    shelf: { xTrack: 0, yTrack: y + top, xSpan: 24, ySpan: shelf },
-    watch: { xTrack: 0, yTrack: y + top + shelf, xSpan: 24, ySpan: watch },
+    budget: { xTrack: 16, yTrack: y, xSpan: 8, ySpan: BUDGET_TRACKS },
+    watch: { xTrack: 16, yTrack: y + BUDGET_TRACKS, xSpan: 8, ySpan: top - BUDGET_TRACKS },
   });
-  const base = at(0);
-  // With the waits table: it runs full width at the top, right under the header, and the rest moves down.
-  const withWaits = { ...at(10), waits: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 10 } };
-  return { base, withWaits, tracks: top + shelf + watch };
+  return { base: at(0), withWaits: { ...at(WAITS_TRACKS), waits: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: WAITS_TRACKS } }, tracks: top };
 }
 
 const FOLDED_PANELS = { ai: { collapsed: true }, data: { collapsed: true } };
@@ -129,18 +104,15 @@ function initialState(p: StudioPayload, narrow: boolean): AgReportState {
         id: PAGE_ID,
         name: "Dashboard",
         widgets: {
-          verdicts: { type: "verdictList", dataMapping: {} },
-          rebuys: { type: "rebuyList", dataMapping: {} },
+          verdicts: { type: "verdictSummary", dataMapping: {} },
           budget: { type: "budgetFigure", dataMapping: {} },
-          skip: { type: "skipFigure", dataMapping: {} },
-          shelf: narrow ? { type: "shelfList", dataMapping: {} } : { type: "shelfTable", dataMapping: {} },
           watch:
             narrow || p.tables.watchlist.length === 0
               ? { type: "watchList", dataMapping: {} }
               : {
                   type: "grid",
                   format: { title: { enabled: true, text: "Price watches" } },
-                  dataMapping: { cols: [{ id: "watchlist.product" }, { id: "watchlist.startPrice" }, { id: "watchlist.currentPrice" }, { id: "watchlist.targetPrice" }, { id: "watchlist.status" }, { id: "watchlist.alert" }] },
+                  dataMapping: { cols: [{ id: "watchlist.product" }, { id: "watchlist.currentPrice" }, { id: "watchlist.targetPrice" }, { id: "watchlist.status" }] },
                 },
         },
         widgetLayout: layouts(p, narrow).base,
@@ -361,16 +333,25 @@ export default function Workspace({ initial, narrow }: Props) {
             comp: VerdictWidget,
             defaultSize: { width: 420, height: 640 },
             minSize: { width: 260, height: 220 },
-            ai: { description: `${APP_NAME} verdicts: one card per checked product (skip, wait, buy) with its reason, evidence links and a pay button on buys. Reads the verdicts table; needs no field mapping.` },
+            ai: { description: `${APP_NAME} verdicts: one card per checked product (skip, wait, buy) with its reason, evidence links and a pay button on buys. Reads the verdicts table and needs no field mapping.` },
+          },
+          {
+            id: "verdictSummary",
+            label: "Verdicts summary",
+            form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
+            comp: VerdictSummaryWidget,
+            defaultSize: { width: 560, height: 420 },
+            minSize: { width: 280, height: 220 },
+            ai: { description: `${APP_NAME} verdicts at a glance: how many skips, waits and buys, as figures over one bar, then one row per product with the verdict, its short reason and a pay button on buys. Reads the verdicts table and needs no field mapping.` },
           },
           {
             id: "rebuyList",
-            label: "Needs your yes",
+            label: "Reorders",
             form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
             comp: RebuyWidget,
             defaultSize: { width: 320, height: 480 },
             minSize: { width: 220, height: 160 },
-            ai: { description: "Staples running out and price drops waiting for the shopper's yes, each with a pay button. Reads the rebuys table; needs no field mapping." },
+            ai: { description: "Reorders: staples running out and price drops waiting for the shopper's yes, each with a pay button. Reads the rebuys table and needs no field mapping." },
           },
           {
             id: "budgetFigure",
@@ -379,7 +360,7 @@ export default function Workspace({ initial, narrow }: Props) {
             comp: BudgetWidget,
             defaultSize: { width: 320, height: 240 },
             minSize: { width: 220, height: 160 },
-            ai: { description: "Money left this month across the shopper's budgets, with a bar per group. Reads the budgets table; needs no field mapping." },
+            ai: { description: "Money left this month across the shopper's budgets, with a bar per group. Reads the budgets table and needs no field mapping." },
           },
           {
             id: "skipFigure",
@@ -397,7 +378,7 @@ export default function Workspace({ initial, narrow }: Props) {
             comp: ShelfListWidget,
             defaultSize: { width: 320, height: 480 },
             minSize: { width: 220, height: 160 },
-            ai: { description: "The shopper's shelf as stacked rows: product, when it runs out and days left. Reads the shelf table; needs no field mapping." },
+            ai: { description: "The shopper's shelf as stacked rows: product, when it runs out and days left. Reads the shelf table and needs no field mapping." },
           },
           {
             id: "shelfTable",
@@ -406,7 +387,7 @@ export default function Workspace({ initial, narrow }: Props) {
             comp: ShelfTableWidget,
             defaultSize: { width: 640, height: 480 },
             minSize: { width: 320, height: 160 },
-            ai: { description: "The shopper's shelf as a table: product, run-out date, days left (a pink pill within six days) and last price. Reads the shelf table; needs no field mapping." },
+            ai: { description: "The shopper's shelf as a table: product, run-out date, days left (a pink pill within six days) and last price. Reads the shelf table and needs no field mapping." },
           },
           {
             id: "watchList",
@@ -415,10 +396,10 @@ export default function Workspace({ initial, narrow }: Props) {
             comp: WatchListWidget,
             defaultSize: { width: 320, height: 240 },
             minSize: { width: 220, height: 120 },
-            ai: { description: "Items watched for a price drop as stacked rows, or a short note when nothing is watched. Reads the watch list table; needs no field mapping." },
+            ai: { description: "Items watched for a price drop, each with its target and current price. With nothing watched it shows the price waits instead. Reads the watch list and verdicts tables and needs no field mapping." },
           },
         ],
-        menu: [...base.menu, { label: APP_NAME, widgetIds: ["verdictList", "rebuyList", "budgetFigure", "skipFigure", "shelfTable", "shelfList", "watchList"] }],
+        menu: [...base.menu, { label: APP_NAME, widgetIds: ["verdictSummary", "verdictList", "rebuyList", "budgetFigure", "skipFigure", "shelfTable", "shelfList", "watchList"] }],
       } as never),
     [],
   );
@@ -446,10 +427,11 @@ export default function Workspace({ initial, narrow }: Props) {
             maxTurns: 10,
             instructions: () =>
               [
-                `You are ${APP_NAME}'s agent. ${APP_NAME} decides skip, wait or buy for products a shopper is considering, and keeps their shelf, budgets and rebuys.`,
+                `You are ${APP_NAME}'s agent. ${APP_NAME} decides skip, wait or buy for products a shopper is considering, and keeps their shelf, budgets and reorders.`,
                 "You never build widgets yourself. For any change to the workspace, delegate to Studio's lead agent with delegate_to and a precise instruction.",
                 "When asked to group the shopper's waits: ask the lead to add ONE grid widget to the current page, titled 'Waiting for a price drop or next month', that reads the verdicts table with the columns waitingFor, product, price, buyAt and lookAgain, with a widget filter verdict equals 'Wait', sorted by waitingFor. Tell it to leave every other widget as it is and not to create a page.",
-                `After the lead reports back, call report_to_looklook once with the lead's summary, then reply in one short sentence. Never state how many rows there are: ${APP_NAME} counts them itself.`,
+                `After the lead reports back, call report_to_looklook once with the lead's summary, then reply in one short sentence. Never state how many rows there are, ${APP_NAME} counts them itself.`,
+                "Write plain everyday words. Never use semicolons or middle dots.",
               ].join("\n"),
             tools: () => [tools.delegateTo(["lead"]), report],
           } as never);
@@ -528,11 +510,11 @@ export default function Workspace({ initial, narrow }: Props) {
   const waits = waitCounts(payload.tables.verdicts);
   const [initial0] = useState(() => initialState(initial, narrow));
   // The canvas is as tall as its widgets, so the page scrolls, not the canvas. On a phone the widgets stack in one column.
-  const tracks = layouts(initial, narrow).tracks + (run.kind !== "idle" ? 10 : 0);
+  const tracks = layouts(initial, narrow).tracks + (run.kind !== "idle" ? WAITS_TRACKS : 0);
   const editing = mode === "edit" && !narrow;
   // While customizing, the editor fits the window and the canvas scrolls inside it, so the assistant's
   // suggestions and its message box stay in view beside the widgets.
-  const canvasHeight = editing ? "max(40rem, calc(100dvh - 1.5rem))" : `${Math.max(tracks, 34) * TRACK_PX + (narrow ? 80 : 24)}px`;
+  const canvasHeight = editing ? "max(40rem, calc(100dvh - 1.5rem))" : `${Math.max(tracks, 20) * TRACK_PX + (narrow ? 80 : 8)}px`;
 
   // The editor's panels are created when it first opens, after the page state was applied, so the
   // assistant and the field list are folded to rails then, with their own headers. Later opens keep
@@ -554,9 +536,9 @@ export default function Workspace({ initial, narrow }: Props) {
     <AgStudioProvider licenseKey={LICENSE} modules={[AgStudioAiModule]}>
       <div className={`workspace${narrow ? " narrow" : ""}${editing ? " editing" : ""}`}>
         <div className="workspace-bar">
-          <div>
+          <div className="workspace-title">
             <h1>Dashboard</h1>
-            <p className="small muted">Your verdicts, rebuys, shelf and budgets in one place. Built in AG Studio.</p>
+            <p className="small muted">Built with AG Studio</p>
           </div>
           {!narrow && (
             <div className="workspace-actions">
@@ -578,7 +560,7 @@ export default function Workspace({ initial, narrow }: Props) {
         )}
         {narrow && (
           <div className="workspace-note">
-            <p>Grouping your waits with Studio&apos;s agents and changing the layout need a wider screen.</p>
+            <p>Group my waits and Customize need a wider screen.</p>
           </div>
         )}
         {!narrow && run.kind !== "idle" && (
@@ -587,12 +569,12 @@ export default function Workspace({ initial, narrow }: Props) {
               <>
                 <span className="spinner" aria-hidden />
                 <span>
-                  {APP_NAME}&apos;s agent asked Studio&apos;s agents to build the table. {run.step}, {run.calls} {run.calls === 1 ? "step" : "steps"}, {Math.max(0, Math.round((now - run.startedAt) / 1000))} s.
+                  Studio&apos;s agents are building your waits table. {run.step}, step {Math.max(1, run.calls)}, {Math.max(0, Math.round((now - run.startedAt) / 1000))} s
                 </span>
               </>
             ) : (
               <span>
-                {run.fromCache ? run.note : `Studio's agents built the table in ${run.seconds} s (${run.calls} steps).`}{" "}
+                {run.fromCache ? run.note : `Built by Studio's agents in ${run.seconds} s.`}{" "}
                 <strong>
                   {waits.total === 0
                     ? "Nothing is waiting."
