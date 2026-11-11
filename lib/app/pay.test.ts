@@ -142,7 +142,7 @@ describe("after PayPal captured a checkout", () => {
 });
 
 describe("the amount and the card the shopper approved", () => {
-  it("refuses a charge when the price moved after the card was shown, then charges the re-approved price", async () => {
+  it("refuses a charge when the price moved after it was shown, then charges the re-approved price", async () => {
     const { payWithSavedMethod } = await import("./pay");
     const { updateSession } = await import("./store");
     const pp = fakePayPal();

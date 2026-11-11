@@ -61,8 +61,8 @@ function priceEvent(id: string, from: number, to: number, domain = "sephora.com"
 const deps = (pp: ReturnType<typeof fakePayPal>) => ({ client: () => pp.client as never, simulated: false });
 const refundCalls = (pp: ReturnType<typeof fakePayPal>) => pp.requests.filter((r) => r.path.endsWith("/refund"));
 
-describe("the price guard after the yes", () => {
-  it("guards what one yes paid for as long as the store takes it back opened, and has no guard where no such window is on record", async () => {
+describe("price protection after the yes", () => {
+  it("protects the price of what one yes paid for as long as the store takes it back opened, and gives no price protection where no such window is on record", async () => {
     const { sid, peptide, cleanser, subscribed, store, guard } = await paidWeek();
     expect(peptide.status).toBe("completed");
     const s = store.loadSession(sid);
@@ -81,7 +81,7 @@ describe("the price guard after the yes", () => {
     expect(guard.guardWindow("Target", "headphones")).toEqual({ ok: false, why: "not-opened" });
   });
 
-  it("puts the refund back into the month's budget, so the next slip can pay a line the budget held back", async () => {
+  it("puts the refund back into the month's budget, so the next order can pay an item the budget held back", async () => {
     const { sid, pp, peptide, store, guard } = await paidWeek();
     const week = await import("./week");
     const { recordSpend } = await import("./budgets");

@@ -55,8 +55,8 @@ function watcher(pp: ReturnType<typeof fakePayPal>, log: string[] = []) {
   };
 }
 
-describe("hand it your week: the slip", () => {
-  it("groups the sample week and puts the buy and the due cleanser on one slip", async () => {
+describe("hand it your week: this week's order", () => {
+  it("groups the sample week and puts the buy and the due cleanser in one order", async () => {
     const { sid, runId } = await week();
     const { loadSession } = await import("./store");
     const { findRun } = await import("./week");
@@ -74,7 +74,7 @@ describe("hand it your week: the slip", () => {
     expect((await slipOf(sid, runId)).hash).toBe(slip.hash);
   });
 
-  it("leaves a line off when the card's cap or the month's budget can't cover it", async () => {
+  it("leaves an item off when the card's cap or the month's budget can't cover it", async () => {
     const capped = await week((s) => s.methods.push({ ...savedCard, capCents: 3000 }));
     const slip = await slipOf(capped.sid, capped.runId);
     expect(slip.lines.map((l) => l.why)).toEqual(["due"]);
@@ -92,7 +92,7 @@ describe("hand it your week: the slip", () => {
 });
 
 describe("hand it your week: one yes", () => {
-  it("pays each line once, as its own PayPal order, after starting the watch", async () => {
+  it("pays each item once, as its own PayPal payment, after starting the watch", async () => {
     const { sid, runId } = await week();
     const { approveWeek } = await import("./week");
     const pp = fakePayPal();
@@ -109,7 +109,7 @@ describe("hand it your week: one yes", () => {
     expect(s.receipts.filter((r) => r.status !== "failed")).toHaveLength(2);
   });
 
-  it("never charges a paid line again: the old slip is refused with no PayPal call", async () => {
+  it("never charges a paid item again: the old order is refused with no PayPal call", async () => {
     const { sid, runId } = await week();
     const { approveWeek } = await import("./week");
     const pp = fakePayPal();
@@ -135,7 +135,7 @@ describe("hand it your week: one yes", () => {
     expect(w.log).toHaveLength(1);
   });
 
-  it("keeps paying the other lines when one is declined, and the paid one stays paid on a new yes", async () => {
+  it("keeps paying the other items when one is declined, and the paid one stays paid on a new yes", async () => {
     const { sid, runId } = await week((s) => {
       s.methods.push({ ...savedCard });
       s.demo.declineNextRebuy = true;
@@ -158,7 +158,7 @@ describe("hand it your week: one yes", () => {
     expect(pp.orders.size).toBe(2);
   });
 
-  it("charges nothing when a price on the slip moved after it was shown", async () => {
+  it("charges nothing when a price in the order moved after it was shown", async () => {
     const { sid, runId } = await week();
     const { approveWeek } = await import("./week");
     const { updateSession } = await import("./store");
@@ -171,7 +171,7 @@ describe("hand it your week: one yes", () => {
     expect(pp.requests).toHaveLength(0);
   });
 
-  it("marks a line whose price moved while the week was being paid, and pays only the others", async () => {
+  it("marks an item whose price moved while the week was being paid, and pays only the others", async () => {
     const { sid, runId } = await week();
     const { approveWeek } = await import("./week");
     const { updateSession } = await import("./store");
@@ -205,8 +205,8 @@ describe("hand it your week: one yes", () => {
   });
 });
 
-describe("hand it your week: lines left for later", () => {
-  it("leaves a line for later: the slip's hash changes and the old hash charges nothing", async () => {
+describe("hand it your week: items left for later", () => {
+  it("leaves an item for later: the order's hash changes and the old hash charges nothing", async () => {
     const { sid, runId } = await week();
     const { approveWeek, setLeftForLater } = await import("./week");
     const before = await slipOf(sid, runId);
@@ -225,7 +225,7 @@ describe("hand it your week: lines left for later", () => {
     expect(pp.orders.size).toBe(view.slip.lines.length);
   });
 
-  it("puts a line back and the slip returns to the hash it had", async () => {
+  it("puts an item back and the order returns to the hash it had", async () => {
     const { sid, runId } = await week();
     const { setLeftForLater } = await import("./week");
     const before = await slipOf(sid, runId);
@@ -236,7 +236,7 @@ describe("hand it your week: lines left for later", () => {
     expect(back.slip.lines.map((l) => l.approvalKey)).toEqual(before.lines.map((l) => l.approvalKey));
   });
 
-  it("only names lines the slip lists: leaving or putting back anything else is refused and changes nothing", async () => {
+  it("only names items the order lists: leaving or putting back anything else is refused and changes nothing", async () => {
     const { sid, runId } = await week();
     const { setLeftForLater } = await import("./week");
     const before = await slipOf(sid, runId);
@@ -250,7 +250,7 @@ describe("hand it your week: lines left for later", () => {
 });
 
 describe("hand it your week: the first payment at checkout", () => {
-  it("returns only to a week of this browser, and notes the line on the week", async () => {
+  it("returns only to a week of this browser, and notes the item on the week", async () => {
     const { parseReturnTo, buildSlip, findRun, noteCheckoutLine, weekView } = await import("./week");
     expect(parseReturnTo(undefined)).toBeUndefined();
     expect(parseReturnTo("/week?run=wk_0123456789ab")).toEqual({ returnTo: "/week?run=wk_0123456789ab", runId: "wk_0123456789ab" });
@@ -270,7 +270,7 @@ describe("hand it your week: the first payment at checkout", () => {
 });
 
 describe("hand it your week: watches", () => {
-  it("starts the watches with a first payment at checkout, and a watch tried once leaves the slip", async () => {
+  it("starts the watches with a first payment at checkout, and a watch tried once leaves the order", async () => {
     const { sid, runId } = await week(() => {});
     const { armWeekWatches, weekView, findRun } = await import("./week");
     const { loadSession } = await import("./store");

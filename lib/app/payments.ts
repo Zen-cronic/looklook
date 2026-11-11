@@ -25,7 +25,7 @@ export const SELLER_OF_RECORD = `${APP_NAME} Test Store (PayPal sandbox)`;
 /** The save-for-later agreement, word for word as shown and stored with the method. {cap} is the per-rebuy cap. */
 export const CONSENT_TEMPLATE = [
   `Save this payment method with PayPal so ${APP_NAME} can rebuy items you approve.`,
-  "Each rebuy is charged only after you tap yes on it, at the price shown on that card.",
+  "Each rebuy is charged only after you tap yes on it, at the price shown next to that yes.",
   "A rebuy above {cap} is refused.",
   "After every charge you get a notice with the PayPal order and capture IDs.",
   "Remove the saved method any time on the Payments page; that deletes it at PayPal.",
@@ -165,7 +165,7 @@ export function checkApproval(state: SessionState, source: PurchaseSource, today
     if (!item) throw new PaymentFlowError("That shelf item is gone.");
     const cycle = stapleCycle(item);
     if (source.cycle !== cycle || !item.runOutDate) {
-      throw new StaleApprovalError(`This rebuy card is out of date: ${item.brand} ${item.name} now runs out on ${item.runOutDate ? formatDate(item.runOutDate) : "no set date"}. Nothing was charged.`.replace(/\s+/g, " "));
+      throw new StaleApprovalError(`This rebuy is out of date: ${item.brand} ${item.name} now runs out on ${item.runOutDate ? formatDate(item.runOutDate) : "no set date"}. Nothing was charged.`.replace(/\s+/g, " "));
     }
     if (daysBetween(today, item.runOutDate) > REBUY_LEAD_DAYS) {
       throw new StaleApprovalError(`${item.brand} ${item.name} isn't due yet: it shows up for a rebuy ${REBUY_LEAD_DAYS} days before it runs out. Nothing was charged.`.replace(/\s+/g, " "));

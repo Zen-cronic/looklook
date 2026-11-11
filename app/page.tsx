@@ -16,7 +16,7 @@ const YES_POINTS = [
   {
     title: "Nothing is charged without your yes",
     lines: [
-      "Each rebuy is charged only after you tap yes on it, at the price shown on that card.",
+      "Each rebuy is charged only after you tap yes on it, at the price shown next to that yes.",
       "PayPal Vault saves the method only when you tick the box, and each rebuy is a charge you start with your tap.",
       "Only refunds happen without your yes; a price event never charges anything.",
     ],
@@ -174,7 +174,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
             The yes stays yours
           </h2>
           <p className={s.yesLede}>
-            Spending limits decide how much an AI shopping agent may spend; {APP_NAME} decides whether to buy at all. For the things you buy again, like a cleanser, a rebuy card asks you first.
+            Spending limits decide how much an AI shopping agent may spend; {APP_NAME} decides whether to buy at all. For the things you buy again, like a cleanser, {APP_NAME} asks you before each rebuy.
           </p>
           <ul className={s.points}>
             {YES_POINTS.map((p) => (
