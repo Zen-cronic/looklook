@@ -3,7 +3,7 @@
 import { useState } from "react";
 
 /**
- * Load the sample week (seven checks: two price waits, two budget waits, two
+ * Load the sample week (six checks: a price wait, two budget waits, two
  * skips and a buy, plus a staple due for a rebuy), or reset to a fresh shelf.
  */
 export function SampleWeekControls({ loaded }: { loaded: boolean }) {

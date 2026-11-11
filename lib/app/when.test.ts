@@ -114,7 +114,7 @@ describe("sample week", () => {
     return s;
   };
 
-  it("gives Group my waits two price waits and two budget waits, with two skips, a buy and a staple due", () => {
+  it("gives Group my waits a price wait and two budget waits, with two skips, a buy and a staple due, all skincare, makeup or hair", () => {
     const s = week();
     const p = studioPayload(s, REAL);
     const v = p.tables.verdicts;
@@ -122,19 +122,20 @@ describe("sample week", () => {
     expect(v.filter((r) => r.verdict === "Buy").length).toBe(1);
     const price = v.filter((r) => r.waitingFor === WAITING_FOR.price);
     const budget = v.filter((r) => r.waitingFor === WAITING_FOR.budget);
-    expect(price.length).toBe(2);
+    expect(price.length).toBe(1);
     expect(budget.length).toBe(2);
     expect(price.every((r) => typeof r.buyAt === "number" && (r.buyAt as number) < (r.price as number))).toBe(true);
     expect(budget.every((r) => r.lookAgain === "2026-12-01")).toBe(true);
-    expect(waitCounts(v)).toEqual({ total: 4, groups: [{ waitingFor: WAITING_FOR.price, count: 2 }, { waitingFor: WAITING_FOR.budget, count: 2 }] });
+    expect(waitCounts(v)).toEqual({ total: 3, groups: [{ waitingFor: WAITING_FOR.budget, count: 2 }, { waitingFor: WAITING_FOR.price, count: 1 }] });
+    expect(p.tables.budgets.map((r) => r.group)).toEqual(["Skincare", "Makeup", "Hair"]);
     expect(p.tables.rebuys.filter((r) => r.sourceKind === "staple").length).toBeGreaterThanOrEqual(1);
     expect(p.sample).toBe(true);
   });
 
-  it("carries the 90-day trend on both price waits", () => {
+  it("carries the 90-day trend on the price wait", () => {
     const s = week();
     const waits = s.checks.filter((c) => c.decision.verdict === "wait" && c.decision.rule === "above-usual-price");
-    expect(waits.length).toBe(2);
+    expect(waits.length).toBe(1);
     for (const c of waits) {
       expect(c.band?.usable).toBe(true);
       expect(c.band!.weekly!.length).toBeGreaterThanOrEqual(10);
@@ -198,8 +199,8 @@ describe("/api/demo sample week and reset", () => {
     expect((await post("sample-week")).status).toBe(200);
     const loaded = await (await GET()).json();
     expect(loaded.studio.sample).toBe(true);
-    expect(loaded.checks.length).toBe(7);
-    expect(loaded.studio.waits.total).toBe(4);
+    expect(loaded.checks.length).toBe(6);
+    expect(loaded.studio.waits.total).toBe(3);
     expect(loaded.studio.waits.groups.length).toBe(2);
     expect((await post("reset")).status).toBe(200);
     const reset = await (await GET()).json();

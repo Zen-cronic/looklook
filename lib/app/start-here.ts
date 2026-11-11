@@ -49,7 +49,7 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
     {
       title: "Open the sunscreen skip",
       body: "On Check, open the sunscreen post: skip, you own one that does the same job.",
-      more: "The sample week has two skips, four waits, a buy and a cleanser due for a rebuy; the week page hands over the four posts with screenshots. See why shows the rule, the shelf item and the store's cited return policy, and the same product at other stores. Four sample posts are on Check too, or upload your own screenshot or paste a store link.",
+      more: "The sample week has two skips, three waits, a buy and a cleanser due for a rebuy; the week page hands over the four posts with screenshots. See why shows the rule, the shelf item and the store's cited return policy, and the same product at other stores. Four sample posts are on Check too, or upload your own screenshot or paste a store link.",
       links: [{ href: "/check", label: "Open Check" }],
       sampleWeek: true,
     },
