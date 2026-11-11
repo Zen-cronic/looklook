@@ -5,6 +5,8 @@ export interface Refund {
   id: string;
   status: string;
   amount?: Money;
+  /** What the capture has had refunded so far, this refund included. */
+  seller_payable_breakdown?: { total_refunded_amount?: Money };
 }
 
 /** Refund a capture: pass amountCents for a partial refund, omit it for the remaining balance. */
@@ -12,7 +14,7 @@ export async function refundCapture(
   client: PayPalClient,
   captureId: string,
   opts: { requestId: string; amountCents?: number; currency?: string; noteToPayer?: string },
-): Promise<{ refundId: string; status: string; amountCents?: number }> {
+): Promise<{ refundId: string; status: string; amountCents?: number; totalRefundedCents?: number }> {
   const body: Record<string, unknown> = {};
   if (opts.amountCents !== undefined) {
     if (!opts.currency) throw new Error("currency is required for a partial refund");
@@ -26,7 +28,13 @@ export async function refundCapture(
     headers: { Prefer: "return=representation" },
     body,
   });
-  return { refundId: res.body.id, status: res.body.status, amountCents: res.body.amount ? toCents(res.body.amount.value) : undefined };
+  const total = res.body.seller_payable_breakdown?.total_refunded_amount;
+  return {
+    refundId: res.body.id,
+    status: res.body.status,
+    amountCents: res.body.amount ? toCents(res.body.amount.value) : undefined,
+    ...(total ? { totalRefundedCents: toCents(total.value) } : {}),
+  };
 }
 
 export async function getCapture(client: PayPalClient, captureId: string) {

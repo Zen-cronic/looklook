@@ -43,7 +43,7 @@ function writeJson(file: string, value: unknown): void {
 const locks = new Map<string, Promise<unknown>>();
 
 /** Run fn with exclusive access to one file key. */
-async function withLock<T>(key: string, fn: () => Promise<T> | T): Promise<T> {
+export async function withLock<T>(key: string, fn: () => Promise<T> | T): Promise<T> {
   const previous = locks.get(key) ?? Promise.resolve();
   const run = previous.catch(() => undefined).then(fn);
   const tail = run.catch(() => undefined);
