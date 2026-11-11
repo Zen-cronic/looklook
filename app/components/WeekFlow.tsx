@@ -42,7 +42,7 @@ export function WeekStart({ hasMethod }: { hasMethod: boolean }) {
   return (
     <section className={`card ${s.start}`} aria-labelledby="week-start">
       <Eyebrow as="h2" icon="post" id="week-start">
-        Posts in
+        Your posts this week
       </Eyebrow>
       <p>
         Hand over the posts you saved this week. Each one is checked against your shelf, your budget, the price history and the store&apos;s returns. Then one slip lists what the week needs paid, and one yes pays it.
@@ -82,7 +82,7 @@ function postLine(i: WeekInput, view: WeekView): string {
     if (i.waitKind === "price" && i.targetPrice !== undefined) {
       const w = view.run.watches.find((x) => x.checkId === i.checkId);
       const target = money(Math.round(i.targetPrice * 100));
-      if (w?.status === "armed") return `Watching for ${target} or less. You get a yes card when it drops.`;
+      if (w?.status === "armed") return `Watching for ${target} or less. When it drops, you are asked before anything is bought.`;
       if (w?.status === "unavailable") return w.message ?? "The price feed didn't accept this product.";
       return `Watching for ${target} or less starts with your yes.`;
     }
@@ -260,7 +260,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
         {view.sample && <SampleWeekNote />}
         <section className={s.step} aria-labelledby="week-posts">
           <Eyebrow as="h2" icon="post" id="week-posts">
-            {`${posts.length} posts in`}
+            {`${posts.length} posts this week`}
           </Eyebrow>
           <p className={`small muted ${s.sum}`}>
             {counts.skip} skipped, {counts.wait} waiting, {counts.buy} to buy. {view.keptCents > 0 ? `${money(view.keptCents)} kept by skipping.` : ""}
@@ -310,7 +310,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
         {sent.length > 0 && (
           <section className={s.step} aria-labelledby="week-paid" aria-live="polite">
             <Eyebrow as="h2" icon="receipt" id="week-paid">
-              What your yes did
+              Paid with your yes
             </Eyebrow>
             <ul className={s.rows}>
               {sent.map((l) => (
@@ -325,7 +325,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
         {done ? (
           <section className={`card ${s.slip} ${s.done} lit-sheen`} aria-labelledby="week-done" data-testid="week-done">
             <Eyebrow as="h2" icon="check" id="week-done">
-              One yes
+              Paid with one yes
             </Eyebrow>
             <p className={s.total}>
               Week done. {money(paidCents)} paid.

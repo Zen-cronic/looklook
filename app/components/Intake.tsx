@@ -128,7 +128,7 @@ export function Intake({ samples, shared, linkExample = "https://www.ulta.com/p/
         </button>
       </form>
       <div className="stack-sm">
-        <h2>Or try a post</h2>
+        <h2>Or try a sample post</h2>
         <div className="samples">
           {samples.map((s) => (
             <button
