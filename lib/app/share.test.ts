@@ -76,7 +76,7 @@ describe("links shared to /check", () => {
     expect(sharedInput({ url: long })).toMatchObject({ kind: "error", message: expect.stringMatching(/too long/) });
     expect(sharedInput({ text: `see ${long}` })).toMatchObject({ kind: "error", message: expect.stringMatching(/too long/) });
     // Error codes from /api/share become fixed sentences; nothing from the query is echoed.
-    expect(sharedInput({ share_error: "too-big" })).toEqual({ kind: "error", message: "That image is over 5 MB. Crop it or take a smaller screenshot." });
+    expect(sharedInput({ share_error: "too-big" })).toEqual({ kind: "error", message: "That image is over 15 MB. Crop it or take a smaller screenshot." });
     expect(sharedInput({ share_error: "<script>" })).toMatchObject({ kind: "error", message: expect.not.stringContaining("<script>") });
     expect(sharedInput({ shared: "<bad token>" })).toMatchObject({ kind: "error" });
   });
@@ -85,23 +85,23 @@ describe("links shared to /check", () => {
 describe("screenshots shared to /api/share", () => {
   it("keeps a PNG under a token that opens once, with the same size and type limits as checks", async () => {
     const { saveSharedImage, claimSharedImage, MAX_SHARED_IMAGE_BYTES } = await import("./share");
-    expect(MAX_SHARED_IMAGE_BYTES).toBe(5 * 1024 * 1024);
+    expect(MAX_SHARED_IMAGE_BYTES).toBe(15 * 1024 * 1024);
     const bytes = png();
-    const saved = saveSharedImage(bytes);
+    const saved = await saveSharedImage(bytes);
     expect(saved.mediaType).toBe("image/png");
     const first = claimSharedImage(saved.token);
     expect([...first.bytes]).toEqual([...bytes]);
     expect(() => claimSharedImage(saved.token)).toThrow(/expired or was already checked/);
-    expect(() => saveSharedImage(new Uint8Array(MAX_SHARED_IMAGE_BYTES + 1).fill(0x89))).toThrow(/over 5 MB/);
-    expect(() => saveSharedImage(new TextEncoder().encode("%PDF-1.7 not an image"))).toThrow(/PNG, JPEG, GIF or WebP/);
-    expect(() => saveSharedImage(new Uint8Array(0))).toThrow(/no link or screenshot/);
+    await expect(saveSharedImage(new Uint8Array(MAX_SHARED_IMAGE_BYTES + 1).fill(0x89))).rejects.toThrow(/over 15 MB/);
+    await expect(saveSharedImage(new TextEncoder().encode("%PDF-1.7 not an image"))).rejects.toThrow(/PNG, JPEG, GIF or WebP/);
+    await expect(saveSharedImage(new Uint8Array(0))).rejects.toThrow(/no link or screenshot/);
   });
 
   it("refuses a token after ten minutes, a changed token and one signed with another secret", async () => {
     const { saveSharedImage, claimSharedImage, verifyShareToken, SHARE_TTL_MS } = await import("./share");
     expect(SHARE_TTL_MS).toBe(10 * 60 * 1000);
     const now = Date.parse("2026-11-08T20:00:00Z");
-    const saved = saveSharedImage(png(), now);
+    const saved = await saveSharedImage(png(), now);
     expect(saved.expiresAt).toBe(new Date(now + SHARE_TTL_MS).toISOString());
     expect(() => claimSharedImage(saved.token, now + SHARE_TTL_MS + 1)).toThrow(/expired/);
     const [id, exp, mac] = saved.token.split(".");
@@ -117,11 +117,11 @@ describe("screenshots shared to /api/share", () => {
     process.env.APP_DATA_DIR = mkdtempSync(join(tmpdir(), "share-cap-"));
     process.env.SHARES_PENDING_MAX = "2";
     const { saveSharedImage, claimSharedImage } = await import("./share");
-    const a = saveSharedImage(png());
-    saveSharedImage(png());
-    expect(() => saveSharedImage(png())).toThrow(/busy/);
+    const a = await saveSharedImage(png());
+    await saveSharedImage(png());
+    await expect(saveSharedImage(png())).rejects.toThrow(/busy/);
     claimSharedImage(a.token);
-    expect(saveSharedImage(png()).token).toBeTruthy();
+    expect((await saveSharedImage(png())).token).toBeTruthy();
     expect(readdirSync(join(process.env.APP_DATA_DIR, "shared"))).toHaveLength(2);
     process.env.APP_DATA_DIR = dir;
   });
@@ -190,8 +190,8 @@ describe("opening a shared screenshot runs a normal check", () => {
     const { saveSharedImage } = await import("./share");
     withRequest(await signSession("sharesession0001", SECRET));
     const { POST } = await import("../../app/api/check/route");
-    const a = saveSharedImage(png());
-    const b = saveSharedImage(png());
+    const a = await saveSharedImage(png());
+    const b = await saveSharedImage(png());
     expect((await POST(open(a.token))).status).toBe(422);
     expect(reads).toEqual(["image/png"]);
     // Used once: opening the same link again finds nothing.
@@ -214,7 +214,7 @@ describe("opening a shared screenshot runs a normal check", () => {
     const { saveSharedImage } = await import("./share");
     withRequest("aaaaaaaaaaaaaaaaaaaaaaaa");
     const { POST } = await import("../../app/api/check/route");
-    const res = await POST(open(saveSharedImage(png()).token));
+    const res = await POST(open((await saveSharedImage(png())).token));
     expect(res.status).toBe(401);
   });
 });
@@ -251,5 +251,173 @@ describe("web app manifest", () => {
     // The manifest, icons and /api/share are served without issuing a session.
     const matcher = (await import("../../proxy")).config.matcher[0];
     for (const p of ["manifest.webmanifest", "icons/", "api/share"]) expect(matcher).toContain(p);
+  });
+});
+
+describe("the iPhone Shortcut's requests", () => {
+  it("opens a link pasted into /s as it is, its own ? and & included", async () => {
+    const { linkFromRawQuery } = await import("./share");
+    expect(linkFromRawQuery("?u=https://www.ulta.com/p/serum?sku=1&color=red")).toBe("https://www.ulta.com/p/serum?sku=1&color=red");
+    expect(linkFromRawQuery("?u=https%3A%2F%2Fshop.example%2Fp%3Fa%3D1")).toBe("https://shop.example/p?a=1");
+    expect(linkFromRawQuery("?u=https://a.example/x%20y")).toBe("https://a.example/x%20y");
+    // Two links pasted in (a text share with two): the first one.
+    expect(linkFromRawQuery("?u=https://a.example/one%0Ahttps://b.example/two")).toBe("https://a.example/one");
+    expect(linkFromRawQuery("?x=1&u=https://a.example/")).toBe("https://a.example/");
+    expect(linkFromRawQuery("?u=")).toBeUndefined();
+    expect(linkFromRawQuery("")).toBeUndefined();
+
+    withRequest(undefined, { host: "looklook.example", "x-forwarded-proto": "https" });
+    const { GET } = await import("../../app/s/route");
+    const res = await GET(new Request("https://looklook.example/s?u=https://www.ulta.com/p/serum?sku=1&color=red"));
+    expect(res.status).toBe(303);
+    expect(res.headers.get("location")).toBe("https://looklook.example/check?url=https%3A%2F%2Fwww.ulta.com%2Fp%2Fserum%3Fsku%3D1%26color%3Dred");
+    const empty = await GET(new Request("https://looklook.example/s"));
+    expect(empty.headers.get("location")).toBe("https://looklook.example/check?share_error=missing");
+  });
+
+  it("takes the converted image as the whole request body and answers with the page to open as text", async () => {
+    withRequest(undefined, { host: "looklook.example", "x-forwarded-proto": "https" });
+    const { POST } = await import("../../app/api/share/route");
+    const raw = (body: Uint8Array<ArrayBuffer>, type = "image/jpeg") => new Request("http://localhost/api/share?reply=url", { method: "POST", body, headers: { "content-type": type } });
+    const ok = await POST(raw(png(), "image/png"));
+    expect(ok.status).toBe(200);
+    expect(ok.headers.get("content-type")).toMatch(/^text\/plain/);
+    expect(await ok.text()).toMatch(/^https:\/\/looklook\.example\/check\?shared=[A-Za-z0-9_.%-]+$/);
+    // Refused: still a page to open, which says why.
+    const bad = await POST(raw(new TextEncoder().encode("not an image"), "application/octet-stream"));
+    expect(await bad.text()).toBe("https://looklook.example/check?share_error=type");
+    const empty = await POST(raw(new Uint8Array(0)));
+    expect(await empty.text()).toBe("https://looklook.example/check?share_error=missing");
+    // A multipart form with ?reply=url gets the same plain answer.
+    const form = await POST(new Request("http://localhost/api/share?reply=url", { method: "POST", body: imageForm(png()) }));
+    expect(await form.text()).toMatch(/\/check\?shared=/);
+  });
+});
+
+describe("phone-sized images", () => {
+  /** A real PNG of random pixels: it doesn't compress, so it is as large as a busy phone screenshot. */
+  async function noisePng(width: number, height: number) {
+    const sharp = (await import("sharp")).default;
+    const pixels = Buffer.alloc(width * height * 3);
+    for (let i = 0; i < pixels.length; i++) pixels[i] = (i * 2654435761) >>> 24;
+    return new Uint8Array(await sharp(pixels, { raw: { width, height, channels: 3 } }).png({ compressionLevel: 0 }).toBuffer());
+  }
+
+  it("scales a large screenshot to the reader's size and keeps small ones byte for byte", async () => {
+    const { fitForReading, READ_AS_IS_BYTES, READ_EDGE } = await import("../vision/fit");
+    const sharp = (await import("sharp")).default;
+    const big = await noisePng(1290, 2796);
+    expect(big.byteLength).toBeGreaterThan(READ_AS_IS_BYTES);
+    const fitted = await fitForReading(big);
+    expect(fitted.resized).toBe(true);
+    expect(fitted.mediaType).toBe("image/jpeg");
+    // Base64 of the result stays under the reader's 5 MB.
+    expect(Buffer.from(fitted.bytes).toString("base64").length).toBeLessThan(5 * 1024 * 1024);
+    const meta = await sharp(fitted.bytes).metadata();
+    expect(Math.max(meta.width ?? 0, meta.height ?? 0)).toBe(READ_EDGE);
+    expect(meta.height! / meta.width!).toBeCloseTo(2796 / 1290, 1);
+    // A JPEG that is small already is not touched.
+    const jpeg = new Uint8Array(await sharp(big).resize(600).jpeg().toBuffer());
+    const same = await fitForReading(jpeg);
+    expect(same.resized).toBe(false);
+    expect(same.bytes).toBe(jpeg);
+    // A tall scrolling capture over the edge limit is scaled even when the file is small.
+    const tall = new Uint8Array(await sharp({ create: { width: 400, height: 9000, channels: 3, background: "#ffffff" } }).png().toBuffer());
+    expect((await fitForReading(tall)).resized).toBe(true);
+  });
+
+  it("keeps a large shared screenshot at the reader's size, and refuses HEIC with a way out", async () => {
+    const { saveSharedImage, claimSharedImage } = await import("./share");
+    const saved = await saveSharedImage(await noisePng(1290, 2796));
+    expect(saved.mediaType).toBe("image/jpeg");
+    expect(claimSharedImage(saved.token).bytes.byteLength).toBeLessThan(3.5 * 1024 * 1024);
+    const heic = new Uint8Array(64);
+    heic.set([0, 0, 0, 0x18, ...new TextEncoder().encode("ftypheic")]);
+    await expect(saveSharedImage(heic)).rejects.toThrow(/HEIC format.*Take a screenshot/);
+  });
+
+  it("checks a large screenshot from the upload box after scaling it", async () => {
+    const reads: { mediaType: string; size: number }[] = [];
+    vi.doMock("./services", () => ({ missingKeys: () => [], liveCheckServices: () => ({ cache: { get: () => undefined } }) }));
+    vi.doMock("./checks", async (orig) => ({
+      ...(await orig<typeof import("./checks")>()),
+      readImage: async (img: { mediaType: string; data: string }) => {
+        reads.push({ mediaType: img.mediaType, size: img.data.length });
+        throw new (await orig<typeof import("./checks")>()).CheckInputError("stop here");
+      },
+    }));
+    withRequest(await signSession("sharesession0002", SECRET));
+    const { POST } = await import("../../app/api/check/route");
+    const f = new FormData();
+    f.set("image", new File([await noisePng(1290, 2796)], "IMG_0001.PNG", { type: "image/png" }));
+    expect((await POST(new Request("http://localhost/api/check", { method: "POST", body: f }))).status).toBe(422);
+    expect(reads).toHaveLength(1);
+    expect(reads[0].mediaType).toBe("image/jpeg");
+    expect(reads[0].size).toBeLessThan(5 * 1024 * 1024);
+  });
+});
+
+describe("a shared link that isn't a store page", () => {
+  const html = (head: string) => new Response(`<!doctype html><html><head>${head}</head><body>post</body></html>`, { headers: { "content-type": "text/html; charset=utf-8" } });
+  const publicDns = async () => ["93.184.216.34"];
+
+  it("reads the page's preview picture, or the image the link points at", async () => {
+    const sharp = (await import("sharp")).default;
+    const jpeg = new Uint8Array(await sharp({ create: { width: 64, height: 64, channels: 3, background: "#e0d0c0" } }).jpeg().toBuffer());
+    const { pageImage, previewImageOf } = await import("./page-image");
+    expect(previewImageOf(`<meta property="og:image" content="https://cdn.example/a.jpg?w=1&amp;h=2">`)).toBe("https://cdn.example/a.jpg?w=1&h=2");
+    expect(previewImageOf(`<meta content='/b.png' name='twitter:image'>`)).toBe("/b.png");
+    expect(previewImageOf(`<meta property="og:title" content="x">`)).toBeUndefined();
+    const asked: string[] = [];
+    const fake = (async (input: URL | RequestInfo) => {
+      const url = String(input);
+      asked.push(url);
+      if (url === "https://posts.example/p/1") return html(`<meta property="og:image" content="/img/1.jpg">`);
+      if (url === "https://posts.example/img/1.jpg") return new Response(jpeg, { headers: { "content-type": "image/jpeg" } });
+      if (url === "https://posts.example/moved") return new Response(null, { status: 302, headers: { location: "/p/1" } });
+      return new Response("nope", { status: 404 });
+    }) as typeof fetch;
+    const fromPage = await pageImage("https://posts.example/p/1", { fetch: fake, resolve: publicDns });
+    expect(fromPage).toEqual({ mediaType: "image/jpeg", data: Buffer.from(jpeg).toString("base64") });
+    expect(await pageImage("https://posts.example/img/1.jpg", { fetch: fake, resolve: publicDns })).toMatchObject({ mediaType: "image/jpeg" });
+    expect(await pageImage("https://posts.example/moved", { fetch: fake, resolve: publicDns })).toMatchObject({ mediaType: "image/jpeg" });
+    expect(await pageImage("https://posts.example/none", { fetch: fake, resolve: publicDns })).toBeUndefined();
+  });
+
+  it("never fetches a private or local address, including through a redirect", async () => {
+    const { pageImage, isPrivateAddress, PAGE_TIMEOUT_MS } = await import("./page-image");
+    expect(PAGE_TIMEOUT_MS).toBe(8000);
+    for (const ip of ["127.0.0.1", "10.1.2.3", "172.16.0.1", "192.168.1.1", "169.254.169.254", "100.64.0.1", "0.0.0.0", "::1", "fd00::1", "fe80::1", "::ffff:127.0.0.1"]) expect(isPrivateAddress(ip), ip).toBe(true);
+    for (const ip of ["93.184.216.34", "8.8.8.8", "2606:4700::1111"]) expect(isPrivateAddress(ip), ip).toBe(false);
+    const asked: string[] = [];
+    const fake = (async (input: URL | RequestInfo) => {
+      asked.push(String(input));
+      return new Response(null, { status: 302, headers: { location: "http://169.254.169.254/latest/meta-data/" } });
+    }) as typeof fetch;
+    expect(await pageImage("http://127.0.0.1:4880/api/state", { fetch: fake, resolve: publicDns })).toBeUndefined();
+    expect(await pageImage("https://internal.example/", { fetch: fake, resolve: async () => ["10.0.0.5"] })).toBeUndefined();
+    expect(await pageImage("https://posts.example/p", { fetch: fake, resolve: publicDns })).toBeUndefined();
+    // Only the public page was asked for; the redirect to the metadata address was not followed.
+    expect(asked).toEqual(["https://posts.example/p"]);
+  });
+
+  it("checks the picture when the catalogue doesn't know the link, and says so when there is none", async () => {
+    const { readLink, CheckInputError } = await import("./checks");
+    const base = {
+      anthropic: {} as never,
+      search: async () => [],
+      lookup: async () => {
+        throw new Error("not found");
+      },
+      priceBand: async () => null,
+    };
+    const image = { data: "aGVsbG8=", mediaType: "image/png" as const };
+    const cached = { fields: { isProduct: true }, products: [] };
+    const store = new Map<string, unknown>([[`reading:${(await import("./checks")).sha256(image.data)}`, cached]]);
+    const cache = { get: <T,>(k: string, key: string) => store.get(`${k}:${key}`) as T | undefined, set: (k: string, key: string, v: unknown) => void store.set(`${k}:${key}`, v) };
+    const reading = await readLink("https://posts.example/p/1", { ...base, cache, pageImage: async () => image });
+    expect(reading).toEqual({ ...cached, picture: true });
+    await expect(readLink("https://posts.example/p/2", { ...base, pageImage: async () => undefined })).rejects.toThrow(CheckInputError);
+    await expect(readLink("https://posts.example/p/2", base)).rejects.toThrow(/catalogue or a picture on the page/);
   });
 });

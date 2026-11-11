@@ -5,15 +5,14 @@ import { appToday } from "@/lib/app/dates";
 import { HttpError, handle, sessionIdOrThrow } from "@/lib/app/http";
 import { SAMPLES } from "@/lib/app/samples";
 import { liveCheckServices, missingKeys } from "@/lib/app/services";
-import { MAX_SHARED_LINK, ShareError, claimSharedImage } from "@/lib/app/share";
+import { MAX_SHARED_LINK, SHARE_ERRORS, ShareError, claimSharedImage } from "@/lib/app/share";
 import { loadSession, updateSession } from "@/lib/app/store";
 import type { CheckRecord } from "@/lib/app/types";
 import { CallBudget } from "@/lib/studio/llm";
 import { envInt, GlobalBudget } from "@/lib/studio/guard";
-import { sniffMediaType } from "@/lib/vision/read";
+import { fitForReading, ImageFitError, MAX_UPLOAD_BYTES } from "@/lib/vision/fit";
 import { ReaderOutputError } from "@/lib/vision/schema";
 
-const MAX_BYTES = 5 * 1024 * 1024;
 const HOUR = 60 * 60 * 1000;
 // Each new screenshot or link costs a vision call and catalogue calls; one already read is free.
 const perSession = new CallBudget(envInt("CHECKS_PER_SESSION_PER_HOUR", 30), HOUR);
@@ -56,10 +55,9 @@ export async function POST(request: Request) {
         reading = await readImage({ data, mediaType: "image/png" }, services);
         input = { kind: "screenshot", imageHash: sha256(data), sample: s.id };
       } else if (image instanceof File && image.size > 0) {
-        if (image.size > MAX_BYTES) throw new HttpError(413, "That image is over 5 MB. Crop it or take a smaller screenshot.");
-        const bytes = new Uint8Array(await image.arrayBuffer());
-        const mediaType = sniffMediaType(bytes);
-        if (!mediaType) throw new HttpError(415, "Use a PNG, JPEG, GIF or WebP screenshot.");
+        if (image.size > MAX_UPLOAD_BYTES) throw new HttpError(413, SHARE_ERRORS["too-big"]);
+        // A large phone screenshot is scaled to the reader's size first.
+        const { bytes, mediaType } = await fitForReading(new Uint8Array(await image.arrayBuffer()));
         const data = Buffer.from(bytes).toString("base64");
         if (!services.cache?.get("reading", sha256(data))) takeCheck(sid);
         reading = await readImage({ data, mediaType }, services);
@@ -80,13 +78,14 @@ export async function POST(request: Request) {
         if (url.trim().length > MAX_SHARED_LINK) throw new HttpError(422, "That link is too long to check. Paste the store page's address instead.");
         takeCheck(sid);
         reading = await readLink(url, services);
-        input = { kind: "link", url: url.trim() };
+        input = { kind: "link", url: url.trim(), ...(reading.picture ? { picture: true } : {}) };
       } else {
         throw new HttpError(400, "Add a screenshot or paste a store link.");
       }
     } catch (e) {
       if (e instanceof CheckInputError) throw new HttpError(422, e.message);
       if (e instanceof ShareError) throw new HttpError(e.status, e.message);
+      if (e instanceof ImageFitError) throw new HttpError(e.code === "too-big" ? 413 : 415, SHARE_ERRORS[e.code]);
       if (e instanceof ReaderOutputError) throw new HttpError(422, "We couldn't read that image. Try a sharper screenshot that shows the product name.");
       throw e;
     }

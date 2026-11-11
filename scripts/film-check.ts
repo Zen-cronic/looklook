@@ -37,7 +37,7 @@ async function main() {
   if (!checkout.length) throw new Error("couldn't open a checkout for a buy verdict");
 
   // What a phone's share sheet opens; the page clears the query and checks in the browser.
-  const share = ["/check?url=https%3A%2F%2Fwww.ulta.com%2Fp%2Fexample", "/check?text=Look%20https%3A%2F%2Fwww.sephora.com%2Fproduct%2Fexample", "/check?shared=aaaaaaaaaaaaaaaaaaaaaaaa.zz.bb", "/check?share_error=type"];
+  const share = ["/check?url=https%3A%2F%2Fwww.ulta.com%2Fp%2Fexample", "/check?text=Look%20https%3A%2F%2Fwww.sephora.com%2Fproduct%2Fexample", "/check?shared=aaaaaaaaaaaaaaaaaaaaaaaa.zz.bb", "/check?share_error=type", "/check?share_error=heif", "/share"];
 
   // A week handed over (the sample week's posts): its page and its JSON.
   const weekRes = await fetch(`${base}/api/week`, { method: "POST", headers: { ...plain, "content-type": "application/json" }, body: JSON.stringify({ checkIds: ["week-spf", "week-vitc", "week-retinol", "week-peptide"] }) });

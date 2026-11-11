@@ -250,7 +250,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
 
 /** The eyebrow tag: where this check was read from. */
 function sourceTag(check: CheckRecord): string {
-  if (check.input.kind === "link") return "From the store link";
+  if (check.input.kind === "link") return check.input.picture ? "From the picture on the page" : "From the store link";
   if (isSampleWeekCheck(check.input.sample)) return "From the sample week";
   if (check.input.sample) return "From a sample post";
   return "From your screenshot";

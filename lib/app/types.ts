@@ -28,7 +28,7 @@ export interface CheckRecord {
   createdAt: string;
   /** The (possibly simulated) date the verdict was decided on. */
   decidedOn: string;
-  input: { kind: "screenshot"; imageHash: string; sample?: string } | { kind: "link"; url: string };
+  input: { kind: "screenshot"; imageHash: string; sample?: string } | { kind: "link"; url: string; picture?: boolean };
   fields: ScreenshotFields;
   candidates: CheckCandidate[];
   product?: ProductCard;

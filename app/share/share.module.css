@@ -1,0 +1,16 @@
+.steps {
+  margin: 0;
+  padding-left: 1.25rem;
+  list-style: decimal;
+}
+
+.points {
+  margin: 0;
+  padding-left: 1.1rem;
+  list-style: disc;
+}
+
+.steps code {
+  overflow-wrap: anywhere;
+  font-size: 0.875em;
+}

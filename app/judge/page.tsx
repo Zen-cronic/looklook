@@ -83,7 +83,7 @@ export default function JudgePage() {
 
       <p className="small" data-testid="share-from-phone">
         <strong>From a phone:</strong> share a store link or a screenshot straight to {APP_NAME} with the &ldquo;Look twice&rdquo; Shortcut (iPhone) or the share sheet (Android).{" "}
-        <a href="https://github.com/Zen-cronic/looklook/blob/main/docs/share-shortcut.md">How to set it up</a> (tested on desktop; phone test after deploy).
+        <Link href="/share">How to set it up</Link> (tested on desktop; phone test after deploy).
       </p>
 
       <details className="card disclosure">
