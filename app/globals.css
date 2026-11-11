@@ -388,7 +388,8 @@ body::after {
     bottom: calc(0.6rem + env(safe-area-inset-bottom));
     z-index: 20;
     margin: 0;
-    background: var(--glass-strong);
+    /* Solid on a phone: content scrolls under it and must not show through */
+    background: var(--card);
     border: 1px solid var(--hairline);
     padding: 0.3rem;
     justify-content: space-between;

@@ -163,6 +163,13 @@
   }
 }
 
+/* The hero card's thumbnail is smaller, so a wrapped price lines up under the product name */
+@media (max-width: 520px) {
+  .card :global(.product-row .price-line) {
+    padding-left: 3.9rem;
+  }
+}
+
 /* Stills are rendered unfeathered; the stage feathers them like the canvas */
 .object[data-phase="capture"] .stage {
   mask-image: none;
