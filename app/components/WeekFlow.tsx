@@ -423,6 +423,9 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                   {paying || view.paying ? "Paying…" : slip.lines.length === 0 ? "Yes, start watching" : slip.methodId ? `Yes, pay ${money(slip.totalCents)}` : `Pay the first with PayPal, ${money(slip.lines[0].amountCents)}`}
                 </button>
                 <p className="small muted">Your yes here is your yes for each line above, at the price on that line. Nothing else is charged.</p>
+                <p className="small">
+                  <Link href={`/studio/week?run=${runId}`}>Change this slip in AG Studio</Link>
+                </p>
               </>
             )}
             {message && <p className={`small ${s.message}`}>{message}</p>}

@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 327](https://img.shields.io/badge/unit%20tests-327-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 332](https://img.shields.io/badge/unit%20tests-332-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 
@@ -57,7 +57,7 @@ From a phone, share a store link or a screenshot straight to LookLook: the "Look
 | Channel3 price history | 90-day history, filtered to one size and steady points, gives the usual price, the low, the price to wait for and the weekly trend line. |
 | Channel3 product subscriptions + webhooks | A wait verdict starts a price-drop subscription; `/api/webhooks/channel3` checks the signature, handles a repeated event once, and turns a drop to the target into an approval card. A watch counts only price changes at the store you saw, and stopping it never stops another shopper's watch on the same product. |
 | Channel3 buy links | The product link on a verdict, with the commission notice next to it. |
-| AG Studio (custom widgets, theme, agent framework) | Hosts `/studio`, the Decisions workspace: our verdict widget pays a due rebuy on the saved method from inside it and updates the shelf grid in place, and our agent asks Studio's lead agent to build the table of what each wait is waiting for. |
+| AG Studio (custom widgets, theme, agent framework) | Hosts `/studio`, the Decisions workspace: our verdict widget pays a due rebuy on the saved method from inside it and updates the shelf grid in place, and our agent asks Studio's lead agent to build the table of what each wait is waiting for. `/studio/week` puts the week's slip in Studio: ask in words ("Leave the cleanser for next week") and the slip and its grid change. In the Studio week, the assistant can take a line off the slip or put it back, but it has no tool that pays: only your yes on the slip you see pays. Every change gives the slip a new fingerprint, so a yes given for the old slip charges nothing. |
 | Claude (`claude-sonnet-5-5`) | Reads a screenshot or a listing into structured fields (strict JSON schema), words the one-line reason after the verdict is decided, and runs the Decisions workspace's agents through our `/api/llm`. |
 | Render | One web service runs the app, the API and both webhook endpoints (`render.yaml`). |
 
