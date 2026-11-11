@@ -2,47 +2,53 @@
 
 Saw something on Instagram, TikTok, Safari or in your photos? Share it to LookLook and the verdict opens in your browser: skip, wait, buy, or "Which one is it?" when the match needs your pick.
 
-**Status: tested on desktop; phone test after deploy.** The web side (the links, the upload, the redirect and the manifest) was run against a local build. The Shortcut and the Android share sheet have not been tried on a phone yet.
+**Status: tested on desktop; phone test after deploy.** The web side (the Shortcut's two requests, the Android share form, the upload, the redirects and the pages at 390 px) was run against a local build in a desktop browser with an iPhone-sized window and an iPhone user agent. The Shortcut file and the Android share sheet have not been tried on a phone yet.
 
-In the steps below, `<base>` is the address of the running app, for example `https://looklook.example.com`, with no slash at the end.
+The setup page in the app is `/share` (on the hosted app: https://looklook-7cpf.onrender.com/share). It says the same as this page, in fewer words.
 
-## What the "Look twice" Shortcut does
+## iPhone: the "Look twice" Shortcut
 
-- **You share a link** (a store page from Safari, or a post link): it opens `<base>/check?url=<the link>`. The Check page starts the check by itself and lands on the verdict.
-- **You share a screenshot or photo**: it sends the image to `<base>/api/share`, which keeps it for ten minutes and answers with a link to open. Opening that link checks the image in your browser, the same as adding a screenshot on the Check page.
+### Add it
 
-A link to an Instagram or TikTok post is not a store page, so the catalogue usually can't find it and LookLook says so. For a creator post, take a screenshot and share the screenshot instead.
+1. On the iPhone, open https://looklook-7cpf.onrender.com/share in **Safari**.
+2. Tap **Get the Shortcut**. If Safari asks to download "Look twice.shortcut", tap **Download**, then open the file from Safari's Downloads list (or the Files app, in Downloads).
+3. The Shortcuts app shows "Look twice" with its actions: tap **Add Shortcut**.
 
-## How it works
+The file is signed with the Shortcuts app on a Mac (`npx tsx scripts/shortcut/build.ts`) and opens https://looklook-7cpf.onrender.com. To point it at another address, build it again with that address (`npx tsx scripts/shortcut/build.ts https://your-copy.example`), or build it by hand.
 
-- `GET /check?url=<link>` checks a store link straight away. `GET /check?text=<text>` uses the first web link in the text. Only `http` and `https` links up to 2048 characters are accepted, with the same messages as the store-link box.
-- `POST /api/share` takes a multipart form with a PNG, JPEG, GIF or WebP image up to 5 MB in the field `image` (or `file`), and answers `{ "verdictUrl": "<base>/check?shared=<token>", "expiresAt": "…" }`. A browser form post (Android) gets a redirect to the same page instead.
-- A shared screenshot waits ten minutes for its link to be opened, and the link works once.
-- The check runs in your browser's own session, under the same hourly limits as the Check page. `/api/share` only stores the image; it never calls the model or the catalogue, and it has its own hourly upload limits.
+### Or build it by hand (four steps)
 
-## Build the Shortcut on an iPhone
+`<base>` is the app's address with no slash at the end, for example `https://looklook-7cpf.onrender.com`.
 
-1. Open the **Shortcuts** app and tap **+** to make a new shortcut. Name it **Look twice**.
-2. Tap the **ⓘ** (Details) button and turn on **Show in Share Sheet**. Back in the editor, the first line now reads "Receive … input from Share Sheet": tap the input types and keep only **Images**, **URLs**, **Safari web pages** and **Text**. If it offers "If there's no input", choose **Stop and Respond**.
-3. Add **Get URLs from Input**. Its input should read **Shortcut Input**.
-4. Add **If**. Set it to **If URLs has any value**.
-5. Inside the If, add:
-   1. **Get Item from List**: **First Item** from **URLs**.
-   2. **URL Encode**: Encode **Item from List**.
-   3. **Text**: type `<base>/check?url=`, then insert the **URL Encoded Text** variable right after the `=` with no space.
-   4. **Open URLs**: **Text**.
-6. In the **Otherwise** branch, add:
-   1. **Convert Image**: Convert **Shortcut Input** to **JPEG** (this also turns iPhone HEIC photos into something LookLook reads).
-   2. **Resize Image**: **Converted Image** to width **1600** (keeps the file under the 5 MB limit; leave height on Auto).
-   3. **Get Contents of URL**: URL `<base>/api/share`. Tap **Show More**: Method **POST**, Request Body **Form**. Tap **Add new field**, choose **File**, key `image`, value **Resized Image**.
-   4. **Get Dictionary Value**: Get **Value** for key `verdictUrl` in **Contents of URL**.
-   5. **Open URLs**: **Dictionary Value**.
-7. Tap **Done**.
+1. In **Shortcuts**, tap **+**, name it **Look twice**, tap **ⓘ** (Details) and turn on **Show in Share Sheet**. On the first line ("Receive … from Share Sheet"), keep **Images**, **URLs**, **Safari web pages** and **Text**.
+2. Add **Get URLs from Input** (input: **Shortcut Input**), then **If**: **URLs** **has any value**.
+3. Inside the If, add **Text**: type `<base>/s?u=` and insert the **URLs** variable right after the `=` (no space). Then add **Open URLs** (it takes the Text).
+4. Under **Otherwise**, add **Convert Image**: **Shortcut Input** to **JPEG**. Then **Get Contents of URL**: URL `<base>/api/share?reply=url`; tap **Show More**, Method **POST**, Request Body **File**, File **Converted Image**. Then **Open URLs** (it takes Contents of URL). Tap **Done**.
 
-To use it: in Safari, Instagram, TikTok or Photos, tap **Share**, then **Look twice** (scroll the row of actions, or tap **Edit Actions** to add it to your favourites). The first run asks to allow the Shortcut to connect to `<base>`; tap **Allow**.
+No encoding step is needed: `/s` takes the link as it is pasted in. Converting to JPEG also turns an iPhone camera photo (HEIC) into something LookLook reads.
 
-If the image is refused (too big, not an image, or too many uploads this hour), the answer has an `error` message instead of `verdictUrl`, for example "That image is over 5 MB. Crop it or take a smaller screenshot.", and the Shortcut stops at Open URLs. Add the screenshot on the Check page instead.
+### Use it
+
+In Safari, Instagram, TikTok or Photos, tap **Share**, then **Look twice** (scroll the row of actions to the end, or tap **Edit Actions** to add it to your favourites). The first time you share an image, it asks to send it to the app's address: tap **Allow**. Safari opens the Check page, which shows "Reading the post…" and then the verdict, in about 30 to 45 seconds.
+
+If a share is refused (too big, not an image, too many this hour, or a screenshot link opened twice), the page that opens says why.
 
 ## Android
 
-Open `<base>` in Chrome, open the menu and tap **Add to Home screen** (or **Install app**). LookLook then appears in the share sheet: share a link, text with a link, or a screenshot to it and the verdict opens. The manifest sends every share to `/api/share`, which passes links on to `/check` and keeps screenshots as above.
+Open https://looklook-7cpf.onrender.com in Chrome, open the **⋮** menu and tap **Add to Home screen** (or **Install app**). LookLook then appears in the share sheet: share a link, text with a link, or a screenshot to it and the verdict opens. The manifest sends every share to `/api/share`, which passes links on to `/check` and keeps screenshots as above.
+
+## What a share turns into
+
+- **A link** opens `/s?u=<link>` (the Shortcut) or `/check?url=<link>` / `/check?text=<text with a link>` (Android, or any page). Only `http` and `https` links up to 2048 characters are accepted, with the same messages as the store-link box. The Check page starts the check by itself and clears the link from the address bar, so reloading doesn't check it again.
+- **A store page** the product catalogue knows is checked as a listing. **Any other page** (a post, an article, a link to an image) is read from its picture: the image itself, or the page's preview picture (the one a chat app shows when the link is pasted). The verdict page then says "From the picture on the page". Only public web addresses are fetched, with an 8-second timeout and a size cap. Some sites (Instagram often) show a sign-in page to anyone not signed in, and then there is no picture to read: share a screenshot of the post instead.
+- **A screenshot or photo** is posted to `/api/share` as a multipart form (field `image`, or `file` from Android) or as the whole request body (the Shortcut). It takes a PNG, JPEG, GIF or WebP image up to 15 MB. A bigger image is scaled to 1568 pixels on its long edge and kept as a JPEG; the reader works at that size anyway. A HEIC photo sent without converting gets "That photo is in HEIC format, which LookLook can't read. Take a screenshot of it and share the screenshot."
+- The answer is the page to open: `{ "verdictUrl": "<base>/check?shared=<token>", "expiresAt": "…" }` as JSON, a 303 redirect for a browser form post (Android), or the address alone as plain text for `?reply=url` (the Shortcut), also when the share is refused (`<base>/check?share_error=<reason>`).
+- A shared screenshot waits ten minutes for its link to be opened, and the link works once.
+- The check runs in your browser's own session, under the same hourly limits as the Check page. `/api/share` only stores the image; it never calls the model or the catalogue, and it has its own hourly upload limits.
+
+## Try it on an iPhone, step by step
+
+1. In Safari, open https://looklook-7cpf.onrender.com/share and add the Shortcut as above.
+2. In Safari, open https://looklook-7cpf.onrender.com/filming/posts/sunscreen.png (an unbranded sample post). Tap **Share** (the square with the arrow), then **Look twice**. You should see: Safari opens the Check page with "Reading the post…", then a pink **Check this** card headed "From the picture on the page", with "Which one is it?" choices below. Tap **This one** on the first choice: the verdict follows (in a local run it was **Skip**, because the sample shelf already has a face sunscreen).
+3. Take a screenshot of a product post (side button + volume up). In Photos, open it, tap **Share**, then **Look twice**, and **Allow** the first time. You should see the same Check page, then a verdict headed "From your screenshot".
+4. In Safari, open a store's product page, tap **Share**, then **Look twice**. You should see a verdict headed "From the store link".

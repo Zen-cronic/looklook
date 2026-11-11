@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 332](https://img.shields.io/badge/unit%20tests-332-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 340](https://img.shields.io/badge/unit%20tests-340-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 
@@ -37,7 +37,7 @@ Open `/judge` on the running app for five short steps. Sandbox PayPal buyer logi
 
 One yes on the week's slip pays each line at the price on that line, each as its own PayPal order. If a price on the slip moved, nothing is charged and the slip is shown again. A declined line doesn't stop the others, and a yes again never charges a paid line twice. After the yes, each item bought gets a price guard for as long as its store takes it back opened (from the cited return policies): if that store lowers its price in that time, the difference comes back to the card and to the month's budget, so the next slip is built on it. The week's done card has a labelled sandbox test drop that makes a real sandbox refund. The price watch starts before the first payment on purpose: buying the peptide serum spends this month's skincare budget, and the retinol would then wait for next month's budget instead of a lower price.
 
-From a phone, share a store link or a screenshot straight to LookLook: the "Look twice" Shortcut on iPhone, or the installed app in Android's share sheet. How to set it up: [docs/share-shortcut.md](docs/share-shortcut.md) (tested on desktop; phone test after deploy).
+From a phone, share a store link, a post or a screenshot straight to LookLook: the "Look twice" Shortcut on iPhone (one tap to add, from `/share` in the app), or the installed app in Android's share sheet. A link that isn't a store page is read from the picture it shows. How to set it up: `/share`, or [docs/share-shortcut.md](docs/share-shortcut.md) (tested on desktop; phone test after deploy).
 
 ## Built with
 
