@@ -356,7 +356,8 @@ export async function ensureGuards(sid: string, receiptIds: string[] | undefined
         const g = s.receipts.find((x) => x.id === t.receiptId)?.guard;
         if (g && g.status === "starting") {
           g.status = "unavailable";
-          g.note = `The price feed didn't take this product (${e instanceof Error ? e.message.slice(0, 120) : "no answer"}).`;
+          g.note = "The price feed didn't take this product, so a lower price on it won't be refunded.";
+          console.warn("guard: price feed refused", t.receiptId, e instanceof Error ? e.message.slice(0, 200) : e);
         }
       }).catch(() => undefined);
     } finally {
