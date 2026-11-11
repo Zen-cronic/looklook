@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 340](https://img.shields.io/badge/unit%20tests-340-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 343](https://img.shields.io/badge/unit%20tests-343-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 
@@ -16,6 +16,8 @@ For anyone who buys skincare and makeup they saw on their feed and ends up with 
 <img src="docs/verdict-skip.png" alt="A skip verdict on a phone: you already own a sunscreen that does the same job" width="320">
 
 **On 30 products it had never seen, LookLook's skip was right 28 times. Skipping anything in a category you own gets 19; saying skip to everything gets 13.** Skip precision 92.3% (12 of 13 skips right), recall 92.3% (12 of 13 caught). Of the 12 right skips, 10 rest on evidence (the shelf, or a cited store policy) and 2 on our default that an unknown opened-return policy counts as not returnable. The order of work is in git: the engine last changed in `4fbf420` (2026-11-06 22:28 EST), the 30 expected answers were committed in `effe79b` (2026-11-07 00:17 EST), and the one scored run was committed as generated in `e3cd601` (2026-11-07 00:20 EST). The wrong skip, the missed skip and the five other misses are in [`eval/holdout/RESULTS.md`](eval/holdout/RESULTS.md) and on the app's `/proof` page; `GET /api/eval/holdout` returns every case, read from that run's committed results.
+
+The same model with no LookLook rules got it right 27 times (median of 3 runs, range 27 to 27). It was asked in plain words whether to skip each product; how it was run, and where it and LookLook each went wrong, is in [`eval/baseline/RESULTS.md`](eval/baseline/RESULTS.md).
 
 The 65 products the matching was developed on come second, because they were used to improve it: 58 of 65 there (same category gets 40; saying skip to everything gets 39). Its first scored run was 55 of 65 and one similarity change later 60 of 65; then a store policy we had misread was corrected, together with the expected answers it affected, and it is 58 of 65 ([`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md); see Corrections below). `GET /api/eval/skip` and `npm run eval:skip` re-run it with no network calls.
 

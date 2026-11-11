@@ -22,6 +22,7 @@ Every number and capability that the README, the landing page, `/proof`, `/judge
 | F11 | "On the development set seven of 65 skip decisions disagree" | `README.md` | `lib/facts/facts.test.ts` › "states how many development cases rest on the unknown-policy default" |
 | F12 | "`GET /api/eval/skip` and `npm run eval:skip` re-run it with no network calls." | `README.md`, /proof (Run it again) | `lib/app/holdout.test.ts` › "/api/eval/skip leads with the held-out headline and re-runs the development set" |
 | F13 | "`GET /api/eval/holdout` returns every case, read from that run's committed results." | `README.md` | `lib/app/holdout.test.ts` › "/api/eval/holdout returns every held-out case and the development set" |
+| F75 | "The same model with no LookLook rules got it right 27 times (median of 3 runs, range 27 to 27)." | `README.md`, /proof, eval/baseline/RESULTS.md | `lib/app/baseline.test.ts` › "states the plain-model baseline from its committed runs"<br>`lib/app/baseline.test.ts` › "fixed the prompt and runner before the first scored call" |
 
 ## How a verdict is decided
 
