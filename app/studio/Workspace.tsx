@@ -128,7 +128,7 @@ function initialState(p: StudioPayload, narrow: boolean): AgReportState {
     pages: [
       {
         id: PAGE_ID,
-        name: "Decisions",
+        name: "Dashboard",
         widgets: {
           verdicts: { type: "verdictList", dataMapping: {} },
           rebuys: { type: "rebuyList", dataMapping: {} },
@@ -556,7 +556,7 @@ export default function Workspace({ initial, narrow }: Props) {
       <div className={`workspace${narrow ? " narrow" : ""}${editing ? " editing" : ""}`}>
         <div className="workspace-bar">
           <div>
-            <h1>Decisions</h1>
+            <h1>Dashboard</h1>
             <p className="small muted">Your verdicts, rebuys, shelf and budgets in one place. Built in AG Studio.</p>
           </div>
           {!narrow && (

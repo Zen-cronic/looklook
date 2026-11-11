@@ -61,17 +61,17 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
     },
     {
       title: "See your decisions in AG Studio",
-      body: "On a laptop, open Decisions: checks, rebuys, shelf and budgets together. Tap Group my waits and Studio's agents build a table of what each wait is waiting for.",
+      body: "On a laptop, open the dashboard: checks, rebuys, shelf and budgets together. Tap Group my waits and Studio's agents build a table of what each wait is waiting for.",
       more: "Tap Yes on a rebuy there to pay with the saved method; the shelf row updates in place. The table takes about 30 seconds. Customize opens the Studio editor.",
-      links: [{ href: "/studio", label: "Open Decisions" }],
+      links: [{ href: "/studio", label: "Open the dashboard" }],
     },
     {
       title: "See the webhooks and the accuracy test",
-      body: "Webhook events lists what PayPal and Channel3 sent and whether each was verified. How often skip is right lists every miss.",
+      body: "Webhook events lists what PayPal and Channel3 sent and whether each was verified. The accuracy test lists every miss.",
       more: `It leads with ${n.heldOutRight} of ${n.heldOutN} on products the app had never seen, then the ${n.devN} products the matching was built on, which you can re-run on the server.`,
       links: [
         { href: "/events", label: "Webhook events" },
-        { href: "/proof", label: "How often skip is right", outline: true },
+        { href: "/proof", label: "Accuracy test", outline: true },
       ],
     },
   ];

@@ -159,10 +159,10 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
         </div>
         <div className={s.studio} data-reveal>
           <p>
-            <strong>On a laptop:</strong> Decisions puts your verdicts, rebuys, shelf and budgets in one AG Studio workspace, and pays a due rebuy from inside it.
+            <strong>On a laptop:</strong> the dashboard puts your verdicts, rebuys, shelf and budgets in one AG Studio workspace, and pays a due rebuy from inside it.
           </p>
           <Link className="btn outline small" href="/studio">
-            Open Decisions
+            Open the dashboard
           </Link>
         </div>
       </section>
@@ -174,7 +174,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
             The yes stays yours
           </h2>
           <p className={s.yesLede}>
-            Spend guards decide how much an AI may spend; {APP_NAME} decides whether to buy at all. For the things you buy again, like a cleanser, a rebuy card asks you first.
+            Spending limits decide how much an AI shopping agent may spend; {APP_NAME} decides whether to buy at all. For the things you buy again, like a cleanser, a rebuy card asks you first.
           </p>
           <ul className={s.points}>
             {YES_POINTS.map((p) => (

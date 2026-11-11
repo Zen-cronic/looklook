@@ -1,7 +1,7 @@
 import { DecisionsLoader } from "./DecisionsLoader";
 import "./studio.css";
 
-export const metadata = { title: "Decisions" };
+export const metadata = { title: "Dashboard" };
 
 export default function StudioPage() {
   return (
