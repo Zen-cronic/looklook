@@ -145,7 +145,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                 {e.price && (
                   <>
                     <dt>Price</dt>
-                    <dd>{e.price.usable && e.price.typical !== undefined ? `${formatDollars(e.price.shown)} ${bought ? "when you checked" : "now"}. Usually ${formatDollars(e.price.typical)}, lowest ${formatDollars(e.price.low!)} in the last 90 days; a good price is ${formatDollars(e.price.target!)} or less.` : `${formatDollars(e.price.shown)} ${bought ? "when you checked" : "now"}. Not enough price history to judge.`}</dd>
+                    <dd>{e.price.usable && e.price.typical !== undefined ? `${formatDollars(e.price.shown)} ${bought ? "when you checked" : "now"}. Usually ${formatDollars(e.price.typical)}, lowest ${formatDollars(e.price.low!)} in the last 90 days. A good price is ${formatDollars(e.price.target!)} or less.` : `${formatDollars(e.price.shown)} ${bought ? "when you checked" : "now"}. Not enough price history to judge.`}</dd>
                   </>
                 )}
                 {e.budget && (

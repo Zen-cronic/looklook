@@ -49,20 +49,20 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
     {
       title: "Open the sunscreen skip",
       body: "On Check, open the sunscreen post: skip, you own one that does the same job.",
-      more: "The sample week has two skips, four waits, a buy and a cleanser due for a rebuy; the week page hands over the four posts with screenshots. See why shows the rule, the shelf item and the store's cited return policy, and the same product at other stores. Four sample posts are on Check too, or upload your own screenshot or paste a store link.",
+      more: "The sample week has two skips, four waits, a buy and a cleanser due for a rebuy. The week page hands over the four posts with screenshots. See why shows the rule, the shelf item and the store's cited return policy, and the same product at other stores. Four sample posts are on Check too, or upload your own screenshot or paste a store link.",
       links: [{ href: "/check", label: "Open Check" }],
       sampleWeek: true,
     },
     {
       title: "Rebuy with one yes, then a decline",
       body: "On Rebuys, move a week ahead: the next staples come due. Tap Yes on one to pay with the saved method. Then tick Make the next rebuy decline and tap Yes on the other.",
-      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and LookLook asks you to pay with another card or PayPal account. The retinol's watch is on Rebuys too: Send a test price drop shows how a drop arrives, and with this month's skincare budget spent it waits for next month's.`,
+      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and LookLook asks you to pay with another card or PayPal account. The retinol's watch is on Rebuys too: Try a price drop shows how a drop arrives, and with this month's skincare budget spent it waits for next month's.`,
       links: [{ href: "/rebuys", label: "Open Rebuys" }],
     },
     {
       title: "See your decisions in AG Studio",
       body: "On a laptop, open the dashboard: checks, rebuys, shelf and budgets together. Tap Group my waits and Studio's agents build a table of what each wait is waiting for.",
-      more: "Tap Yes on a rebuy there to pay with the saved method; the shelf row updates in place. The table takes about 30 seconds. Customize opens the Studio editor.",
+      more: "Tap Yes on a rebuy there to pay with the saved method. The shelf row updates in place. The table takes about 30 seconds. Customize opens the Studio editor.",
       links: [{ href: "/studio", label: "Open the dashboard" }],
     },
     {

@@ -22,7 +22,7 @@ describe("held-out result (read from the single scored run)", () => {
   });
 
   it("states the headline sentence", () => {
-    expect(heldOutHeadline(r)).toBe("On 30 products it had never seen, LookLook's skip was right 28 times. Skipping anything in a category you own gets 19; saying skip to everything gets 13.");
+    expect(heldOutHeadline(r)).toBe("On 30 products it had never seen, LookLook's skip was right 28 times. Skipping anything in a category you own gets 19, and saying skip to everything gets 13.");
   });
 
   it("lists every wrong, missed and other miss with the rule that fired", () => {

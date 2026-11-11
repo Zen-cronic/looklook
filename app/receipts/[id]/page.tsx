@@ -59,7 +59,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <dt>Paid with</dt>
           <dd>{r.methodLabel}</dd>
           <dt>How</dt>
-          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "You tapped yes; paid with your saved method"}</dd>
+          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "You tapped yes and paid with your saved method"}</dd>
           <dt>PayPal order</dt>
           <dd>{r.orderId}</dd>
           {r.refund && (

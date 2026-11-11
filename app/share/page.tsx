@@ -20,7 +20,7 @@ export default function SharePage() {
           Saw something in Safari, Instagram, TikTok or Photos? Share it to {APP_NAME} and the verdict opens in your browser.
         </p>
         <p className="small" data-testid="share-status">
-          Status: tested on desktop; phone test after deploy.
+          Status: tested on desktop, phone test after deploy.
         </p>
       </div>
 

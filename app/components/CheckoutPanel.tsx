@@ -241,7 +241,7 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
             Pay {amountLabel} by card
           </button>
         </div>
-        {cardReady === "no" && <p className="small muted">Card payment isn&apos;t available here; use PayPal.</p>}
+        {cardReady === "no" && <p className="small muted">Card payment isn&apos;t available here. Use PayPal.</p>}
       </div>
     </div>
   );

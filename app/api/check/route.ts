@@ -20,7 +20,7 @@ const allSessions = new GlobalBudget(envInt("CHECKS_PER_HOUR", 300), HOUR);
 
 /** Spend one check from this shopper's and the server's hourly allowance, or answer 429. */
 function takeCheck(sid: string): void {
-  if (!perSession.take(sid)) throw new HttpError(429, "You've checked a lot of new items in the last hour. Try again a bit later; your earlier checks are still here.");
+  if (!perSession.take(sid)) throw new HttpError(429, "You've checked a lot of new items in the last hour. Try again a bit later. Your earlier checks are still here.");
   if (!allSessions.take()) throw new HttpError(429, "Checking is busy right now. Try again in a few minutes.");
 }
 

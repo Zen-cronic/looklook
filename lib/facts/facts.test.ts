@@ -151,8 +151,8 @@ describe("README numbers match the data and code", () => {
     expect(README).toContain(`Claude (\`${READER_MODEL}\`)`);
   });
 
-  it("names the sandbox test store as the seller, as the app does", () => {
-    expect(SELLER_OF_RECORD).toBe(`${APP_NAME} Test Store (PayPal sandbox)`);
+  it("names the test store as the seller, as the app does", () => {
+    expect(SELLER_OF_RECORD).toBe(`${APP_NAME} Test Store`);
     expect(README).toContain(`sold by "${SELLER_OF_RECORD}"`);
   });
 

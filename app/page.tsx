@@ -18,10 +18,10 @@ const YES_POINTS = [
     lines: [
       "Each rebuy is charged only after you tap yes on it, at the price shown next to that yes.",
       "PayPal Vault saves the method only when you tick the box, and each rebuy is a charge you start with your tap.",
-      "Only refunds happen without your yes; a price event never charges anything.",
+      "Only refunds happen without your yes. A price event never charges anything.",
     ],
   },
-  { title: "A cap on every rebuy", lines: ["You set a cap for each rebuy when you save PayPal or a card; a rebuy above it is refused."] },
+  { title: "A cap on every rebuy", lines: ["You set a cap for each rebuy when you save PayPal or a card. A rebuy above it is refused."] },
   { title: "Charged once", lines: ["Tap yes twice and you are charged once."] },
 ];
 

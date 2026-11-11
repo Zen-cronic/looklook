@@ -160,7 +160,7 @@ export function GuardRow({ g, onChange }: { g: GuardView; onChange: () => Promis
     setBusy(true);
     setError(null);
     const r = await postJson(`/api/receipts/${g.receiptId}/drop`, { priceCents: g.testCents });
-    if (!r.ok) setError(typeof r.data.error === "string" ? r.data.error : "The test price drop didn't go through. Nothing was refunded.");
+    if (!r.ok) setError(typeof r.data.error === "string" ? r.data.error : "The price drop didn't go through. Nothing was refunded.");
     await onChange();
     setBusy(false);
   }
@@ -171,7 +171,6 @@ export function GuardRow({ g, onChange }: { g: GuardView; onChange: () => Promis
       {g.refunds.map((x) => (
         <span key={x.refundId} className={`small ${s.guardRefund}`} data-testid="guard-refund">
           {guardRefundLine(g, x)} PayPal refund <span className="mono">{x.refundId}</span>
-          {x.simulated ? " (test price drop)" : ""}
         </span>
       ))}
       {g.testCents !== undefined && (
@@ -412,7 +411,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
               {slip.methodLabel
                 ? `Paid with ${slip.methodLabel}, up to ${money(slip.capCents ?? 0)} per item. Each item is its own PayPal payment.`
                 : slip.lines.length > 0
-                  ? `The first item goes through PayPal checkout. Tick save there; after that, one yes pays ${slip.lines.length === 2 ? "the other item" : `the other ${slip.lines.length - 1} items`}.`
+                  ? `The first item goes through PayPal checkout. Tick save there. After that, one yes pays ${slip.lines.length === 2 ? "the other item" : `the other ${slip.lines.length - 1} items`}.`
                   : ""}
             </p>
             {(slip.lines.length > 0 || slip.watches.length > 0) && (
