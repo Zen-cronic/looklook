@@ -1,0 +1,341 @@
+"use client";
+
+import { AgStudio, AgStudioProvider, createWidgets } from "ag-studio-react";
+import { AgStudioAiModule, createAiHarness, directLlmRunner, singleColumnLayout, studioTheme } from "ag-studio";
+import type { AgAiChatSession, AgAiHarness, AgReportState, AgStudioApi } from "ag-studio";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { APP_NAME } from "@/lib/brand";
+import type { WeekView } from "@/lib/app/week";
+import { diffRows, type Row } from "@/lib/studio/schema";
+import { SLIP_TABLE, slipAgentInstructions, slipRows } from "@/lib/studio/slip";
+import { claudeAdapter, type TurnInfo } from "./adapter";
+import { setSlipState, WeekSlipWidget, type SlipContext } from "./slip-widget";
+
+const LICENSE = process.env.NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY;
+const PAGE_ID = "week";
+const AGENT_ID = "slip";
+const RUN_LIMIT_MS = 60_000;
+
+let onTurn: (t: TurnInfo) => void = () => undefined;
+const adapter = claudeAdapter("/api/llm", (t) => onTurn(t));
+
+const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
+
+/** Requests the assistant box offers; each goes to the slip agent as typed. */
+const STARTERS = ["Leave the cleanser for next week", "Put everything back on the slip"];
+
+function themeFromTokens() {
+  const css = getComputedStyle(document.documentElement);
+  const v = (name: string) => css.getPropertyValue(name).trim();
+  const font = `${v("--font-ui")}, sans-serif`;
+  return studioTheme.withParams({
+    accentColor: v("--signature"),
+    foregroundColor: v("--ink"),
+    backgroundColor: v("--card"),
+    borderColor: v("--line"),
+    chromeBackgroundColor: v("--paper"),
+    studioCanvasBackgroundColor: v("--paper"),
+    studioWidgetBackgroundColor: v("--card"),
+    studioWidgetBorderRadius: v("--radius"),
+    fontFamily: font,
+    studioCanvasFontFamily: font,
+    studioWidgetTitleFontFamily: font,
+    studioWidgetTitleFontWeight: 800,
+    studioCanvasBorder: false,
+    studioCanvasShadow: false,
+    studioCanvasPadding: "0px",
+    studioWidgetBorder: `0.5px solid ${v("--ink")}`,
+    studioCanvasRowHeight: "20px",
+    studioMinWidth: 0,
+  } as Parameters<typeof studioTheme.withParams>[0]);
+}
+
+function slipSource(rows: Row[]) {
+  return {
+    id: SLIP_TABLE.id,
+    name: SLIP_TABLE.name,
+    description: SLIP_TABLE.description,
+    primaryKeyField: "id",
+    transactions: "all" as const,
+    data: rows,
+    fields: SLIP_TABLE.fields.map((f) => ({
+      id: f.id,
+      name: f.name,
+      description: f.description,
+      blankValue: "",
+      format: f.kind === "money" ? "currencyFormat" : "textFormat",
+      ...(f.kind === "money" ? { formatOptions: { format: usd } } : {}),
+    })),
+  };
+}
+
+function initialState(narrow: boolean): AgReportState {
+  return {
+    pages: [
+      {
+        id: PAGE_ID,
+        name: "This week",
+        widgets: {
+          slip: { type: "weekSlip", dataMapping: {} },
+          lines: {
+            type: "grid",
+            format: { title: { enabled: true, text: "Every line, and what happened to it" } },
+            dataMapping: { cols: [{ id: "slip.product" }, { id: "slip.why" }, { id: "slip.amount" }, { id: "slip.status" }, { id: "slip.orderId" }] },
+          },
+        },
+        widgetLayout: narrow
+          ? { slip: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 22 }, lines: { xTrack: 0, yTrack: 22, xSpan: 24, ySpan: 14 } }
+          : { slip: { xTrack: 0, yTrack: 0, xSpan: 9, ySpan: 24 }, lines: { xTrack: 9, yTrack: 0, xSpan: 15, ySpan: 24 } },
+      },
+    ],
+    selectedPageId: PAGE_ID,
+  } as unknown as AgReportState;
+}
+
+type AskState = { kind: "idle" } | { kind: "running"; request: string; steps: number } | { kind: "done"; request: string; changes: string[]; note?: string };
+
+export default function WeekWorkspace({ initial, runId, narrow }: { initial: WeekView; runId: string; narrow: boolean }) {
+  const apiRef = useRef<AgStudioApi | null>(null);
+  const harnessRef = useRef<AgAiHarness | null>(null);
+  const viewRef = useRef(initial);
+  const rowsRef = useRef<Row[]>(slipRows(initial));
+  const changesRef = useRef<string[]>([]);
+  const [view, setViewState] = useState(initial);
+  const [paying, setPaying] = useState(false);
+  const [message, setMessage] = useState<string | null>(null);
+  const [ask, setAsk] = useState<AskState>({ kind: "idle" });
+  const [text, setText] = useState("");
+  const [theme] = useState(themeFromTokens);
+  const [state0] = useState(() => {
+    setSlipState({ view: initial, paying: false, message: null });
+    return initialState(narrow);
+  });
+  const router = useRouter();
+
+  /** Show a new state of the week: the widget re-renders from it, and the grid gets only the rows that changed. */
+  const show = useCallback(async (next: WeekView) => {
+    viewRef.current = next;
+    setViewState(next);
+    const rows = slipRows(next);
+    const d = diffRows(rowsRef.current, rows);
+    rowsRef.current = rows;
+    const engine = apiRef.current?.getDataEngine() as unknown as { applyTransaction(tx: unknown[]): Promise<unknown> } | undefined;
+    if (engine && (d.add.length || d.update.length || d.remove.length)) await engine.applyTransaction([{ tableId: SLIP_TABLE.id, add: d.add, update: d.update, remove: d.remove }]);
+  }, []);
+
+  /** Take a line off the slip or put it back (the assistant's tools call this). Returns what our code saw happen. */
+  const change = useCallback(
+    async (key: string, action: "leave" | "back"): Promise<{ ok: boolean; text: string }> => {
+      const before = viewRef.current;
+      const title = [...before.slip.lines, ...before.slip.leftOff].find((l) => l.approvalKey === key)?.title ?? key;
+      const res = await fetch(`/api/week/${runId}/slip`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ approvalKey: key, action }) });
+      const data = (await res.json().catch(() => ({}))) as WeekView & { error?: string };
+      if (!res.ok) return { ok: false, text: data.error ?? "That didn't change the slip." };
+      await show(data);
+      const done = action === "leave" ? `Took ${title} off the slip.` : `Put ${title} back on the slip.`;
+      changesRef.current.push(done);
+      return { ok: true, text: `${done} The slip now has ${data.slip.lines.length} ${data.slip.lines.length === 1 ? "line" : "lines"}.` };
+    },
+    [runId, show],
+  );
+
+  const yes = useCallback(async () => {
+    const v = viewRef.current;
+    if (v.slip.lines.length > 0 && !v.slip.methodId) {
+      router.push(`/week?run=${runId}`);
+      return;
+    }
+    setPaying(true);
+    setMessage(null);
+    const res = await fetch(`/api/week/${runId}/approve`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ hash: v.slip.hash }) });
+    const data = (await res.json().catch(() => ({}))) as WeekView & { error?: string };
+    if (res.ok) {
+      await show(data);
+      const paid = data.sent.filter((l) => l.status === "paid" && v.slip.lines.some((x) => x.approvalKey === l.approvalKey));
+      setMessage(`Paid ${usd.format(paid.reduce((n, l) => n + l.amountCents, 0) / 100)}: ${paid.map((l) => `${l.title}, PayPal order ${l.orderId}`).join("; ")}.`);
+    } else {
+      setMessage(data.error ?? "The payment didn't go through. Nothing was charged.");
+      const again = await fetch(`/api/week/${runId}`, { cache: "no-store" });
+      if (again.ok) await show((await again.json()) as WeekView);
+    }
+    setPaying(false);
+  }, [runId, show, router]);
+
+  useEffect(() => setSlipState({ view, paying, message }), [view, paying, message]);
+  const yesRef = useRef(yes);
+  useEffect(() => {
+    yesRef.current = yes;
+  }, [yes]);
+  const [context] = useState<SlipContext>(() => ({ yes: () => void yesRef.current() }));
+  const data = useMemo(() => ({ sources: [slipSource(slipRows(initial))] }), [initial]);
+
+  const widgets = useMemo(
+    () => (base: { menu: unknown[] }) =>
+      createWidgets({
+        additionalTypes: [
+          {
+            id: "weekSlip",
+            label: "This week's slip",
+            form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
+            comp: WeekSlipWidget,
+            defaultSize: { width: 380, height: 480 },
+            minSize: { width: 260, height: 240 },
+            ai: { description: `${APP_NAME}'s slip for this week: the payments one yes would make, their total and the yes button. Needs no field mapping.` },
+          },
+        ],
+        menu: [...base.menu, { label: APP_NAME, widgetIds: ["weekSlip"] }],
+      } as never),
+    [],
+  );
+
+  const ai = useMemo(
+    () =>
+      ({ api }: { api: AgStudioApi }) => {
+        if (harnessRef.current) return harnessRef.current;
+        const harness = createAiHarness(api, () => {
+          type Params = { object: (o: unknown) => unknown; string: (o: unknown) => unknown };
+          const keyParam = (s: Params) => s.object({ key: s.string({ description: "The line's key, exactly as listed in your instructions." }) });
+          const run = (action: "leave" | "back") => async (args: { key?: string }, ctx: { success: (m: string) => unknown }) => {
+            const r = await change(String(args?.key ?? ""), action);
+            return ctx.success(r.text);
+          };
+          const leave = api.defineAiTool({ name: "leave_for_later", description: "Take one line off this week's slip. It is not paid; it stays listed as left for later.", params: keyParam, execute: run("leave") } as never);
+          const back = api.defineAiTool({ name: "put_back", description: "Put one line that was left for later back on this week's slip.", params: keyParam, execute: run("back") } as never);
+          const slipAgent = directLlmRunner({
+            id: AGENT_ID,
+            name: APP_NAME,
+            description: `${APP_NAME}'s slip agent: takes lines off this week's slip or puts them back. It cannot pay.`,
+            adapter,
+            maxTurns: 6,
+            instructions: () => slipAgentInstructions(viewRef.current),
+            tools: () => [leave, back],
+          } as never);
+          return { agents: [slipAgent], primary: AGENT_ID } as never;
+        });
+        harnessRef.current = harness;
+        return harness;
+      },
+    [change],
+  );
+
+  const running = useRef(false);
+  async function askAgent(request: string) {
+    const harness = harnessRef.current;
+    if (!harness || running.current || !request.trim()) return;
+    running.current = true;
+    changesRef.current = [];
+    let steps = 0;
+    setAsk({ kind: "running", request, steps });
+    onTurn = () => {
+      steps += 1;
+      setAsk({ kind: "running", request, steps });
+    };
+    let session: AgAiChatSession | null = null;
+    try {
+      session = await harness.createThread({ agentId: AGENT_ID, title: request.slice(0, 60) });
+      const finished = new Promise<string>((resolve) => {
+        let sawRunning = false;
+        const timer = window.setTimeout(() => resolve("timeout"), RUN_LIMIT_MS);
+        session!.addEventListener("changed", () => {
+          const st = session!.status;
+          if (st === "running") sawRunning = true;
+          if (sawRunning && (st === "idle" || st === "error")) {
+            window.clearTimeout(timer);
+            resolve(st);
+          }
+        });
+      });
+      session.sendMessage(request);
+      const outcome = await finished;
+      if (outcome === "timeout") session.cancel();
+      const changes = [...changesRef.current];
+      setAsk({ kind: "done", request, changes, note: outcome === "idle" ? undefined : "The assistant didn't finish." });
+    } catch {
+      session?.cancel();
+      setAsk({ kind: "done", request, changes: [...changesRef.current], note: "The assistant isn't available right now. The slip is as shown." });
+    } finally {
+      onTurn = () => undefined;
+      running.current = false;
+    }
+  }
+
+  const busy = ask.kind === "running";
+  return (
+    <AgStudioProvider licenseKey={LICENSE} modules={[AgStudioAiModule]}>
+      <div className={`workspace${narrow ? " narrow" : ""}`}>
+        <div className="workspace-bar">
+          <div>
+            <h1>This week</h1>
+            <p className="small muted">This week&apos;s slip in AG Studio. Ask {APP_NAME}&apos;s assistant to take a line off or put it back; only your yes on the slip pays.</p>
+          </div>
+          <div className="workspace-actions">
+            <Link className="btn outline" href={`/week?run=${runId}`}>
+              Back to the week
+            </Link>
+          </div>
+        </div>
+        <form
+          className="slip-ask"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void askAgent(text);
+          }}
+        >
+          <label htmlFor="slip-ask-input" className="small">
+            Ask about this slip
+          </label>
+          <div className="slip-ask-row">
+            <input id="slip-ask-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Leave the cleanser for next week" disabled={busy} data-testid="slip-ask-input" />
+            <button className="btn" type="submit" disabled={busy || !text.trim()} data-testid="slip-ask">
+              {busy ? "Asking…" : "Ask"}
+            </button>
+          </div>
+          <div className="slip-starters">
+            {STARTERS.map((s) => (
+              <button key={s} type="button" className="btn outline small" disabled={busy} onClick={() => (setText(s), void askAgent(s))}>
+                {s}
+              </button>
+            ))}
+          </div>
+        </form>
+        {ask.kind !== "idle" && (
+          <div className={`workspace-run ${ask.kind}`} role="status" aria-live="polite" data-testid="slip-ask-status">
+            {ask.kind === "running" ? (
+              <>
+                <span className="spinner" aria-hidden />
+                <span>
+                  {APP_NAME}&apos;s assistant is on it: &ldquo;{ask.request}&rdquo;, {ask.steps} {ask.steps === 1 ? "step" : "steps"}.
+                </span>
+              </>
+            ) : (
+              <span>
+                <strong>{ask.changes.length ? ask.changes.join(" ") : "The slip didn't change."}</strong> {ask.note ?? ""} Nothing was paid: the yes on the slip is yours.
+              </span>
+            )}
+          </div>
+        )}
+        <div className="workspace-canvas" data-testid="studio-week" style={{ height: narrow ? "760px" : "520px" }}>
+          <AgStudio
+            style={{ height: "100%", width: "100%" }}
+            data={data as never}
+            mode="view"
+            initialState={state0}
+            widgets={widgets as never}
+            theme={theme}
+            layout={{ columns: 24, minWidth: 250 } as never}
+            responsiveLayoutBreakpoints={[{ maxWidth: 760, layout: singleColumnLayout }] as never}
+            context={context}
+            panels={{ view: { left: [], right: [] }, edit: { left: ["ai"], right: ["edit", "data"] } }}
+            ai={ai as never}
+            onApiReady={(e: { api: AgStudioApi }) => {
+              apiRef.current = e.api;
+              ai({ api: e.api });
+            }}
+          />
+        </div>
+      </div>
+    </AgStudioProvider>
+  );
+}

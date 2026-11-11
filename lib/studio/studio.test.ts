@@ -229,3 +229,35 @@ describe("assistant request shaping", () => {
     expect(b.take("s", 1011)).toBe(true);
   });
 });
+
+describe("the Studio week: an assistant that edits the slip but can't pay", () => {
+  const line = (key: string, title: string, cents: number, why: "buy" | "due") => ({ source: { kind: "check" as const, checkId: key }, approvalKey: key, amountCents: cents, version: "", why, title, brand: "B" });
+
+  it("gives the assistant slip tools and no tool that pays", async () => {
+    const { SLIP_AGENT_TOOLS, slipAgentInstructions } = await import("./slip");
+    const { guardTurn, STUDIO_TOOLS } = await import("./guard");
+    for (const t of SLIP_AGENT_TOOLS) expect(STUDIO_TOOLS.has(t)).toBe(true);
+    expect([...STUDIO_TOOLS].filter((t) => /pay|charge|approve|capture|order|refund|checkout/i.test(t))).toEqual([]);
+    const view = { slip: { lines: [line("check:a", "Peptide Serum", 3200, "buy")], leftOff: [] }, sent: [] } as never;
+    const instructions = slipAgentInstructions(view);
+    const tool = (name: string) => ({ type: "function", name, description: "", parameters: {} });
+    const guarded = guardTurn({ instructions, input: [], tools: [tool("leave_for_later"), tool("put_back"), tool("pay_slip"), tool("approve_week")] } as never);
+    expect(guarded.agent).toBe("slip");
+    expect((guarded.turn.tools as Array<{ name: string }>).map((t) => t.name)).toEqual(["leave_for_later", "put_back"]);
+    expect(guarded.dropped).toEqual(["pay_slip", "approve_week"]);
+    expect(instructions).toContain("check:a: Peptide Serum, $32.00 (on the slip)");
+  });
+
+  it("the slip table marks a line left for later, then paid with its PayPal order id", async () => {
+    const { slipRows } = await import("./slip");
+    const a = line("check:a", "Peptide Serum", 3200, "buy");
+    const b = line("staple:c:1", "Cleanser", 1697, "due");
+    const before = slipRows({ slip: { lines: [a], leftOff: [{ ...b, leftOff: "for-later", note: "" }] }, sent: [] } as never);
+    expect(before.map((r) => [r.id, r.status])).toEqual([["staple:c:1", "Left for later"], ["check:a", "On the slip"]]);
+    const after = slipRows({ slip: { lines: [], leftOff: [{ ...b, leftOff: "for-later", note: "" }] }, sent: [{ ...a, status: "paid", orderId: "9AB12345CD678901E" }] } as never);
+    const d = diffRows(before, after);
+    expect(d.update).toEqual([expect.objectContaining({ id: "check:a", status: "Paid", orderId: "9AB12345CD678901E" })]);
+    expect(d.add).toEqual([]);
+    expect(d.remove).toEqual([]);
+  });
+});

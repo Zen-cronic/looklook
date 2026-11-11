@@ -433,3 +433,65 @@ body:has(.workspace.editing) .footer {
 .workspace.editing .workspace-canvas {
   overflow-x: auto;
 }
+
+/* The Studio week: the slip widget and the assistant box */
+.slip-ask {
+  display: grid;
+  gap: 0.4rem;
+  margin: 0 0 0.9rem;
+}
+
+.slip-ask-row {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.slip-ask-row input {
+  flex: 1;
+  min-width: 0;
+  font: inherit;
+  padding: 0.6rem 0.8rem;
+  border: 1px solid var(--line-strong);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+}
+
+.slip-starters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.slip-widget .slip-lines {
+  list-style: none;
+  margin: 0.4rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.5rem;
+}
+
+.slip-widget .slip-lines li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--line);
+}
+
+.slip-widget .slip-lines.later li {
+  color: var(--muted);
+}
+
+.slip-widget .slip-total {
+  display: flex;
+  justify-content: space-between;
+  font-weight: 800;
+  font-size: 1.25rem;
+  margin: 0.6rem 0;
+}
+
+.slip-widget .slip-message {
+  font-weight: 600;
+  overflow-wrap: anywhere;
+}
