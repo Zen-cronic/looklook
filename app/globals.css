@@ -38,7 +38,7 @@
   --card: #ffffff;
   --ink: #0a0a0a;
   --ink-2: #3a3a38;
-  --muted: #5c5c58;
+  --muted: #55554f;
   --line: #e2e2de;
   --line-strong: #b9b9b4;
   --shade: #e9e9e5;
@@ -93,6 +93,25 @@
   --display-fig: clamp(2.5rem, 1.9rem + 2.6vw, 4.25rem);
   --track-display: -0.045em;
 
+  /* Light: colour fields made only from the cobalt and the pink, a little grain, and soft depth.
+     Fields sit behind content and never under small text at full strength. */
+  --field-cobalt: color-mix(in srgb, var(--signature) 22%, transparent);
+  --field-cobalt-soft: color-mix(in srgb, var(--signature) 10%, transparent);
+  --field-pink: color-mix(in srgb, var(--accent) 44%, transparent);
+  --glass: color-mix(in srgb, var(--card) 86%, transparent);
+  --glass-strong: color-mix(in srgb, var(--card) 94%, transparent);
+  --depth:
+    0 1px 0 color-mix(in srgb, var(--card) 80%, transparent) inset,
+    0 1px 2px color-mix(in srgb, var(--ink) 5%, transparent),
+    0 22px 48px -26px color-mix(in srgb, var(--ink) 26%, transparent);
+  /* A cobalt slab lit from its top right corner and shaded to the deep cobalt low on the left.
+     No pink on cobalt (the two would blend to violet). White text keeps at least 5:1 on every part. */
+  --lit-cobalt:
+    radial-gradient(110% 85% at 100% 0%, color-mix(in srgb, var(--signature) 82%, var(--card)) 0%, transparent 60%),
+    radial-gradient(90% 80% at 0% 100%, var(--signature-deep) 0%, transparent 65%),
+    var(--signature);
+  --grain: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0.04 0 0 0 0 0.04 0 0 0 0 0.04 0 0 0 0.9 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+
   /* Motion */
   --ease-out: cubic-bezier(0.22, 1, 0.36, 1);
   --ease-in: cubic-bezier(0.55, 0, 1, 0.45);
@@ -110,6 +129,7 @@
 
 html {
   -webkit-text-size-adjust: 100%;
+  overflow-x: clip;
 }
 
 body {
@@ -120,6 +140,8 @@ body {
   line-height: 1.5;
   -webkit-font-smoothing: antialiased;
   min-height: 100dvh;
+  /* Light pools may spill past a column; the window edge clips them, never a scrollbar */
+  overflow-x: clip;
 }
 
 a {
@@ -168,9 +190,40 @@ img {
   font-stretch: 75%;
 }
 
+/* Ambient light behind every page: two slow colour fields and a fine grain, fixed to the window */
+body::before,
+body::after {
+  content: "";
+  position: fixed;
+  pointer-events: none;
+  z-index: -1;
+}
+
+body::before {
+  inset: -12vmax;
+  background:
+    radial-gradient(40vmax 30vmax at 86% 10%, var(--field-cobalt), transparent 70%),
+    radial-gradient(34vmax 28vmax at 4% 44%, var(--field-pink), transparent 70%),
+    radial-gradient(48vmax 26vmax at 62% 104%, var(--field-cobalt-soft), transparent 72%);
+  animation: field-drift 46s ease-in-out infinite alternate;
+  will-change: transform;
+}
+
+body::after {
+  inset: 0;
+  background: var(--grain);
+  opacity: 0.07;
+}
+
+@keyframes field-drift {
+  0% { transform: translate3d(0, 0, 0); }
+  50% { transform: translate3d(-3vmax, 2vmax, 0); }
+  100% { transform: translate3d(2vmax, -2.5vmax, 0); }
+}
+
 /* Shell */
 .topbar {
-  background: var(--paper);
+  background: transparent;
 }
 
 .topbar-inner {
@@ -208,7 +261,9 @@ img {
   gap: 0.25rem;
   margin-left: auto;
   padding: 0.3rem;
-  background: var(--card);
+  background: var(--glass);
+  border: 1px solid color-mix(in srgb, var(--card) 70%, transparent);
+  box-shadow: var(--depth);
   border-radius: var(--radius-pill);
 }
 
@@ -275,9 +330,10 @@ img {
 .context-frame {
   display: grid;
   gap: 0.6rem;
-  background: var(--card);
+  background: var(--glass);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
+  box-shadow: var(--depth);
   padding: 1.1rem 1.25rem 1.2rem;
 }
 
@@ -332,7 +388,7 @@ img {
     bottom: calc(0.6rem + env(safe-area-inset-bottom));
     z-index: 20;
     margin: 0;
-    background: var(--card);
+    background: var(--glass-strong);
     border: 1px solid var(--hairline);
     padding: 0.3rem;
     justify-content: space-between;
@@ -420,15 +476,17 @@ h3 {
 
 /* Surfaces: plain cards; hero cards (verdict, approval, receipt) get the ink edge and hard shadow */
 .card {
-  background: var(--card);
+  background: var(--glass);
   border-radius: var(--radius);
+  box-shadow: var(--depth);
   padding: 1.25rem 1.3rem;
 }
 
 .list {
   list-style: none;
-  background: var(--card);
+  background: var(--glass);
   border-radius: var(--radius);
+  box-shadow: var(--depth);
   overflow: hidden;
 }
 
@@ -961,7 +1019,7 @@ select:focus-visible {
   border-bottom: var(--edge);
 }
 
-.verdict.skip .verdict-head { background: var(--skip); color: var(--skip-ink); }
+.verdict.skip .verdict-head { background: var(--lit-cobalt); color: var(--skip-ink); }
 .verdict.wait .verdict-head { background: var(--wait); color: var(--wait-ink); }
 .verdict.buy .verdict-head :focus-visible,
 .verdict.skip .verdict-head :focus-visible { outline-color: var(--card); }
@@ -1889,7 +1947,8 @@ tr:last-child td {
 
 /* Checkout: the order summary and the payment in one white card, framed on the panel */
 .checkout-card {
-  background: var(--card);
+  background: var(--glass-strong);
+  box-shadow: var(--depth);
   border: var(--edge);
   border-radius: var(--radius);
   overflow: hidden;
@@ -2298,9 +2357,9 @@ tr:last-child td {
   line-height: 1.3;
 }
 
-/* A flat slab filled with the signature colour (the headline number on Start here) */
+/* A slab filled with the signature colour (the headline number on Start here), lit like the others */
 .card.signature {
-  background: var(--signature);
+  background: var(--lit-cobalt);
   color: var(--signature-ink);
 }
 
@@ -2582,8 +2641,28 @@ html[data-still]::view-transition-new(*) {
 
 /* A lotion panel behind a page's main records, with hairline frames: Start here, Rebuys, a receipt */
 
+/* A material panel (checkout, a check) floats in light like the rest of the page */
+.lead:has(> .panel) {
+  position: relative;
+  isolation: isolate;
+}
+
+.lead:has(> .panel)::before {
+  content: "";
+  position: absolute;
+  inset: -6% -10% -6%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(26% 18% at 80% 14%, color-mix(in srgb, var(--accent) 60%, transparent), transparent 70%),
+    radial-gradient(50% 36% at 46% 58%, color-mix(in srgb, var(--signature) 26%, transparent), transparent 72%),
+    radial-gradient(22% 16% at 16% 84%, color-mix(in srgb, var(--accent) 40%, transparent), transparent 70%);
+  filter: blur(6px);
+}
+
 .panel {
   position: relative;
+  box-shadow: var(--depth);
   border-radius: 32px;
   overflow: hidden;
   isolation: isolate;
@@ -2716,4 +2795,29 @@ html[data-still]::view-transition-new(*) {
   font: 600 0.6rem/1.4 var(--font-mono), monospace;
   letter-spacing: 0.04em;
   pointer-events: none;
+}
+
+/* A slow light that moves across a lit cobalt slab. The slab needs position and isolation;
+   with reduced motion or ?still=1 it rests where it starts. */
+.lit-sheen {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.lit-sheen::after {
+  content: "";
+  position: absolute;
+  inset: -40%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(26% 22% at 30% 30%, color-mix(in srgb, var(--card) 13%, transparent), transparent 70%),
+    radial-gradient(30% 26% at 72% 66%, color-mix(in srgb, var(--card) 9%, transparent), transparent 70%);
+  animation: sheen-drift 22s ease-in-out infinite alternate;
+}
+
+@keyframes sheen-drift {
+  0% { transform: translate3d(-6%, -4%, 0); }
+  100% { transform: translate3d(8%, 6%, 0); }
 }

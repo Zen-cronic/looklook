@@ -11,6 +11,27 @@
   flex-direction: column;
   gap: 0.75rem;
   min-height: 40rem;
+  position: relative;
+  isolation: isolate;
+}
+
+/* The canvas sits in the same light as the rest of the app: a cobalt pool and two pink halos */
+.workspace::before {
+  content: "";
+  position: absolute;
+  inset: 4rem -6% -8%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(24% 20% at 22% 24%, color-mix(in srgb, var(--accent) 48%, transparent), transparent 70%),
+    radial-gradient(46% 38% at 62% 62%, color-mix(in srgb, var(--signature) 22%, transparent), transparent 72%),
+    radial-gradient(20% 18% at 86% 82%, color-mix(in srgb, var(--accent) 40%, transparent), transparent 70%);
+  filter: blur(6px);
+}
+
+/* Studio marks the widget it opened with a grey ring; on this page it reads as a stray frame */
+.workspace-canvas .ag-studio-layout-widget-toolbar-active {
+  box-shadow: none;
 }
 
 .workspace.narrow {
