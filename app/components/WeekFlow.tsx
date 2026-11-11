@@ -11,7 +11,7 @@ import { guardHead, guardLine, guardRefundLine, guardTestLabel } from "@/lib/app
 import type { SentLineView, WeekView } from "@/lib/app/week";
 import { Eyebrow } from "./Eyebrow";
 import { ProductGlyph, glyphFor } from "./ProductGlyph";
-import { VerdictChip } from "./VerdictChip";
+import { VerdictTag } from "./VerdictChip";
 import s from "./WeekFlow.module.css";
 
 const money = (c: number) => formatCents(c);
@@ -72,7 +72,7 @@ function Thumb({ imageUrl, category, brand }: { imageUrl?: string; category?: We
 }
 
 function postLine(i: WeekInput, view: WeekView): string {
-  if (i.group === "skip") return i.keptCents !== undefined ? `Already on your shelf. ${money(i.keptCents)} kept.` : "Already on your shelf.";
+  if (i.group === "skip") return i.keptCents !== undefined ? `${money(i.keptCents)} kept by not buying it again.` : "Already on your shelf.";
   if (i.group === "buy") {
     const sent = view.sent.find((l) => l.source.kind === "check" && l.source.checkId === i.checkId);
     return sent?.status === "paid" ? `Paid, ${money(sent.amountCents)}.` : `${i.priceCents !== undefined ? money(i.priceCents) : "Price"}, in this week's order.`;
@@ -276,6 +276,9 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                 <div className={s.meta}>
                   <div className="brand-line">{p.brand}</div>
                   <div className="name-line">{p.title.startsWith(p.brand) ? p.title.slice(p.brand.length).trim() || p.title : p.title}</div>
+                  <Link className={s.chipLink} href={`/check/${p.checkId}`} aria-label={`Why: ${p.title}`}>
+                    <VerdictTag verdict={VERDICT_OF[p.group]} rule={p.rule} />
+                  </Link>
                   <p className={`small ${p.group === "skip" ? s.kept : "muted"}`}>{postLine(p, view)}</p>
                   {p.group === "ask" && (
                     <p className="small">
@@ -283,9 +286,6 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                     </p>
                   )}
                 </div>
-                <Link className={s.chipLink} href={`/check/${p.checkId}`} aria-label={`Why: ${p.title}`}>
-                  <VerdictChip verdict={VERDICT_OF[p.group]} />
-                </Link>
               </li>
             ))}
           </ul>

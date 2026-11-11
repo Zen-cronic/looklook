@@ -87,6 +87,8 @@
 }
 
 .chipLink {
+  display: inline-flex;
+  margin-top: 0.4rem;
   text-decoration: none;
 }
 

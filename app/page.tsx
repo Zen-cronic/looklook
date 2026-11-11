@@ -2,6 +2,7 @@ import Link from "next/link";
 import { baselineScore, heldOutHeadline, heldOutResult } from "@/lib/app/holdout";
 import { landingSample } from "@/lib/app/landing";
 import { SELLER_OF_RECORD } from "@/lib/app/payments";
+import { VerdictTag } from "./components/VerdictChip";
 import { APP_NAME } from "@/lib/brand";
 import { WEEK_TAGLINE } from "@/lib/app/week";
 import { Eyebrow } from "./components/Eyebrow";
@@ -121,7 +122,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
               <div className={s.stepCard} aria-hidden="true">
                 <div className={`card ${s.evidenceCard}`}>
                   <p className={s.miniVerdict}>
-                    <span className="chip skip">Skip</span>
+                    <VerdictTag verdict="skip" rule={x.check.decision.rule} />
                   </p>
                   <dl className="evidence">
                     <dt>On your shelf</dt>

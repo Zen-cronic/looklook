@@ -10,7 +10,7 @@ import { atTheTime } from "@/lib/app/when";
 import { APP_NAME } from "@/lib/brand";
 import { Intake } from "../components/Intake";
 import { Chevron } from "../components/Chevron";
-import { VerdictChip } from "../components/VerdictChip";
+import { VerdictTag } from "../components/VerdictChip";
 import { VerdictSummary } from "../components/VerdictSummary";
 import { Frames, MaterialStage, ShelfLink } from "../components/stage/MaterialStage";
 
@@ -72,9 +72,11 @@ async function RecentChecks() {
                 <span className="name-line" style={{ display: "block" }}>
                   {c.facts.name || "Unreadable post"}
                 </span>
+                <span style={{ display: "block", marginTop: "0.4rem" }}>
+                  <VerdictTag verdict={c.decision.verdict} rule={c.decision.rule} />
+                </span>
               </span>
               <span className="row-end">
-                <VerdictChip verdict={c.decision.verdict} />
                 <Chevron />
               </span>
             </Link>
