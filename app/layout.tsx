@@ -5,6 +5,7 @@ import { Suspense, ViewTransition } from "react";
 import { APP_DESCRIPTION, APP_NAME, APP_TAGLINE } from "@/lib/brand";
 import { FilmBadge } from "./components/FilmBadge";
 import { NavLinks } from "./components/NavLinks";
+import { VerdictLegend } from "./components/VerdictLegend";
 import { MOTION_SCRIPT, stillAtBuild } from "./components/motion";
 import "./globals.css";
 
@@ -64,6 +65,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/events">Webhook events</Link>
           </nav>
         </footer>
+        <VerdictLegend />
         {process.env.NODE_ENV !== "production" && <FilmBadge />}
       </body>
     </html>

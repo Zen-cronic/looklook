@@ -2844,3 +2844,174 @@ html[data-still]::view-transition-new(*) {
   0% { transform: translate3d(-6%, -4%, 0); }
   100% { transform: translate3d(8%, 6%, 0); }
 }
+
+/* A verdict chip with its short reason next to it */
+.verdict-tag {
+  display: inline-flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.3rem 0.5rem;
+}
+
+.verdict-tag-reason {
+  font-size: 0.8125rem;
+  font-weight: 600;
+  color: var(--ink-2);
+  line-height: 1.25;
+}
+
+/* The verdict legend: a round ? button, bottom right, and the sheet it opens */
+.legend-fab {
+  position: fixed;
+  right: 1.25rem;
+  bottom: calc(1.25rem + env(safe-area-inset-bottom));
+  z-index: 30;
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  background: var(--card);
+  color: var(--ink);
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: 1.15rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: var(--depth);
+  display: grid;
+  place-items: center;
+  transition: opacity 160ms ease, transform 160ms ease;
+}
+
+.legend-fab:hover {
+  background: var(--signature);
+  color: var(--signature-ink);
+  border-color: var(--signature);
+}
+
+.legend-fab:focus-visible {
+  outline: 3px solid var(--signature);
+  outline-offset: 3px;
+}
+
+.legend-fab[data-tucked] {
+  opacity: 0;
+  transform: scale(0.85);
+  pointer-events: none;
+}
+
+@media (max-width: 640px) {
+  /* Above the bottom nav */
+  .legend-fab {
+    right: 0.9rem;
+    bottom: calc(4.75rem + env(safe-area-inset-bottom));
+  }
+}
+
+.legend-sheet {
+  border: 0;
+  padding: 0;
+  margin: auto 1.25rem calc(4.5rem + env(safe-area-inset-bottom)) auto;
+  width: min(25rem, calc(100vw - 2rem));
+  max-height: calc(100dvh - 6rem);
+  border-radius: var(--radius);
+  background: var(--card);
+  color: var(--ink);
+  box-shadow: var(--depth), 0 0 0 1px var(--line);
+}
+
+.legend-sheet::backdrop {
+  background: color-mix(in srgb, var(--ink) 28%, transparent);
+}
+
+.legend-sheet[open] {
+  animation: legend-in 180ms ease-out;
+}
+
+@keyframes legend-in {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: none; }
+}
+
+@media (max-width: 640px) {
+  .legend-sheet {
+    margin: auto auto calc(0.6rem + env(safe-area-inset-bottom));
+    width: calc(100vw - 1.2rem);
+  }
+}
+
+.legend-inner {
+  padding: 1.1rem 1.2rem 1.25rem;
+  display: grid;
+  gap: 0.9rem;
+}
+
+.legend-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.legend-head h2 {
+  margin: 0;
+  font-family: var(--font-display);
+  font-size: 1.05rem;
+  font-weight: 800;
+}
+
+.legend-close {
+  width: 44px;
+  height: 44px;
+  margin: -0.5rem -0.5rem -0.5rem 0;
+  border: 0;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--ink);
+  font-size: 1.5rem;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.legend-close:hover {
+  background: var(--paper);
+}
+
+.legend-close:focus-visible {
+  outline: 3px solid var(--signature);
+  outline-offset: 1px;
+}
+
+.legend-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.8rem;
+}
+
+.legend-list li {
+  display: grid;
+  grid-template-columns: 4.6rem 1fr;
+  gap: 0.75rem;
+  align-items: start;
+  font-size: 0.9375rem;
+  line-height: 1.4;
+}
+
+.legend-list .chip {
+  justify-self: start;
+}
+
+.legend-note {
+  margin: 0;
+  padding-top: 0.8rem;
+  border-top: 1px solid var(--line);
+  font-size: 0.875rem;
+  color: var(--ink-2);
+}
+
+/* Not in still captures (set before JS runs), unless a recorder opens it with ?legend=1 */
+html[data-still] .legend-fab:not([data-forced]) {
+  display: none;
+}
