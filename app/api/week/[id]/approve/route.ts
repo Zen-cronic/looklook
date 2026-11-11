@@ -1,5 +1,6 @@
 import { displayJson } from "@/lib/filming/server";
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
+import { startGuards } from "@/lib/app/guard-start";
 import { startWatch } from "@/lib/app/watch-start";
 import { approveWeek } from "@/lib/app/week";
 import { getPayPalClient } from "@/lib/paypal";
@@ -11,6 +12,6 @@ export async function POST(request: Request, ctx: RouteContext<"/api/week/[id]/a
     const { id } = await ctx.params;
     const body = await readJsonBody<{ hash?: unknown }>(request);
     if (typeof body.hash !== "string") throw new HttpError(400, "Send the slip you said yes to.");
-    return displayJson(await approveWeek(sid, id, body.hash, { client: getPayPalClient, startWatch }));
+    return displayJson(await approveWeek(sid, id, body.hash, { client: getPayPalClient, startWatch, startGuards }));
   });
 }

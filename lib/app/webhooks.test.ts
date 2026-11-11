@@ -59,6 +59,42 @@ describe("a webhook is handled once, and only after its effect is applied", () =
     expect(logged.some((e) => e.effect && !e.duplicate)).toBe(true);
   });
 
+  it("Channel3: a refund that failed answers 500, the redelivery refunds once", async () => {
+    const { fakePayPal } = await import("./testing");
+    let busy = true;
+    const pp = fakePayPal({ refundConflict: () => (busy ? ((busy = false), true) : false) });
+    const paypal = await import("../paypal");
+    vi.doMock("../paypal", () => ({ ...paypal, getPayPalClient: () => pp.client }));
+    const store = await import("./store");
+    const { recordPaid, sourceDetails } = await import("./payments");
+    const { newGuard } = await import("./guard");
+    const { appToday } = await import("./dates");
+    const sid = "webhooksession03";
+    await store.loadSampleWeek(sid);
+    const productId = await store.updateSession(sid, (s) => {
+      const source = { kind: "check" as const, checkId: "week-peptide" };
+      const outcome = { orderId: "O-G", orderStatus: "COMPLETED", captureId: "CAP-G", captureStatus: "COMPLETED", amountCents: 3200, currency: "USD" };
+      const { receipt } = recordPaid(s, source, sourceDetails(s, source), { outcome, requestId: "rebuy:g", kind: "saved-method", methodLabel: "Visa ending 1111" }, appToday(0));
+      receipt.guard = { ...newGuard(s, receipt, appToday(0))!, status: "on", subscriptionId: "sub_guard" };
+      return receipt.productId;
+    });
+    pp.capture("CAP-G", 3200);
+    await store.indexAdd("subscription", "sub_guard", sid);
+    const { POST } = await import("../../app/api/webhooks/channel3/route");
+    const body = JSON.stringify({ id: "evt_guard_1", timestamp: new Date().toISOString(), type: "offer.price.changed", data: { subscription_id: "sub_guard", subject: { product_id: productId, domain: "sephora.com" }, previous: { price: 32, currency: "USD" }, current: { price: 28, currency: "USD" } } });
+    const deliver = () => {
+      const ts = Math.floor(Date.now() / 1000);
+      return POST(new Request("http://localhost/api/webhooks/channel3", { method: "POST", body, headers: { "svix-id": "msg_guard", "svix-timestamp": String(ts), "svix-signature": `v1,${signChannel3(SECRET, "msg_guard", ts, body)}` } }));
+    };
+    expect((await deliver()).status).toBeGreaterThanOrEqual(500);
+    expect((await deliver()).status).toBe(200);
+    expect((await (await deliver()).json()).duplicate).toBe(true);
+    expect(pp.refunds.size).toBe(1);
+    const r = store.loadSession(sid).receipts.find((x) => x.captureId === "CAP-G")!;
+    expect(r.guard!.refunds.map((x) => x.amountCents)).toEqual([400]);
+    expect(r.status).toBe("partly-refunded");
+  });
+
   it("PayPal: a failed apply answers 500 so PayPal redelivers, and the redelivery is applied", async () => {
     const paypal = await import("../paypal");
     vi.doMock("../paypal", () => ({ ...paypal, getPayPalClient: () => ({}), verifyWebhookSignature: async () => ({ verified: true, eventId: "WH-RETRY-1", eventType: "PAYMENT.CAPTURE.COMPLETED" }) }));

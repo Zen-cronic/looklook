@@ -17,6 +17,7 @@ import { HttpError } from "./http";
 import { payWithSavedMethod } from "./pay";
 import { activeMethod, approvalKey, approvalVersion, boughtFor, dueStaples, openDecline } from "./payments";
 import { waitAction } from "./reminders";
+import { guardView, type GuardView } from "./guard";
 import { singleFlight } from "./single-flight";
 import { loadSession, updateSession } from "./store";
 import type { CheckRecord, SessionState, SlipLine, WeekInput, WeekLineOutcome, WeekLineStatus, WeekRun } from "./types";
@@ -234,6 +235,12 @@ export function weekView(state: SessionState, run: WeekRun) {
     paying: Boolean(run.approvedAt && sent.some((l) => l.status === "queued")),
     keptCents: run.inputs.reduce((sum, i) => sum + (i.keptCents ?? 0), 0),
     budgetsLeft: remainingBudgets(state.budgets, today),
+    // After the yes: the price guard on each line that was paid.
+    guards: sent.flatMap((l): GuardView[] => {
+      const r = l.receiptId ? state.receipts.find((x) => x.id === l.receiptId) : undefined;
+      const g = r ? guardView(r) : undefined;
+      return g ? [g] : [];
+    }),
     sample: Boolean(state.sample),
     today,
   };
@@ -261,6 +268,8 @@ export function lineOutcome(e: unknown, now = new Date()): WeekLineOutcome {
 export interface ApproveDeps {
   client: () => PayPalClient;
   startWatch: (sid: string, checkId: string) => Promise<{ watchId: string; subscription: { status: string } }>;
+  /** After the lines are paid: price guards on what was bought (never fails or holds up the yes for long). */
+  startGuards?: (sid: string, receiptIds: string[]) => Promise<void>;
 }
 
 /**
@@ -314,6 +323,8 @@ export function approveWeek(sid: string, runId: string, hash: string, deps: Appr
         break;
       }
     }
+    const paidIds = Object.values(findRun(loadSession(sid), runId).outcomes).flatMap((o) => (o.status === "paid" && o.receiptId ? [o.receiptId] : []));
+    if (deps.startGuards && paidIds.length) await deps.startGuards(sid, paidIds).catch(() => undefined);
     return weekView(loadSession(sid), findRun(loadSession(sid), runId));
   });
 }

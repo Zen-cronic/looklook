@@ -191,6 +191,42 @@ export interface Receipt {
   /** Set when a denied capture's shelf and budget changes were undone. */
   reversedAt?: string;
   status: ReceiptStatus;
+  /** After the yes: a lower price at the same store, inside its return window, gets the difference back. */
+  guard?: PriceGuard;
+}
+
+/**
+ * The price guard on one paid receipt, for as long as the store takes the
+ * item back opened (its cited return policy). A Channel3 subscription scoped
+ * to that store reports price changes; a drop below the price paid (or the
+ * lowest price already refunded down to) refunds the difference on the
+ * receipt's capture, and the refund goes back into the month's budget. Money
+ * only moves back: nothing here charges.
+ */
+export interface PriceGuard {
+  status: "starting" | "on" | "unavailable" | "ended";
+  /** The store's web domain: only its price events count. */
+  domain: string;
+  /** The store as the app names it (filming mode rewrites this key). */
+  store: string;
+  productId: string;
+  paidCents: number;
+  /** Last day (app date) a drop still counts. */
+  until: string;
+  /** Days the store takes it back opened, by its cited return policy (0 when there is no guard). */
+  windowDays: number;
+  /** Why there is no guard: no return rules on record for the store, it doesn't take it back opened, only sometimes, or no number of days. */
+  noGuard?: "no-rules" | "not-opened" | "sometimes" | "no-days";
+  subscriptionId?: string;
+  /** The lowest price a refund has already been made down to. */
+  lowCents?: number;
+  /** Newest price event applied (older ones are ignored). */
+  lastEventAt?: string;
+  /** Price events already handled, newest last (a short list). */
+  eventIds: string[];
+  refunds: Array<{ refundId: string; priceCents: number; amountCents: number; status: string; eventId: string; simulated: boolean; at: string }>;
+  startedAt: string;
+  note?: string;
 }
 
 /** A rebuy PayPal refused; the approval card offers re-approval. */

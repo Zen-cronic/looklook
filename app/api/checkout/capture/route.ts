@@ -1,5 +1,6 @@
 import { appToday } from "@/lib/app/dates";
 import { handle, HttpError, readJsonBody, sessionIdOrThrow } from "@/lib/app/http";
+import { startGuards } from "@/lib/app/guard-start";
 import { recordCheckoutCapture } from "@/lib/app/payments";
 import { singleFlight } from "@/lib/app/single-flight";
 import { indexAdd, loadSession, updateSession } from "@/lib/app/store";
@@ -35,6 +36,7 @@ export async function POST(request: Request) {
     const result = await updateSession(sid, (s) => recordCheckoutCapture(s, { ...intent, order }, outcome, requestId, appToday(s.dayOffset)));
     if (outcome.captureId) await indexAdd("capture", outcome.captureId, sid);
     if (result.method) await indexAdd("token", result.method.vaultId, sid);
+    await startGuards(sid, [result.receipt.id]);
     return Response.json({ receiptId: result.receipt.id, savedMethod: result.method?.label ?? null, vaultStatus: result.vaultStatus ?? null, saveRequested: order.save });
   });
 }

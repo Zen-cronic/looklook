@@ -7,12 +7,16 @@ import type { SessionState } from "./types";
  * anything in this session still listen to it?
  */
 export function listensTo(state: SessionState, subscriptionId: string, except?: { watchId?: string }): boolean {
-  return state.watch.some((w) => !w.closedAt && w.id !== except?.watchId && w.subscription.status === "active" && w.subscription.id === subscriptionId);
+  const watch = state.watch.some((w) => !w.closedAt && w.id !== except?.watchId && w.subscription.status === "active" && w.subscription.id === subscriptionId);
+  // A price guard on a paid item at the same store asks Channel3 for the same thing, so it gets the same subscription.
+  const guard = state.receipts.some((r) => (r.guard?.status === "on" || r.guard?.status === "starting") && r.guard.subscriptionId === subscriptionId);
+  return watch || guard;
 }
 
 /**
  * Is a subscription still needed by any session the index names (other than
- * the watch being stopped)? Only an unused one may be cancelled at Channel3.
+ * the watch being stopped), by a watch or a price guard? Only an unused one
+ * may be cancelled at Channel3.
  */
 export function subscriptionInUse(subscriptionId: string, except: { sessionId: string; watchId?: string }, sessions: string[] = indexLookup("subscription", subscriptionId)): boolean {
   const ids = new Set([...sessions, except.sessionId]);
