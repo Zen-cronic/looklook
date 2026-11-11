@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 310](https://img.shields.io/badge/unit%20tests-310-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 314](https://img.shields.io/badge/unit%20tests-314-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 
@@ -55,7 +55,7 @@ From a phone, share a store link or a screenshot straight to LookLook: the "Look
 | Channel3 search and URL lookup | Finds the catalogue product behind a screenshot (text search on what Claude read) or a pasted link. |
 | Channel3 product detail and offers | The same product at other stores on a verdict, each joined with that store's opened-return policy; only the store, price and link are kept (cached for a day, never committed). |
 | Channel3 price history | 90-day history, filtered to one size and steady points, gives the usual price, the low, the price to wait for and the weekly trend line. |
-| Channel3 product subscriptions + webhooks | A wait verdict starts a price-drop subscription; `/api/webhooks/channel3` checks the signature, handles a repeated event once, and turns a drop to the target into an approval card. |
+| Channel3 product subscriptions + webhooks | A wait verdict starts a price-drop subscription; `/api/webhooks/channel3` checks the signature, handles a repeated event once, and turns a drop to the target into an approval card. A watch counts only price changes at the store you saw, and stopping it never stops another shopper's watch on the same product. |
 | Channel3 buy links | The product link on a verdict, with the commission notice next to it. |
 | AG Studio (custom widgets, theme, agent framework) | Hosts `/studio`, the Decisions workspace: our verdict widget pays a due rebuy on the saved method from inside it and updates the shelf grid in place, and our agent asks Studio's lead agent to build the table of what each wait is waiting for. |
 | Claude (`claude-sonnet-5-5`) | Reads a screenshot or a listing into structured fields (strict JSON schema), words the one-line reason after the verdict is decided, and runs the Decisions workspace's agents through our `/api/llm`. |
