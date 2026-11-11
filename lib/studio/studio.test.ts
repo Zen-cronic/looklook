@@ -230,10 +230,10 @@ describe("assistant request shaping", () => {
   });
 });
 
-describe("the Studio week: an assistant that edits the slip but can't pay", () => {
+describe("the Studio week: an assistant that edits this week's order but can't pay", () => {
   const line = (key: string, title: string, cents: number, why: "buy" | "due") => ({ source: { kind: "check" as const, checkId: key }, approvalKey: key, amountCents: cents, version: "", why, title, brand: "B" });
 
-  it("gives the assistant slip tools and no tool that pays", async () => {
+  it("gives the assistant order tools and no tool that pays", async () => {
     const { SLIP_AGENT_TOOLS, slipAgentInstructions } = await import("./slip");
     const { guardTurn, STUDIO_TOOLS } = await import("./guard");
     for (const t of SLIP_AGENT_TOOLS) expect(STUDIO_TOOLS.has(t)).toBe(true);
@@ -245,15 +245,31 @@ describe("the Studio week: an assistant that edits the slip but can't pay", () =
     expect(guarded.agent).toBe("slip");
     expect((guarded.turn.tools as Array<{ name: string }>).map((t) => t.name)).toEqual(["leave_for_later", "put_back"]);
     expect(guarded.dropped).toEqual(["pay_slip", "approve_week"]);
-    expect(instructions).toContain("check:a: Peptide Serum, $32.00 (on the slip)");
+    expect(instructions).toContain("check:a: Peptide Serum, $32.00 (in the order)");
   });
 
-  it("the slip table marks a line left for later, then paid with its PayPal order id", async () => {
+  it("says this week's order and item to the model, never slip or line, in its prompt, tools and table", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { SLIP_TABLE, slipAgentInstructions } = await import("./slip");
+    const { SERVER_SYSTEM } = await import("./guard");
+    const view = { slip: { lines: [line("check:a", "Peptide Serum", 3200, "buy")], leftOff: [{ ...line("staple:c:1", "Cleanser", 1697, "due"), leftOff: "for-later", note: "" }] }, sent: [] } as never;
+    const empty = { slip: { lines: [], leftOff: [] }, sent: [] } as never;
+    const banned = /\bslips?\b|\blines?\b|price guard|·/i;
+    const texts = [slipAgentInstructions(view), slipAgentInstructions(empty), SERVER_SYSTEM, SLIP_TABLE.name, SLIP_TABLE.description, ...SLIP_TABLE.fields.flatMap((f) => [f.name, f.description ?? ""])];
+    // The tool, agent and widget descriptions the model reads in the Studio week.
+    const workspace = readFileSync("app/studio/WeekWorkspace.tsx", "utf8");
+    texts.push(...[...workspace.matchAll(/(?:description|label): (?:"([^"]*)"|`([^`]*)`)/g)].map((m) => m[1] ?? m[2]));
+    expect(texts.length).toBeGreaterThan(10);
+    for (const t of texts) expect(t, t).not.toMatch(banned);
+    expect(slipAgentInstructions(view)).toContain("this week's order");
+  });
+
+  it("the order table marks an item left for later, then paid with its PayPal order id", async () => {
     const { slipRows } = await import("./slip");
     const a = line("check:a", "Peptide Serum", 3200, "buy");
     const b = line("staple:c:1", "Cleanser", 1697, "due");
     const before = slipRows({ slip: { lines: [a], leftOff: [{ ...b, leftOff: "for-later", note: "" }] }, sent: [] } as never);
-    expect(before.map((r) => [r.id, r.status])).toEqual([["staple:c:1", "Left for later"], ["check:a", "On the slip"]]);
+    expect(before.map((r) => [r.id, r.status])).toEqual([["staple:c:1", "Left for later"], ["check:a", "In this order"]]);
     const after = slipRows({ slip: { lines: [], leftOff: [{ ...b, leftOff: "for-later", note: "" }] }, sent: [{ ...a, status: "paid", orderId: "9AB12345CD678901E" }] } as never);
     const d = diffRows(before, after);
     expect(d.update).toEqual([expect.objectContaining({ id: "check:a", status: "Paid", orderId: "9AB12345CD678901E" })]);

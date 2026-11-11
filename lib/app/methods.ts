@@ -30,9 +30,9 @@ export async function removeSavedMethod(sid: string, id: string, deps: { client:
     result = await singleFlight(`revoke:${m.vaultId}`, () => revokePaymentToken(deps.client(), m.vaultId, { waitMs: deps.waitMs ?? 2000, sleep: deps.sleep }));
   } catch {
     await updateSession(sid, (s) => {
-      s.notices.push({ id: noticeId(), at: new Date().toISOString(), text: `Removed ${m.label} here: no rebuy can use it. PayPal didn't confirm the delete yet; retry from the Payments page.` });
+      s.notices.push({ id: noticeId(), at: new Date().toISOString(), text: `Removed ${m.label} here: no reorder can use it. PayPal didn't confirm the delete yet. Retry from the Payments page.` });
     });
-    throw new HttpError(502, `${m.label} is removed here and no rebuy can use it, but PayPal didn't confirm the delete. Tap Retry removal.`, { removalPending: true });
+    throw new HttpError(502, `${m.label} is removed here and no reorder can use it, but PayPal didn't confirm the delete. Tap Retry removal.`, { removalPending: true });
   }
   const confirmedGone = result.confirmed;
   await updateSession(sid, (s) => {
@@ -41,7 +41,7 @@ export async function removeSavedMethod(sid: string, id: string, deps: { client:
       x.revokeConfirmed = confirmedGone;
       x.revokePending = !confirmedGone;
     }
-    s.notices.push({ id: noticeId(), at: new Date().toISOString(), text: `Removed ${m.label}. PayPal ${confirmedGone ? "no longer has it" : "was asked to delete it; retry to confirm"}; no rebuy can use it.` });
+    s.notices.push({ id: noticeId(), at: new Date().toISOString(), text: `Removed ${m.label}. PayPal ${confirmedGone ? "no longer has it" : "was asked to delete it. Retry to confirm"}. No reorder can use it.` });
   });
   return { removed: true, confirmedGone, deletes: result.deletes, checks: result.checks };
 }

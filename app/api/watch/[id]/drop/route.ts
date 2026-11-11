@@ -20,7 +20,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/watch/[id]/
       effects = await updateSession(sid, (s) => applyPriceEvent(s, event));
       return effects.join(" ") || "No open watch matched.";
     });
-    if (handled.outcome === "failed") throw new HttpError(500, "The test price drop couldn't be applied. Try again.");
+    if (handled.outcome === "failed") throw new HttpError(500, "The price drop couldn't be applied. Try again.");
     return Response.json({ eventId: event.id, price: to, effects });
   });
 }

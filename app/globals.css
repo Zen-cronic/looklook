@@ -779,7 +779,6 @@ select:focus-visible {
 }
 
 .status-strip .small,
-.sample-note .small,
 .simdate .small {
   color: var(--ink-2);
   font-size: 0.75rem;
@@ -2101,14 +2100,6 @@ tr:last-child td {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1rem;
-}
-
-.sample-note {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 0.35rem 0.6rem;
-  max-width: 60rem;
 }
 
 /* Simulated date note */

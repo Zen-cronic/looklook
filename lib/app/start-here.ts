@@ -42,27 +42,27 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
   return [
     {
       title: "Hand it your week",
-      body: "On the week page, tap Use the sample week: four posts are checked at once, and one slip lists what the week needs paid, the peptide serum and the cleanser that's running out. The first payment opens PayPal checkout: tick save and pay with the login or card in the testing instructions on the submission page. Back on the week, one yes pays the rest.",
-      more: "The two skips show what they kept, and the retinol's price watch starts with the yes. Each line is its own PayPal order, shown with its order ID and receipt. Tap yes again and nothing is charged twice.",
+      body: "On the week page, tap Use the sample week: four posts are checked at once, and this week's order lists what needs paying: the peptide serum and the cleanser that's running out. The first item goes through PayPal checkout: tick save and pay with the login or card in the testing instructions on the submission page. Back on the week, one yes pays the rest.",
+      more: "The two skips show what they kept, and the retinol's price watch starts with the yes. Each item is its own PayPal payment, shown with its PayPal order ID and receipt. Tap yes again and nothing is charged twice.",
       links: [{ href: "/week", label: "Open the week" }],
     },
     {
       title: "Open the sunscreen skip",
       body: "On Check, open the sunscreen post: skip, you own one that does the same job.",
-      more: "The sample week has two skips, four waits, a buy and a cleanser due for a rebuy; the week page hands over the four posts with screenshots. See why shows the rule, the shelf item and the store's cited return policy, and the same product at other stores. Four sample posts are on Check too, or upload your own screenshot or paste a store link.",
+      more: "The sample week has two skips, four waits, a buy and a cleanser due for a reorder. The week page hands over the four posts with screenshots. See why shows the rule, the shelf item and the store's cited return policy, and the same product at other stores. Four sample posts are on Check too, or upload your own screenshot or paste a store link.",
       links: [{ href: "/check", label: "Open Check" }],
       sampleWeek: true,
     },
     {
-      title: "Rebuy with one yes, then a decline",
-      body: "On Rebuys, move a week ahead: the next staples come due. Tap Yes on one to pay with the saved method. Then tick Make the next rebuy decline and tap Yes on the other.",
-      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and the card asks you to approve another card or PayPal account. The retinol's watch is on Rebuys too: Send a test price drop shows how a drop arrives, and with this month's skincare budget spent it waits for next month's.`,
-      links: [{ href: "/rebuys", label: "Open Rebuys" }],
+      title: "Reorder with one yes, then a decline",
+      body: "On Reorders, move a week ahead: the next staples come due. Tap Yes on one to pay with the saved method. Then tick Make the next reorder decline and tap Yes on the other.",
+      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and LookLook asks you to pay with another card or PayPal account. The retinol's watch is on Reorders too: Try a price drop shows how a drop arrives, and with this month's skincare budget spent it waits for next month's.`,
+      links: [{ href: "/rebuys", label: "Open Reorders" }],
     },
     {
       title: "See your decisions in AG Studio",
-      body: "On a laptop, open the dashboard: checks, rebuys, shelf and budgets together. Tap Group my waits and Studio's agents build a table of what each wait is waiting for.",
-      more: "Tap Yes on a rebuy there to pay with the saved method; the shelf row updates in place. The table takes about 30 seconds. Customize opens the Studio editor.",
+      body: "On a laptop, open the dashboard: checks, reorders, shelf and budgets together. Tap Group my waits and Studio's agents build a table of what each wait is waiting for.",
+      more: "Tap Yes on a reorder there to pay with the saved method. The shelf row updates in place. The table takes about 30 seconds. Customize opens the Studio editor.",
       links: [{ href: "/studio", label: "Open the dashboard" }],
     },
     {

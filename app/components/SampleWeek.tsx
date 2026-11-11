@@ -1,19 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { Eyebrow } from "./Eyebrow";
-
-/** Says the data on screen is the sample week: a made-up shopper, real catalogue products. */
-export function SampleWeekNote() {
-  return (
-    <p className="sample-note" data-testid="sample-week-note">
-      <Eyebrow as="span" icon="tag">
-        Sample week
-      </Eyebrow>{" "}
-      <span className="small">Made-up shopper; real products, stores and prices.</span>
-    </p>
-  );
-}
 
 /**
  * Load the sample week (seven checks: two price waits, two budget waits, two
@@ -39,7 +26,6 @@ export function SampleWeekControls({ loaded }: { loaded: boolean }) {
 
   return (
     <div className="sample-controls">
-      {loaded && <SampleWeekNote />}
       <div className="actions">
         <button className="btn outline small" disabled={!!busy} onClick={() => run("sample-week")} data-testid="load-sample-week">
           {busy === "sample-week" ? "Loading…" : loaded ? "Load the sample week again" : "Load the sample week"}

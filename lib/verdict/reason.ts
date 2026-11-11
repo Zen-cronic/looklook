@@ -34,7 +34,7 @@ export function templateReason(d: Decision, product: ProductFacts): string {
     case "owns-unopened":
       return `You already have an unopened ${owned}.`;
     case "run-out-unknown":
-      return `You already have ${owned} open. Tell us roughly when it runs out and we'll time the rebuy.`;
+      return `You already have ${owned} open. Tell us roughly when it runs out and we'll time the reorder.`;
     case "not-needed-yet":
       return `You have ${owned} until about ${day(e.shelf?.runOutDate)}. We'll look again on ${day(e.waitUntil)}.`;
     case "owns-similar":
@@ -46,9 +46,9 @@ export function templateReason(d: Decision, product: ProductFacts): string {
     case "over-budget":
       return `${money(e.budget!.price)} is more than the ${money(e.budget!.remaining)} left in your ${e.budget!.group} budget this month.`;
     case "no-price-history":
-      return `There isn't enough price history for ${product.brand} ${product.name} to judge this price; we'll watch it${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
+      return `There isn't enough price history for ${product.brand} ${product.name} to judge this price. We'll watch it${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
     case "above-usual-price":
-      return `${money(e.price!.shown)} is above its 90-day low of ${money(e.price!.low!)}; we'd wait for ${money(e.price!.target!)} or less${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
+      return `${money(e.price!.shown)} is above its 90-day low of ${money(e.price!.low!)}. We'd wait for ${money(e.price!.target!)} or less${e.buyBy ? ` until ${day(e.buyBy)}` : ""}.`;
     case "replacing-run-out":
       return `Your ${e.replaces!.brand} ${e.replaces!.name} ${inDays(e.replaces!.daysLeft)}, and this is a fair price.`;
     case "clear-to-buy":
@@ -64,7 +64,7 @@ const REASON_SYSTEM = [
   "Use only the facts in the JSON. No numbers, dates or stores that are not in it.",
   "One sentence, at most 28 words, plain words, no emoji, addressed to the shopper as you.",
   "Return policies: returnableOpened yes means the store takes it back opened within windowDays (and, when openedNeeds is given, only that way, for example with a receipt: say so); no means the store may refuse it once opened; conditional means only on conditions; unknown means we couldn't find the policy. Never state a policy more firmly than that.",
-  "No middle dots, no ids, no rule names.",
+  "No middle dots, no semicolons, no ids, no rule names.",
 ].join(" ");
 
 export interface ReasonOptions {

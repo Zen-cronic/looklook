@@ -20,15 +20,15 @@ export function defaultCapCents(amountCents: number): number {
   return Math.max(2500, Math.ceil((amountCents * 1.5) / 500) * 500);
 }
 
-export const SELLER_OF_RECORD = `${APP_NAME} Test Store (PayPal sandbox)`;
+export const SELLER_OF_RECORD = `${APP_NAME} Test Store`;
 
 /** The save-for-later agreement, word for word as shown and stored with the method. {cap} is the per-rebuy cap. */
 export const CONSENT_TEMPLATE = [
-  `Save this payment method with PayPal so ${APP_NAME} can rebuy items you approve.`,
-  "Each rebuy is charged only after you tap yes on it, at the price shown on that card.",
-  "A rebuy above {cap} is refused.",
+  `Save this payment method with PayPal so ${APP_NAME} can reorder items you approve.`,
+  "Each reorder is charged only after you tap yes on it, at the price shown next to that yes.",
+  "A reorder above {cap} is refused.",
   "After every charge you get a notice with the PayPal order and capture IDs.",
-  "Remove the saved method any time on the Payments page; that deletes it at PayPal.",
+  "Remove the saved method any time on the Payments page. That deletes it at PayPal.",
 ];
 
 export function consentLines(capCents: number, currency = "USD"): string[] {
@@ -165,10 +165,10 @@ export function checkApproval(state: SessionState, source: PurchaseSource, today
     if (!item) throw new PaymentFlowError("That shelf item is gone.");
     const cycle = stapleCycle(item);
     if (source.cycle !== cycle || !item.runOutDate) {
-      throw new StaleApprovalError(`This rebuy card is out of date: ${item.brand} ${item.name} now runs out on ${item.runOutDate ? formatDate(item.runOutDate) : "no set date"}. Nothing was charged.`.replace(/\s+/g, " "));
+      throw new StaleApprovalError(`This reorder is out of date: ${item.brand} ${item.name} now runs out on ${item.runOutDate ? formatDate(item.runOutDate) : "no set date"}. Nothing was charged.`.replace(/\s+/g, " "));
     }
     if (daysBetween(today, item.runOutDate) > REBUY_LEAD_DAYS) {
-      throw new StaleApprovalError(`${item.brand} ${item.name} isn't due yet: it shows up for a rebuy ${REBUY_LEAD_DAYS} days before it runs out. Nothing was charged.`.replace(/\s+/g, " "));
+      throw new StaleApprovalError(`${item.brand} ${item.name} isn't due yet: it shows up for a reorder ${REBUY_LEAD_DAYS} days before it runs out. Nothing was charged.`.replace(/\s+/g, " "));
     }
     return;
   }
@@ -184,7 +184,7 @@ export function sourceDetails(state: SessionState, source: PurchaseSource): Sour
   if (source.kind === "staple") {
     const item = state.shelf.find((i) => i.id === source.shelfItemId);
     if (!item) throw new PaymentFlowError("That shelf item is gone.");
-    if (!item.price) throw new PaymentFlowError("Set a price for this item before a rebuy.");
+    if (!item.price) throw new PaymentFlowError("Set a price for this item before a reorder.");
     return { title: `${item.brand} ${item.name}`.trim(), brand: item.brand, category: item.category, amountCents: Math.round(item.price * 100), productId: item.productId, key: approvalKey(state, source) };
   }
   if (source.kind === "watch") {
@@ -344,7 +344,7 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
   try {
     applyToShelf(state, source, details, receipt, today, amount, now);
   } catch {
-    receipt.shelfNote = "Paid. The shelf couldn't be updated for this item; add it on the Shelf page.";
+    receipt.shelfNote = "Paid. The shelf couldn't be updated for this item. Add it on the Shelf page.";
   }
   try {
     if (details.category) {
@@ -564,8 +564,8 @@ export function receiptStatusLabel(r: Pick<Receipt, "status" | "captureStatus" |
 
 /** What a charge was, in the shopper's words: a first purchase is never called a rebuy. */
 export function chargeKind(r: Pick<Receipt, "kind" | "source" | "savedMethodId">): string {
-  if (r.kind === "first-purchase") return r.savedMethodId ? "First purchase, method saved for rebuys" : "One-time purchase";
-  if (r.source.kind === "staple") return "Rebuy";
+  if (r.kind === "first-purchase") return r.savedMethodId ? "First purchase, method saved for reorders" : "One-time purchase";
+  if (r.source.kind === "staple") return "Reorder";
   if (r.source.kind === "watch") return "Bought after a price drop";
   return "Paid with a saved method";
 }

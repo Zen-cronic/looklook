@@ -215,8 +215,8 @@ async function HeldOut() {
             <li>
               Skip precision {pct(r.precision)}, recall {pct(r.recall)}. In testing terms these {r.n} are held-out products.
             </li>
-            <li>The products, prices and store policies are real catalogue listings and published policies. The shoppers, shelves and budgets are made up; the shopper&apos;s &quot;today&quot; in both tests is Nov 7, 2026.</li>
-            <li>Results, case by case: eval/holdout/RESULTS.md (saved as eval/holdout/results.json) and eval/skip-set/RESULTS.md in the repository; both sets as JSON at /api/eval/holdout.</li>
+            <li>The products, prices and store policies are real catalogue listings and published policies. The shoppers, shelves and budgets are made up. The shopper&apos;s &quot;today&quot; in both tests is Nov 7, 2026.</li>
+            <li>Results, case by case: eval/holdout/RESULTS.md (saved as eval/holdout/results.json) and eval/skip-set/RESULTS.md in the repository. Both sets as JSON at /api/eval/holdout.</li>
           </ul>
         </Row>
       </div>
@@ -354,5 +354,5 @@ async function DevelopmentSet() {
 function correctedCases(corrections: Array<{ expectations: { cases: string[] } }>): string {
   const n = new Set(corrections.flatMap((c) => c.expectations.cases)).size;
   if (!n) return "Nor were the expected answers.";
-  return `${n === 1 ? "One expected answer's" : `${n} expected answers'`} reason text ${n === 1 ? "was" : "were"} later corrected for a store policy we had misread; see Corrections.`;
+  return `${n === 1 ? "One expected answer's" : `${n} expected answers'`} reason text ${n === 1 ? "was" : "were"} later corrected for a store policy we had misread. See Corrections.`;
 }

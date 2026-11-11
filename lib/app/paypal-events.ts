@@ -49,7 +49,7 @@ export function applyPayPalEvent(state: SessionState, e: PayPalEvent, now = new 
     if (e.event_type === "PAYMENT.CAPTURE.DENIED" || e.event_type === "PAYMENT.CAPTURE.DECLINED") {
       receipt.captureStatus = r.status ?? "DECLINED";
       const undone = reversePayment(state, receipt, `PayPal ${e.event_type === "PAYMENT.CAPTURE.DENIED" ? "denied" : "declined"} the payment`, now);
-      return `Receipt for ${receipt.title}: PayPal reports the capture ${receipt.captureStatus.toLowerCase()}${undone ? "; the shelf and budget changes were undone" : ""}.`;
+      return `Receipt for ${receipt.title}: PayPal reports the capture ${receipt.captureStatus.toLowerCase()}${undone ? ", and the shelf and budget changes were undone" : ""}.`;
     }
     if (e.event_type === "PAYMENT.CAPTURE.REFUNDED" && r.id) {
       // The resource is the refund itself: its id, status and amount (a partial refund carries its own amount).

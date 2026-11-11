@@ -39,7 +39,7 @@ export function MethodControls({ id, label, capDollars }: { id: string; label: s
             className="btn danger small"
             disabled={!!busy}
             onClick={() => {
-              if (window.confirm(`Remove ${label}? PayPal deletes the saved method and no rebuy can use it.`)) void call("remove", `/api/methods/${id}`, "DELETE");
+              if (window.confirm(`Remove ${label}? PayPal deletes the saved method and no reorder can use it.`)) void call("remove", `/api/methods/${id}`, "DELETE");
             }}
           >
             {busy === "remove" ? "Removing, confirming with PayPal…" : "Remove"}

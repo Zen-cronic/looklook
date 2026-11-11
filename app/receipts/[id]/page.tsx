@@ -59,7 +59,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <dt>Paid with</dt>
           <dd>{r.methodLabel}</dd>
           <dt>How</dt>
-          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "You tapped yes; paid with your saved method"}</dd>
+          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "You tapped yes and paid with your saved method"}</dd>
           <dt>PayPal order</dt>
           <dd>{r.orderId}</dd>
           {r.refund && (
@@ -119,14 +119,14 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
         </section>
       )}
       {guard && (
-        <section className="context-frame" aria-label="After you paid">
-          <Eyebrow icon="shelf">After you paid</Eyebrow>
+        <section className="context-frame" aria-label="Price protection">
+          <Eyebrow icon="shelf">Price protection</Eyebrow>
           <ReceiptGuard g={guard} />
         </section>
       )}
       {method && (
-        <section className="context-frame" aria-label="Saved for rebuys">
-          <Eyebrow icon="yes">Saved for rebuys</Eyebrow>
+        <section className="context-frame" aria-label="Saved for reorders">
+          <Eyebrow icon="yes">Saved for reorders</Eyebrow>
           <p className="figure-line">{formatCents(method.capCents, method.currency)} cap</p>
           <p className="small">
             {method.label}, charged only after your yes.

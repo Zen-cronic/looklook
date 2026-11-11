@@ -21,7 +21,7 @@ export default function ShelfPage() {
     <main className="page wide">
       <div className="page-head">
         <h1>Your shelf</h1>
-        <p className="lede">What you already own. Checks compare against it, and staples with a run-out date come up for a rebuy.</p>
+        <p className="lede">What you already own. Checks compare against it, and staples with a run-out date come up for a reorder.</p>
       </div>
       <Suspense fallback={<div className="skeleton" />}>
         <Shelf />

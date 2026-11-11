@@ -80,7 +80,7 @@ export class RebuyCapExceededError extends Error {
   readonly amountCents: number;
   readonly capCents: number;
   constructor(amountCents: number, capCents: number) {
-    super(`Rebuy of ${(amountCents / 100).toFixed(2)} is above the per-rebuy cap of ${(capCents / 100).toFixed(2)}.`);
+    super(`Reorder of ${(amountCents / 100).toFixed(2)} is above the per-reorder cap of ${(capCents / 100).toFixed(2)}.`);
     this.name = "RebuyCapExceededError";
     this.amountCents = amountCents;
     this.capCents = capCents;

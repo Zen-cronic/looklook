@@ -2,7 +2,7 @@
 
 Saw something on Instagram, TikTok, Safari or in your photos? Share it to LookLook and the verdict opens in your browser: skip, wait, buy, or "Which one is it?" when the match needs your pick.
 
-**Status: tested on desktop; phone test after deploy.** The web side (the Shortcut's two requests, the Android share form, the upload, the redirects and the pages at 390 px) was run against a local build in a desktop browser with an iPhone-sized window and an iPhone user agent. The Shortcut file and the Android share sheet have not been tried on a phone yet.
+**Status: tested on desktop, phone test after deploy.** The web side (the Shortcut's two requests, the Android share form, the upload, the redirects and the pages at 390 px) was run against a local build in a desktop browser with an iPhone-sized window and an iPhone user agent. The Shortcut file and the Android share sheet have not been tried on a phone yet.
 
 The setup page in the app is `/share` (on the hosted app: https://looklook-7cpf.onrender.com/share). It says the same as this page, in fewer words.
 

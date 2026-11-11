@@ -12,7 +12,7 @@ export interface SlipState {
 }
 
 export interface SlipContext {
-  /** The shopper's yes, for the slip as it is on screen (its hash). The only thing here that pays. */
+  /** The shopper's yes, for the week's order as it is on screen (its hash). The only thing here that pays. */
   yes(): void;
 }
 
@@ -36,7 +36,7 @@ const money = (c: number) => formatCents(c);
 export function WeekSlipWidget(params: AgWidgetParams) {
   const ctx = params.context as SlipContext;
   const state = useSyncExternalStore(subscribe, () => current, () => current);
-  if (!state) return <div className="decision-list loading">Loading the slip…</div>;
+  if (!state) return <div className="decision-list loading">Loading this week&apos;s order…</div>;
   const { slip } = state.view;
   const later = slip.leftOff.filter((l) => l.leftOff === "for-later");
   const held = slip.leftOff.filter((l) => l.leftOff !== "for-later");
@@ -44,9 +44,10 @@ export function WeekSlipWidget(params: AgWidgetParams) {
   return (
     <div className="decision-list slip-widget" data-testid="studio-slip">
       <div className="decision-head">
-        <h2>This week&apos;s slip</h2>
+        <h2>This week&apos;s order</h2>
         <p className="small muted">
-          {slip.lines.length} {slip.lines.length === 1 ? "payment" : "payments"}, slip <span className="mono" data-testid="slip-hash">{slip.hash.slice(0, 8)}</span>
+          {slip.lines.length} {slip.lines.length === 1 ? "item" : "items"}, each its own PayPal payment
+          <span hidden data-testid="slip-hash">{slip.hash.slice(0, 8)}</span>
         </p>
       </div>
       {slip.lines.length > 0 ? (
@@ -59,7 +60,7 @@ export function WeekSlipWidget(params: AgWidgetParams) {
           ))}
         </ul>
       ) : (
-        <p className="small muted">{paid.length ? "Everything on this slip is paid." : "Nothing on the slip."}</p>
+        <p className="small muted">{paid.length ? "Everything in this order is paid." : "Nothing in this order."}</p>
       )}
       {later.length > 0 && (
         <ul className="slip-lines later">
@@ -73,7 +74,7 @@ export function WeekSlipWidget(params: AgWidgetParams) {
       )}
       {held.map((l) => (
         <p key={l.approvalKey} className="small muted">
-          Not on this yes: {l.title}. {l.note}
+          Not in this order: {l.title}. {l.note}
         </p>
       ))}
       {slip.lines.length > 0 && (
@@ -85,9 +86,9 @@ export function WeekSlipWidget(params: AgWidgetParams) {
             </span>
           </p>
           <button className="btn block" onClick={() => ctx.yes()} disabled={state.paying} data-testid="studio-slip-yes">
-            {state.paying ? "Paying…" : slip.methodId ? `Yes, pay ${money(slip.totalCents)}` : "Pay the first on the week page"}
+            {state.paying ? "Paying…" : slip.methodId ? `Yes, pay ${money(slip.totalCents)}` : "Pay the first item on the week page"}
           </button>
-          <p className="small muted">{slip.methodLabel ? `Each line is its own PayPal payment with ${slip.methodLabel}.` : "The first payment opens PayPal checkout on the week page."} The assistant can change this slip; only this yes pays it.</p>
+          <p className="small muted">{slip.methodLabel ? `Paid with ${slip.methodLabel}.` : "The first item goes through PayPal checkout on the week page."} The assistant can change this order, but only your yes pays it.</p>
         </>
       )}
       {state.message && <p className="small slip-message">{state.message}</p>}

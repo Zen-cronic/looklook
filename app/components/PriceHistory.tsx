@@ -33,7 +33,7 @@ export function PriceHistory({ weekly, target, now }: { weekly: number[]; target
   const lowLabelX = Math.min(Math.max(x(lowAt), left + 34), right - 34);
   return (
     <figure className="pricehist">
-      <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Price over the last 90 days: lowest ${formatDollars(low)}, now ${formatDollars(now)}; buy at ${formatDollars(target)} or less`}>
+      <svg viewBox={`0 0 ${w} ${h}`} role="img" aria-label={`Price over the last 90 days: lowest ${formatDollars(low)}, now ${formatDollars(now)}, buy at ${formatDollars(target)} or less`}>
         <line x1={left} x2={right} y1={axisY} y2={axisY} className="axis" />
         <line x1={left} x2={right + 6} y1={targetY} y2={targetY} className="target" />
         <polyline points={points} className="series" />

@@ -1,4 +1,4 @@
-/** The words the week and receipt pages use for a price guard (built from the view, so filming mode's names carry through). */
+/** The words the week and receipt pages use for price protection (a price guard in code; built from the view, so filming mode's names carry through). */
 import { formatDay } from "./dates";
 import type { GuardView } from "./guard";
 import { formatCents } from "./money";
@@ -11,11 +11,19 @@ const NO_GUARD: Record<NonNullable<GuardView["noGuard"]>, (store: string) => str
 };
 
 export function guardHead(g: GuardView): string {
-  if (g.status === "on") return `${g.title}: guarded until ${formatDay(g.until)}. ${g.store} takes it back opened until then, so a lower price there comes back to you.`;
-  if (g.status === "starting") return `${g.title}: starting the price guard at ${g.store}…`;
-  if (g.status === "ended") return `${g.title}: the price guard has ended.`;
-  if (g.noGuard) return `${g.title}: no price guard, because ${NO_GUARD[g.noGuard](g.store)}.`;
-  return `${g.title}: no price guard. ${g.note ?? ""}`.trim();
+  if (g.status === "on") return `${g.title}: price protection until ${formatDay(g.until)}. ${g.store} takes it back opened until then, so if the price drops there, you get the difference back.`;
+  if (g.status === "starting") return `${g.title}: starting price protection at ${g.store}…`;
+  if (g.status === "ended") return `${g.title}: price protection has ended.`;
+  if (g.noGuard) return `${g.title}: no price protection, because ${NO_GUARD[g.noGuard](g.store)}.`;
+  return `${g.title}: no price protection. ${g.note ?? ""}`.trim();
+}
+
+/** The one-line version for the finished week's card: says what is protected, until when and where. */
+export function guardLine(g: GuardView): string {
+  if (g.status === "on") return `Price protection on ${g.title} until ${formatDay(g.until)} at ${g.store}. If the price drops there, you get the difference back.`;
+  if (g.status === "starting") return `Starting price protection on ${g.title} at ${g.store}…`;
+  if (g.status === "ended") return `Price protection on ${g.title} has ended.`;
+  return guardHead(g);
 }
 
 export function guardRefundLine(g: GuardView, x: GuardView["refunds"][number]): string {
@@ -24,5 +32,5 @@ export function guardRefundLine(g: GuardView, x: GuardView["refunds"][number]): 
 }
 
 export function guardTestLabel(g: GuardView): string {
-  return `Sandbox test: ${g.store} drops it to ${formatCents(g.testCents ?? 0)}`;
+  return `Try a price drop to ${formatCents(g.testCents ?? 0)}`;
 }

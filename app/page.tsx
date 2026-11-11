@@ -16,12 +16,12 @@ const YES_POINTS = [
   {
     title: "Nothing is charged without your yes",
     lines: [
-      "Each rebuy is charged only after you tap yes on it, at the price shown on that card.",
-      "PayPal Vault saves the method only when you tick the box, and each rebuy is a charge you start with your tap.",
-      "Only refunds happen without your yes; a price event never charges anything.",
+      "Each reorder is charged only after you tap yes on it, at the price shown next to that yes.",
+      "PayPal Vault saves the method only when you tick the box, and each reorder is a charge you start with your tap.",
+      "Only refunds happen without your yes. A price event never charges anything.",
     ],
   },
-  { title: "A cap on every rebuy", lines: ["You set a cap for each rebuy when you save PayPal or a card; a rebuy above it is refused."] },
+  { title: "A cap on every reorder", lines: ["You set a cap for each reorder when you save PayPal or a card. A reorder above it is refused."] },
   { title: "Charged once", lines: ["Tap yes twice and you are charged once."] },
 ];
 
@@ -159,7 +159,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
         </div>
         <div className={s.studio} data-reveal>
           <p>
-            <strong>On a laptop:</strong> the dashboard puts your verdicts, rebuys, shelf and budgets in one AG Studio workspace, and pays a due rebuy from inside it.
+            <strong>On a laptop:</strong> the dashboard puts your verdicts, reorders, shelf and budgets in one AG Studio workspace, and pays a due reorder from inside it.
           </p>
           <Link className="btn outline small" href="/studio">
             Open the dashboard
@@ -174,7 +174,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
             The yes stays yours
           </h2>
           <p className={s.yesLede}>
-            Spending limits decide how much an AI shopping agent may spend; {APP_NAME} decides whether to buy at all. For the things you buy again, like a cleanser, a rebuy card asks you first.
+            Spending limits decide how much an AI shopping agent may spend; {APP_NAME} decides whether to buy at all. For the things you buy again, like a cleanser, {APP_NAME} asks you before each reorder.
           </p>
           <ul className={s.points}>
             {YES_POINTS.map((p) => (
@@ -202,10 +202,10 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
                 <div className="amount">{x.staple.amountLabel}</div>
               </div>
               <div className={s.approvalActions}>
-                <span className={`btn ${s.fakeBtn}`}>Yes, rebuy for {x.staple.amountLabel}</span>
+                <span className={`btn ${s.fakeBtn}`}>Yes, reorder for {x.staple.amountLabel}</span>
                 <span className={`btn outline ${s.fakeBtn}`}>Pay another way</span>
               </div>
-              <p className="small muted">Charged to PayPal only when you tap yes. Your cap is {x.staple.capLabel} per rebuy.</p>
+              <p className="small muted">Charged to PayPal only when you tap yes. Your cap is {x.staple.capLabel} per reorder.</p>
             </article>
           </div>
         </div>

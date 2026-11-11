@@ -177,7 +177,7 @@ export function buildSlip(state: SessionState, run: WeekRun, today: string): Wee
   const later = new Set(run.leftForLater ?? []);
   for (const line of candidates) {
     if (later.has(line.approvalKey)) {
-      leftOff.push({ ...line, leftOff: "for-later", note: "Left for later. Nothing is charged for it on this yes." });
+      leftOff.push({ ...line, leftOff: "for-later", note: "Left for later. It isn't charged now." });
       continue;
     }
     if (method && line.amountCents > method.capCents) {
@@ -289,9 +289,9 @@ export function approveWeek(sid: string, runId: string, hash: string, deps: Appr
     const run = findRun(state, runId);
     const today = appToday(state.dayOffset);
     const slip = buildSlip(state, run, today);
-    if (slip.hash !== hash) throw new HttpError(409, "Something on the slip changed since you saw it. Nothing was charged. Look at it again.", { slipChanged: true });
-    if (slip.lines.length === 0 && slip.watches.length === 0) throw new HttpError(409, "Nothing on this slip is left to pay.", { slipChanged: true });
-    if (slip.lines.length > 0 && !slip.methodId) throw new HttpError(409, "No saved payment method yet. Pay the first line with PayPal and tick save.", { needsCheckout: true });
+    if (slip.hash !== hash) throw new HttpError(409, "Something in this week's order changed since you saw it. Nothing was charged. Check it again.", { slipChanged: true });
+    if (slip.lines.length === 0 && slip.watches.length === 0) throw new HttpError(409, "Nothing in this week's order is left to pay.", { slipChanged: true });
+    if (slip.lines.length > 0 && !slip.methodId) throw new HttpError(409, "No saved payment method yet. Pay the first item with PayPal and tick save.", { needsCheckout: true });
 
     await updateSession(sid, (s) => {
       const r = findRun(s, runId);
@@ -349,7 +349,7 @@ export async function armWeekWatches(sid: string, runId: string, startWatch: App
       const res = await startWatch(sid, w.checkId);
       entry = res.subscription.status === "active" ? { checkId: w.checkId, watchId: res.watchId, status: "armed" } : { checkId: w.checkId, watchId: res.watchId, status: "unavailable", message: "The price feed didn't accept this product." };
     } catch (e) {
-      entry = { checkId: w.checkId, status: "unavailable", message: e instanceof Error ? e.message : "Couldn't start the watch." };
+      entry = { checkId: w.checkId, status: "unavailable", message: e instanceof Error ? e.message : "Couldn't start watching the price." };
     }
     await updateSession(sid, (s) => {
       const r = findRun(s, runId);
@@ -372,11 +372,11 @@ export async function setLeftForLater(sid: string, runId: string, approvalKey: s
     const onSlip = slip.lines.some((l) => l.approvalKey === approvalKey);
     const later = run.leftForLater ?? [];
     if (action === "leave") {
-      if (!onSlip) throw new HttpError(404, "That line isn't on this week's slip.", { notOnSlip: true });
+      if (!onSlip) throw new HttpError(404, "That item isn't in this week's order.", { notOnSlip: true });
       run.leftForLater = [...later.filter((k) => k !== approvalKey), approvalKey];
     } else {
       const wasLeft = slip.leftOff.some((l) => l.leftOff === "for-later" && l.approvalKey === approvalKey);
-      if (!wasLeft) throw new HttpError(404, "That line wasn't left for later on this slip.", { notOnSlip: true });
+      if (!wasLeft) throw new HttpError(404, "That item wasn't left for later in this week's order.", { notOnSlip: true });
       run.leftForLater = later.filter((k) => k !== approvalKey);
     }
     return weekView(s, run);
