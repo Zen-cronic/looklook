@@ -1,0 +1,373 @@
+{
+  "what": "The same model with no LookLook rules, asked whether to skip each held-out product. Scored like the engine: right when it says skip exactly when skip was expected.",
+  "model": "claude-sonnet-5-5",
+  "modelsAnswering": [
+    "claude-sonnet-5-5"
+  ],
+  "promptSha256": "d6b57395d50c05be60fc5db32ddd980d6f0278af3ccdec8b1a7f0002c1ccf747",
+  "commits": [
+    "a35017220a208b53e593f38afeb7db6d1e45a14d"
+  ],
+  "asOf": "2026-11-07",
+  "ranAt": [
+    "2026-11-11T21:04:11.341Z",
+    "2026-11-11T21:04:22.285Z",
+    "2026-11-11T21:04:33.703Z"
+  ],
+  "n": 30,
+  "runs": [
+    {
+      "run": 1,
+      "skipCorrect": 27,
+      "n": 30,
+      "skipsMade": 12,
+      "skipsRight": 11,
+      "wrongSkips": [
+        "h24"
+      ],
+      "missedSkips": [
+        "h07",
+        "h10"
+      ],
+      "unclear": []
+    },
+    {
+      "run": 2,
+      "skipCorrect": 27,
+      "n": 30,
+      "skipsMade": 12,
+      "skipsRight": 11,
+      "wrongSkips": [
+        "h24"
+      ],
+      "missedSkips": [
+        "h07",
+        "h10"
+      ],
+      "unclear": []
+    },
+    {
+      "run": 3,
+      "skipCorrect": 27,
+      "n": 30,
+      "skipsMade": 12,
+      "skipsRight": 11,
+      "wrongSkips": [
+        "h24"
+      ],
+      "missedSkips": [
+        "h07",
+        "h10"
+      ],
+      "unclear": []
+    }
+  ],
+  "median": 27,
+  "min": 27,
+  "max": 27,
+  "lookLookScoredRun": {
+    "skipCorrect": 28
+  },
+  "cases": [
+    {
+      "id": "h01",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h02",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h03",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h04",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h05",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h06",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h07",
+      "expected": "skip",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h08",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h09",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h10",
+      "expected": "skip",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "buy"
+    },
+    {
+      "id": "h11",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h12",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h13",
+      "expected": "skip",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h14",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "wait"
+    },
+    {
+      "id": "h15",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "wait"
+    },
+    {
+      "id": "h16",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "buy"
+    },
+    {
+      "id": "h17",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "buy"
+    },
+    {
+      "id": "h18",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "skip"
+    },
+    {
+      "id": "h19",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "buy"
+    },
+    {
+      "id": "h20",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "ask"
+    },
+    {
+      "id": "h21",
+      "expected": "buy",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "buy"
+    },
+    {
+      "id": "h22",
+      "expected": "wait",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "wait"
+    },
+    {
+      "id": "h23",
+      "expected": "wait",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "wait"
+    },
+    {
+      "id": "h24",
+      "expected": "wait",
+      "answers": [
+        "skip",
+        "skip",
+        "skip"
+      ],
+      "lookLook": "ask"
+    },
+    {
+      "id": "h25",
+      "expected": "wait",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "wait"
+    },
+    {
+      "id": "h26",
+      "expected": "wait",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "wait"
+    },
+    {
+      "id": "h27",
+      "expected": "wait",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "ask"
+    },
+    {
+      "id": "h28",
+      "expected": "ask",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "ask"
+    },
+    {
+      "id": "h29",
+      "expected": "ask",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "ask"
+    },
+    {
+      "id": "h30",
+      "expected": "ask",
+      "answers": [
+        "buy",
+        "buy",
+        "buy"
+      ],
+      "lookLook": "ask"
+    }
+  ]
+}
