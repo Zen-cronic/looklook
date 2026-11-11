@@ -6,6 +6,7 @@ import { brandOf, dedupeProducts } from "../channel3/dedupe";
 import type { CheckServices } from "./checks";
 import { realToday } from "./dates";
 import { storeOffers } from "./offers";
+import { pageImage } from "./page-image";
 import { cacheGet, cacheSet } from "./store";
 import type { StoreOffer } from "./types";
 
@@ -38,6 +39,7 @@ export function liveCheckServices(): CheckServices {
       return products;
     },
     lookup: (url) => lookupUrl(c3, url),
+    pageImage: (url) => pageImage(url),
     async priceBand(productId): Promise<PriceBand | null> {
       const key = `${productId}-${realToday()}`;
       const hit = cacheGet<{ band: PriceBand | null }>("band", key);

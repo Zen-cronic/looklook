@@ -23,6 +23,8 @@ export interface CheckServices {
   lookup(url: string): Promise<Product>;
   /** Cleaned price band, or null when the history isn't usable. */
   priceBand(productId: string): Promise<PriceBand | null>;
+  /** The picture behind a link that isn't in the catalogue (an image link, or a page's preview picture). */
+  pageImage?(url: string): Promise<ScreenshotImage | undefined>;
   cache?: { get<T>(kind: string, key: string): T | undefined; set(kind: string, key: string, value: unknown): void };
   modelReason?: boolean;
 }
@@ -31,6 +33,8 @@ export interface CheckServices {
 export interface Reading {
   fields: ScreenshotFields;
   products: Product[];
+  /** Read from the picture a shared link shows, not from a catalogue listing. */
+  picture?: boolean;
 }
 
 
@@ -110,7 +114,12 @@ export async function readLink(raw: string, services: CheckServices): Promise<Re
   try {
     product = trimProduct(await services.lookup(url.toString()));
   } catch {
-    throw new CheckInputError("We couldn't find that link in the product catalogue. Try a screenshot of the page instead.");
+    // Not a store page the catalogue knows (a post, an article, an image): read the picture it shows instead.
+    const image = await services.pageImage?.(url.toString());
+    if (!image) throw new CheckInputError("We couldn't find that link in the product catalogue or a picture on the page. Try a screenshot of the page instead.");
+    const reading = { ...(await readImage(image, services)), picture: true };
+    services.cache?.set("reading", key, reading);
+    return reading;
   }
   const host = url.hostname.replace(/^www\./, "");
   const offer = product.offers?.find((o) => host.endsWith(o.domain)) ?? product.offers?.[0];
