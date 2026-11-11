@@ -2,6 +2,7 @@ import { connection } from "next/server";
 import { Suspense } from "react";
 import { devCorrections, devSetRuns, runSkipEval, type CaseRow } from "@/lib/app/eval";
 import { RULE_TEXT } from "@/lib/app/explain";
+import { plainModelBaseline } from "@/lib/app/baseline";
 import { baselineScore, heldOutHeadline, heldOutResult, type HeldOutRow } from "@/lib/app/holdout";
 import { formatDollars } from "@/lib/app/money";
 import type { RuleId } from "@/lib/verdict/types";
@@ -115,6 +116,7 @@ async function HeldOut() {
   const o = r.order;
   const bars = [
     { label: APP_NAME, value: r.skipCorrect, mine: true },
+    { label: `The same model with no ${APP_NAME} rules (median of ${plainModelBaseline().runs.length} runs)`, value: plainModelBaseline().median },
     { label: "Skipping anything in a category you own", value: baselineScore(r, "same-category") },
     { label: "Saying skip to everything", value: baselineScore(r, "always-skip") },
   ];
