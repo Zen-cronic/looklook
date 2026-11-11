@@ -64,7 +64,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
       </section>
 
       {/* Proof */}
-      <section className={s.proof} aria-labelledby="proof-title" data-reveal>
+      <section className={`${s.proof} lit-sheen`} aria-labelledby="proof-title" data-reveal>
         <div className={s.proofHead}>
           <Eyebrow as="h2" icon="chart" id="proof-title" className={s.proofEyebrow}>
             How often skip is right

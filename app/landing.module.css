@@ -1,5 +1,7 @@
 /* Landing page. Tokens only (app/globals.css :root). */
 .landing {
+  position: relative;
+  overflow-x: clip;
   --gutter: 1.25rem;
   /* The app's one container: 72rem less its gutters, so the H1 sits under the wordmark */
   --wide: 69.5rem;
@@ -14,6 +16,59 @@
 
 .landing > section + section {
   margin-top: clamp(4rem, 2.5rem + 5vw, 7rem);
+}
+
+/* Two small lit spheres at the edges of the hero, one cobalt and one pink, floating slowly.
+   Decoration only; they rest in place with reduced motion or ?still=1. */
+.landing::before,
+.landing::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  pointer-events: none;
+  border-radius: 50%;
+  filter: blur(9px);
+}
+
+.landing::before {
+  width: clamp(5rem, 3rem + 7vw, 10rem);
+  aspect-ratio: 1;
+  left: calc(-1 * clamp(2.5rem, 1.5rem + 2.5vw, 4rem));
+  top: clamp(26rem, 20rem + 14vw, 34rem);
+  background: radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--card) 85%, var(--accent)) 0%, var(--accent) 45%, var(--accent) 100%);
+  opacity: 0.9;
+  animation: orb-float 19s ease-in-out infinite alternate;
+}
+
+.landing::after {
+  width: clamp(4rem, 2.5rem + 5vw, 7.5rem);
+  aspect-ratio: 1;
+  right: calc(-1 * clamp(1rem, 0.5rem + 1.5vw, 2.25rem));
+  top: clamp(3rem, 2rem + 3vw, 5rem);
+  background: radial-gradient(circle at 34% 30%, color-mix(in srgb, var(--card) 70%, var(--signature)) 0%, var(--signature) 42%, var(--signature-deep) 100%);
+  opacity: 0.88;
+  animation: orb-float 23s ease-in-out -8s infinite alternate-reverse;
+}
+
+/* Phone: the spheres sit mostly off the edge, clear of the headline and the buttons */
+@media (max-width: 640px) {
+  .landing::before {
+    width: 4.5rem;
+    left: -3rem;
+    top: auto;
+    bottom: 62%;
+  }
+
+  .landing::after {
+    width: 4.5rem;
+    right: -3rem;
+    top: 1.25rem;
+  }
+}
+
+@keyframes orb-float {
+  0% { transform: translate3d(0, 0, 0); }
+  100% { transform: translate3d(0.75rem, -1.5rem, 0); }
 }
 
 /* Hero */
@@ -81,7 +136,7 @@
   gap: 2.25rem;
   padding: clamp(1.75rem, 1rem + 3vw, 3.5rem);
   border-radius: 32px;
-  background: var(--signature);
+  background: var(--lit-cobalt);
   color: var(--signature-ink);
 }
 

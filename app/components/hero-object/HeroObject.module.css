@@ -1,6 +1,31 @@
 /* The hero object: the toy shelf on the page itself, and the verdict it ends on */
 .object {
   position: relative;
+  isolation: isolate;
+}
+
+/* The light the shelf sits in: a cobalt pool under the shelf, a pink halo where the bottle hovers,
+   and a pale band of light along the shelf. It breathes slowly; still with reduced motion. */
+.object::before {
+  content: "";
+  position: absolute;
+  inset: -16% -14% -6%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(40% 8% at 50% 49%, color-mix(in srgb, var(--card) 92%, transparent), transparent 80%),
+    radial-gradient(26% 22% at 76% 17%, color-mix(in srgb, var(--accent) 85%, transparent), transparent 70%),
+    radial-gradient(22% 18% at 18% 58%, color-mix(in srgb, var(--accent) 66%, transparent), transparent 70%),
+    radial-gradient(34% 24% at 40% 38%, color-mix(in srgb, var(--signature) 46%, transparent), transparent 70%),
+    radial-gradient(36% 26% at 60% 46%, color-mix(in srgb, var(--signature) 42%, transparent), transparent 70%),
+    radial-gradient(70% 54% at 50% 58%, color-mix(in srgb, var(--signature) 22%, transparent), transparent 76%);
+  filter: blur(6px);
+  animation: shelf-light 16s ease-in-out infinite alternate;
+}
+
+@keyframes shelf-light {
+  0% { opacity: 0.85; transform: translate3d(-1.5%, 1%, 0); }
+  100% { opacity: 1; transform: translate3d(1.5%, -1.5%, 0); }
 }
 
 /* The shelf's box is sized before anything loads, so nothing shifts */
@@ -84,6 +109,7 @@
 
 .card {
   animation: none;
+  box-shadow: var(--depth);
 }
 
 .card :global(.verdict-word) {
