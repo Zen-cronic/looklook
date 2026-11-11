@@ -44,9 +44,25 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
         </header>
         <ViewTransition default="page-swap">{children}</ViewTransition>
         <footer className="footer">
-          <Link href="/judge">Start here</Link>
-          <Link href="/proof">How often skip is right</Link>
-          <Link href="/events">Webhook events</Link>
+          <nav className="footer-group" aria-labelledby="footer-product">
+            <h2 id="footer-product" className="footer-head">
+              {APP_NAME}
+            </h2>
+            <Link href="/week">This week</Link>
+            <Link href="/check">Check a post</Link>
+            <Link href="/shelf">Shelf</Link>
+            <Link href="/rebuys">Rebuys</Link>
+            <Link href="/payments">Payments</Link>
+            <Link href="/studio">Dashboard</Link>
+          </nav>
+          <nav className="footer-group" aria-labelledby="footer-resources">
+            <h2 id="footer-resources" className="footer-head">
+              Resources
+            </h2>
+            <Link href="/judge">Start here</Link>
+            <Link href="/proof">Accuracy test</Link>
+            <Link href="/events">Webhook events</Link>
+          </nav>
         </footer>
         {process.env.NODE_ENV !== "production" && <FilmBadge />}
       </body>
