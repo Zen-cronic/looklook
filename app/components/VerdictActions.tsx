@@ -151,7 +151,7 @@ export function VerdictActions(p: Props) {
           </Link>
         ) : (
           <button className="btn" disabled={!!busy} onClick={() => call("watch", `/api/check/${p.checkId}/watch`, "POST")}>
-            {busy === "watch" ? "Starting the price alert…" : `Watch for a drop${p.targetLabel ? ` to ${p.targetLabel}` : ""}`}
+            {busy === "watch" ? "Starting to watch the price…" : `Watch for a drop${p.targetLabel ? ` to ${p.targetLabel}` : ""}`}
           </button>
         ))}
       {p.verdict === "buy" &&

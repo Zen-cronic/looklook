@@ -119,8 +119,8 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
         </section>
       )}
       {guard && (
-        <section className="context-frame" aria-label="After you paid">
-          <Eyebrow icon="shelf">After you paid</Eyebrow>
+        <section className="context-frame" aria-label="Price protection">
+          <Eyebrow icon="shelf">Price protection</Eyebrow>
           <ReceiptGuard g={guard} />
         </section>
       )}
