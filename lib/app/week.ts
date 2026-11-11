@@ -24,7 +24,7 @@ import type { CheckRecord, SessionState, SlipLine, WeekInput, WeekLineOutcome, W
 import { targetFor } from "./watch";
 
 /** The one-line promise, on the landing page and the week page. */
-export const WEEK_TAGLINE = "A week of posts in. One yes, and it's done.";
+export const WEEK_TAGLINE = "Your shopping week, checked and paid with one PayPal yes.";
 
 /** The sample week's posts, in the order a shopper would have seen them. */
 export const SAMPLE_WEEK_POSTS = ["week-spf", "week-vitc", "week-retinol", "week-peptide"];
