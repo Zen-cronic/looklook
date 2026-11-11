@@ -24,9 +24,10 @@
   margin: 0;
   padding: 0;
   display: grid;
-  background: var(--card);
+  background: var(--glass);
   border: 1px solid var(--hairline);
   border-radius: var(--radius);
+  box-shadow: var(--depth);
 }
 
 .row,
@@ -130,6 +131,36 @@
 .side {
   display: grid;
   gap: 1rem;
+  position: relative;
+  isolation: isolate;
+}
+
+/* The slip floats in light: a cobalt pool under it and a pink halo at its top corner.
+   Once the week is done the light is fuller. Still with reduced motion or ?still=1. */
+.side::before {
+  content: "";
+  position: absolute;
+  inset: -18% -18% -14%;
+  z-index: -1;
+  pointer-events: none;
+  background:
+    radial-gradient(26% 20% at 76% 18%, color-mix(in srgb, var(--accent) 62%, transparent), transparent 70%),
+    radial-gradient(52% 40% at 46% 66%, color-mix(in srgb, var(--signature) 24%, transparent), transparent 72%),
+    radial-gradient(22% 16% at 20% 80%, color-mix(in srgb, var(--accent) 34%, transparent), transparent 70%);
+  filter: blur(6px);
+  animation: slip-light 18s ease-in-out infinite alternate;
+}
+
+.side:has(.done)::before {
+  background:
+    radial-gradient(28% 22% at 76% 18%, color-mix(in srgb, var(--accent) 80%, transparent), transparent 70%),
+    radial-gradient(60% 46% at 50% 56%, color-mix(in srgb, var(--signature) 40%, transparent), transparent 72%),
+    radial-gradient(24% 18% at 20% 80%, color-mix(in srgb, var(--accent) 56%, transparent), transparent 70%);
+}
+
+@keyframes slip-light {
+  0% { opacity: 0.85; transform: translate3d(-1.5%, 1.5%, 0); }
+  100% { opacity: 1; transform: translate3d(1.5%, -1%, 0); }
 }
 
 @media (min-width: 960px) {
@@ -236,7 +267,7 @@
 
 /* The week done: the one loud card, like a verdict's head */
 .done {
-  background: var(--signature);
+  background: var(--lit-cobalt);
   color: var(--signature-ink);
   border-color: var(--signature);
 }
