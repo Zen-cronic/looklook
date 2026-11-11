@@ -19,7 +19,7 @@ export function ReceiptActions({ receiptId, source, amountCents, canRepeat, canR
       {error && <p className="error">{error.error}</p>}
       <div className="actions">
         <Link className="btn" href="/rebuys">
-          Back to rebuys
+          Back to reorders
         </Link>
         {canRepeat && (
           <button className="btn outline" disabled={!!busy} onClick={() => call("repeat", "/api/pay", "POST", { source, approved: { amountCents } })}>

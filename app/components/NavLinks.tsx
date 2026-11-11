@@ -8,7 +8,7 @@ const LINKS: Array<{ href: string; label: string; short?: string }> = [
   { href: "/week", label: "This week", short: "Week" },
   { href: "/check", label: "Check" },
   { href: "/shelf", label: "Shelf" },
-  { href: "/rebuys", label: "Rebuys" },
+  { href: "/rebuys", label: "Reorders" },
   { href: "/payments", label: "Payments" },
   { href: "/studio", label: "Dashboard" },
 ];

@@ -31,7 +31,7 @@ function realLandingSample() {
   const policy = d.evidence.policy;
   const storeName = policy && !policy.fallback ? policy.retailerName : (check.store ?? "");
   const staple = dueStaples(state, SEED_BASE_DATE)[0];
-  if (!staple) throw new Error("The landing sample needs a staple due for a rebuy.");
+  if (!staple) throw new Error("The landing sample needs a staple due for a reorder.");
   const at = new Date(`${SEED_BASE_DATE}T12:00:00Z`);
   const buy = sampleWeekState("landing", SEED_BASE_DATE, undefined, at).checks.find((c) => c.decision.verdict === "buy" && c.facts.priceShown !== null);
   if (!buy) throw new Error("The landing sample needs a buy verdict.");

@@ -105,7 +105,7 @@ export async function payWithSavedMethod(sid: string, input: PayInput, deps: { c
   const state = loadSession(sid);
   const today = appToday(state.dayOffset);
   const method = input.methodId ? state.methods.find((m) => m.id === input.methodId && m.status === "active") : activeMethod(state);
-  if (!method) throw new HttpError(409, "No saved payment method. Pay with PayPal once and save it for rebuys.", { needsCheckout: true });
+  if (!method) throw new HttpError(409, "No saved payment method. Pay with PayPal once and save it for reorders.", { needsCheckout: true });
 
   const resolved = resolveApproval(state, source, input.approved, today);
   const { key, bought } = resolved;
@@ -155,12 +155,12 @@ export async function payWithSavedMethod(sid: string, input: PayInput, deps: { c
       );
     } catch (e) {
       if (e instanceof RebuyCapExceededError) {
-        throw new HttpError(409, `${formatCents(details.amountCents)} is above your ${formatCents(method.capCents)} per-rebuy cap. Nothing was charged. Raise the cap on the Payments page or pay once with PayPal.`, { overCap: true });
+        throw new HttpError(409, `${formatCents(details.amountCents)} is above your ${formatCents(method.capCents)} per-reorder cap. Nothing was charged. Raise the cap on the Payments page or pay once with PayPal.`, { overCap: true });
       }
       if (e instanceof InstrumentDeclinedError || e instanceof CaptureDeclinedError) {
         const issue = e instanceof InstrumentDeclinedError ? "INSTRUMENT_DECLINED" : `CAPTURE_DECLINED${e.processorResponseCode ? ` (${e.processorResponseCode})` : ""}`;
         const decline = await updateSession(sid, (s) => recordDecline(s, source, details, method, { issue, debugId: e instanceof InstrumentDeclinedError ? e.debugId : undefined, simulated }));
-        throw new HttpError(402, `PayPal declined ${method.label} for this rebuy. Nothing was charged.`, { declined: true, issue, declineId: decline.id });
+        throw new HttpError(402, `PayPal declined ${method.label} for this reorder. Nothing was charged.`, { declined: true, issue, declineId: decline.id });
       }
       throw e;
     }

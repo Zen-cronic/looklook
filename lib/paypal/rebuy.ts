@@ -66,7 +66,7 @@ export function rebuyOrderBody(input: RebuyInput) {
       purchaseUnit({
         referenceId: `${input.itemId}:${input.cycle}`.slice(0, 256),
         currency: input.currency,
-        description: `Rebuy: ${input.title}`.slice(0, 127),
+        description: `Reorder: ${input.title}`.slice(0, 127),
         items: [{ sku: input.itemId, name: input.title, unitCents: input.unitCents }],
       }),
     ],

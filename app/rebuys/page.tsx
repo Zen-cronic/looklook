@@ -14,13 +14,13 @@ import { Eyebrow } from "../components/Eyebrow";
 import { Lotion } from "../components/stage/MaterialStage";
 import { ApprovalButtons, DateControls, DeclineToggle, ReminderDone, WatchControls } from "../components/RebuyControls";
 
-export const metadata = { title: "Rebuys" };
+export const metadata = { title: "Reorders" };
 
 export default function RebuysPage() {
   return (
     <main className="page">
       <div className="page-head">
-        <h1>Rebuys</h1>
+        <h1>Reorders</h1>
         <p className="lede">Staples that are running out and prices that dropped. Nothing is charged until you say yes.</p>
       </div>
       <Suspense fallback={<div className="skeleton" />}>
@@ -106,7 +106,7 @@ async function Rebuys() {
           <h2 id="needs-yes" className="field-title">
             Needs your yes
           </h2>
-          {(due.length > 0 || drops.length > 0) && <p className="small">{method ? `Paid with ${method.label} when you tap yes, up to ${formatCents(method.capCents, method.currency)} each.` : "The first payment can save your PayPal or card for one-tap rebuys."}</p>}
+          {(due.length > 0 || drops.length > 0) && <p className="small">{method ? `Paid with ${method.label} when you tap yes, up to ${formatCents(method.capCents, method.currency)} each.` : "The first payment can save your PayPal or card for one-tap reorders."}</p>}
           {due.length === 0 && drops.length === 0 && reminders.length === 0 && (
             <div className="card">
               <p>Nothing to approve right now.</p>
@@ -157,7 +157,7 @@ async function Rebuys() {
                   </div>
                   <div className="amount">{formatCents(d.amountCents)}</div>
                 </div>
-                <ApprovalButtons source={source} amountCents={d.amountCents} version={d.cycle} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="rebuy" />
+                <ApprovalButtons source={source} amountCents={d.amountCents} version={d.cycle} amountLabel={formatCents(d.amountCents)} method={methodFor(method, d.amountCents)} declined={declined} verb="reorder" />
               </article>
               </div>
             );
@@ -244,7 +244,7 @@ async function Rebuys() {
           <div className="card stack-sm">
             <h2>Try a decline</h2>
             <DeclineToggle on={state.demo.declineNextRebuy} />
-            <p className="small muted">The next rebuy comes back declined (INSTRUMENT_DECLINED), as a refused card would. Nothing is charged, and you can pick another card or PayPal.</p>
+            <p className="small muted">The next reorder comes back declined (INSTRUMENT_DECLINED), as a refused card would. Nothing is charged, and you can pick another card or PayPal.</p>
           </div>
         )}
         {notices.length > 0 && (

@@ -186,12 +186,12 @@ export function CheckoutPanel({ intentId, clientId, amountLabel, defaultCapDolla
       <section className="consent stack-sm">
         <label className="check-row">
           <input type="checkbox" checked={save} onChange={(e) => setSave(e.target.checked)} />
-          Save this payment method for rebuys I approve
+          Save this payment method for reorders I approve
         </label>
         {save && (
           <>
             <div className="cap-input">
-              <label htmlFor="cap">Cap per rebuy</label>
+              <label htmlFor="cap">Cap per reorder</label>
               <span>$</span>
               <input id="cap" type="number" min="1" max="1000" step="1" inputMode="numeric" value={cap} onChange={(e) => setCap(e.target.value)} />
             </div>

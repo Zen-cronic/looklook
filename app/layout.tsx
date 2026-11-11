@@ -51,7 +51,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <Link href="/week">This week</Link>
             <Link href="/check">Check a post</Link>
             <Link href="/shelf">Shelf</Link>
-            <Link href="/rebuys">Rebuys</Link>
+            <Link href="/rebuys">Reorders</Link>
             <Link href="/payments">Payments</Link>
             <Link href="/studio">Dashboard</Link>
           </nav>

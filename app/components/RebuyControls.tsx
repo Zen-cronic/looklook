@@ -29,7 +29,7 @@ export function DeclineToggle({ on }: { on: boolean }) {
     <div className="stack-sm">
       <label className="check-row">
         <input type="checkbox" checked={on} disabled={!!busy} onChange={(e) => call("decline", "/api/demo", "POST", { action: "decline-next", on: e.target.checked })} />
-        Make the next rebuy decline
+        Make the next reorder decline
       </label>
       {error && <p className="error small">{error.error}</p>}
     </div>

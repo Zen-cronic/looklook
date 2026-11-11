@@ -141,7 +141,7 @@ function SentRow({ l }: { l: SentLineView }) {
         )}
         {l.status === "declined" && (
           <p className="small">
-            <Link href="/rebuys">Pay it another way on Rebuys</Link>
+            <Link href="/rebuys">Pay it another way on Reorders</Link>
           </p>
         )}
       </div>
@@ -356,7 +356,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                 See your shelf
               </Link>
               <Link className="btn outline" href="/rebuys">
-                Rebuys and watches
+                Reorders and watches
               </Link>
             </div>
           </section>

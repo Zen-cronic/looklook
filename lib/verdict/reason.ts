@@ -34,7 +34,7 @@ export function templateReason(d: Decision, product: ProductFacts): string {
     case "owns-unopened":
       return `You already have an unopened ${owned}.`;
     case "run-out-unknown":
-      return `You already have ${owned} open. Tell us roughly when it runs out and we'll time the rebuy.`;
+      return `You already have ${owned} open. Tell us roughly when it runs out and we'll time the reorder.`;
     case "not-needed-yet":
       return `You have ${owned} until about ${day(e.shelf?.runOutDate)}. We'll look again on ${day(e.waitUntil)}.`;
     case "owns-similar":

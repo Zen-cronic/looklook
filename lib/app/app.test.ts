@@ -572,8 +572,8 @@ describe("receipt wording", () => {
   });
 
   it("never calls a first purchase a rebuy", () => {
-    expect(chargeKind({ kind: "first-purchase", source: { kind: "check", checkId: "c" }, savedMethodId: "pm" })).toBe("First purchase, method saved for rebuys");
-    expect(chargeKind({ kind: "saved-method", source: { kind: "staple", shelfItemId: "s", cycle: "x" } })).toBe("Rebuy");
+    expect(chargeKind({ kind: "first-purchase", source: { kind: "check", checkId: "c" }, savedMethodId: "pm" })).toBe("First purchase, method saved for reorders");
+    expect(chargeKind({ kind: "saved-method", source: { kind: "staple", shelfItemId: "s", cycle: "x" } })).toBe("Reorder");
   });
 });
 
@@ -606,7 +606,7 @@ describe("offers at other stores", () => {
 
 describe("product name", () => {
   it("names the product in the saved-method agreement, and nowhere uses an earlier name", () => {
-    expect(consentText(2500)).toContain(`so ${APP_NAME} can rebuy`);
+    expect(consentText(2500)).toContain(`so ${APP_NAME} can reorder`);
     const earlier = new RegExp(["sec", "ond"].join("") + "[\\s_-]?look", "i");
     const files = execSync("git ls-files", { cwd: process.cwd() }).toString().trim().split("\n").filter((f) => /\.(ts|tsx|md|json|css|yaml)$/.test(f) && !f.endsWith("package-lock.json"));
     const hits = files.filter((f) => earlier.test(readFileSync(f, "utf8")));

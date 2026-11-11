@@ -13,7 +13,7 @@ export default function PaymentsPage() {
     <main className="page">
       <div className="page-head">
         <h1>Payments</h1>
-        <p className="lede">Cards and PayPal accounts saved for your rebuys.</p>
+        <p className="lede">Cards and PayPal accounts saved for your reorders.</p>
       </div>
       <Suspense fallback={<div className="skeleton" />}>
         <Methods />
@@ -30,7 +30,7 @@ async function Methods() {
       <div className="object-layout">
         <div className="empty-frame lead">
           <Eyebrow icon="card">Nothing saved yet</Eyebrow>
-          <p className="small muted">The first time you pay with PayPal or a card, you can save it for rebuys you approve, with a cap per rebuy.</p>
+          <p className="small muted">The first time you pay with PayPal or a card, you can save it for reorders you approve, with a cap per reorder.</p>
         </div>
       </div>
     );
@@ -41,7 +41,7 @@ async function Methods() {
     <div className="object-layout">
       <section className="panel lead stack" aria-label="Saved methods">
         <Lotion className="panel-material" eager sizes="(min-width: 960px) 40rem, 100vw" />
-        <Eyebrow icon="card">Saved for rebuys</Eyebrow>
+        <Eyebrow icon="card">Saved for reorders</Eyebrow>
         {methods.map((m) => (
           <div key={m.id} className="panel-frame">
             <article className="method-card stack-sm" style={{ opacity: m.status === "removed" ? 0.6 : 1 }}>
@@ -52,11 +52,11 @@ async function Methods() {
                 </Eyebrow>
               </div>
               <p className="small muted">
-                Saved {formatTime(m.consentedAt)} ET.{m.status === "removed" ? ` Removed ${formatTime(m.removedAt!)} ET; no rebuy can use it. ${m.revokeConfirmed ? "PayPal confirmed it no longer has it." : "Removal pending at PayPal: the delete isn't confirmed yet."}` : ""}
+                Saved {formatTime(m.consentedAt)} ET.{m.status === "removed" ? ` Removed ${formatTime(m.removedAt!)} ET; no reorder can use it. ${m.revokeConfirmed ? "PayPal confirmed it no longer has it." : "Removal pending at PayPal: the delete isn't confirmed yet."}` : ""}
               </p>
               {m.status !== "removed" && (
                 <dl className="method-cap">
-                  <dt>Cap per rebuy</dt>
+                  <dt>Cap per reorder</dt>
                   <dd className="price-line">{formatCents(m.capCents, m.currency)}</dd>
                 </dl>
               )}

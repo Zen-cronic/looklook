@@ -20,8 +20,8 @@ export interface PaymentToken {
 
 /** Plain consent text shown before a method is saved. Kept with the code that saves it. */
 export const SAVE_FOR_LATER_CONSENT =
-  `Save this payment method with PayPal so ${APP_NAME} can rebuy items you approve. ` +
-  "Each rebuy asks for your yes, stays under the cap you set, and you get a notice after every charge. " +
+  `Save this payment method with PayPal so ${APP_NAME} can reorder items you approve. ` +
+  "Each reorder asks for your yes, stays under the cap you set, and you get a notice after every charge. " +
   "You can remove the saved method at any time on the Payments page.";
 
 export type SetupSource =
@@ -51,7 +51,7 @@ export async function createSetupToken(
   } else {
     payment_source = {
       paypal: {
-        description: input.source.description ?? `${APP_NAME}: rebuy staples you approve`,
+        description: input.source.description ?? `${APP_NAME}: reorder staples you approve`,
         usage_type: "MERCHANT",
         customer_type: "CONSUMER",
         permit_multiple_payment_tokens: false,

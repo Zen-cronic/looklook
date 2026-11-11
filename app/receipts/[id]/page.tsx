@@ -125,8 +125,8 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
         </section>
       )}
       {method && (
-        <section className="context-frame" aria-label="Saved for rebuys">
-          <Eyebrow icon="yes">Saved for rebuys</Eyebrow>
+        <section className="context-frame" aria-label="Saved for reorders">
+          <Eyebrow icon="yes">Saved for reorders</Eyebrow>
           <p className="figure-line">{formatCents(method.capCents, method.currency)} cap</p>
           <p className="small">
             {method.label}, charged only after your yes.
