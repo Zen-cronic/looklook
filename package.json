@@ -21,6 +21,7 @@
     "eval:skip": "tsx scripts/skip-set/run.ts",
     "eval:skip:bands": "tsx scripts/skip-set/price-bands.ts",
     "eval:holdout": "tsx eval/holdout/run.ts",
+    "eval:baseline": "tsx scripts/eval-baseline.ts",
     "smoke:vision": "tsx scripts/smoke-vision.ts",
     "sample-week:trends": "tsx scripts/sample-week-trends.ts",
     "film:check": "tsx scripts/film-check.ts"
