@@ -11,7 +11,6 @@ import { guardHead, guardRefundLine, guardTestLabel } from "@/lib/app/guard-word
 import type { SentLineView, WeekView } from "@/lib/app/week";
 import { Eyebrow } from "./Eyebrow";
 import { ProductGlyph, glyphFor } from "./ProductGlyph";
-import { SampleWeekNote } from "./SampleWeek";
 import { VerdictChip } from "./VerdictChip";
 import s from "./WeekFlow.module.css";
 
@@ -45,11 +44,11 @@ export function WeekStart({ hasMethod }: { hasMethod: boolean }) {
         Your posts this week
       </Eyebrow>
       <p>
-        Hand over the posts you saved this week. Each one is checked against your shelf, your budget, the price history and the store&apos;s returns. Then one slip lists what the week needs paid, and one yes pays it.
+        Hand over the posts you saved this week. Each one is checked against what you already own, your budget, the price history and the store&apos;s return policy. Then this week&apos;s order lists what needs paying, and one yes pays it.
       </p>
       <p className="small muted">
-        The sample week is four posts a made-up shopper saved: a sunscreen and a vitamin C serum, a retinol and a peptide serum. Loading it replaces this browser&apos;s checks and keeps saved payment methods.
-        {hasMethod ? "" : " The first payment opens PayPal checkout, where you can save the method for the rest."}
+        The sample week is four saved posts: a sunscreen, a vitamin C serum, a retinol and a peptide serum. Loading it replaces this browser&apos;s checks and keeps saved payment methods.
+        {hasMethod ? "" : " The first item goes through PayPal checkout, where you can save your card or PayPal account for the rest."}
       </p>
       <div className="actions">
         <button className="btn" onClick={start} disabled={busy} data-testid="week-start">
@@ -76,7 +75,7 @@ function postLine(i: WeekInput, view: WeekView): string {
   if (i.group === "skip") return i.keptCents !== undefined ? `Already on your shelf. ${money(i.keptCents)} kept.` : "Already on your shelf.";
   if (i.group === "buy") {
     const sent = view.sent.find((l) => l.source.kind === "check" && l.source.checkId === i.checkId);
-    return sent?.status === "paid" ? `Paid, ${money(sent.amountCents)}.` : `${i.priceCents !== undefined ? money(i.priceCents) : "Price"} on the slip.`;
+    return sent?.status === "paid" ? `Paid, ${money(sent.amountCents)}.` : `${i.priceCents !== undefined ? money(i.priceCents) : "Price"}, in this week's order.`;
   }
   if (i.group === "wait") {
     if (i.waitKind === "price" && i.targetPrice !== undefined) {
@@ -161,7 +160,7 @@ export function GuardRow({ g, onChange }: { g: GuardView; onChange: () => Promis
     setBusy(true);
     setError(null);
     const r = await postJson(`/api/receipts/${g.receiptId}/drop`, { priceCents: g.testCents });
-    if (!r.ok) setError(typeof r.data.error === "string" ? r.data.error : "The test drop didn't go through. Nothing was refunded.");
+    if (!r.ok) setError(typeof r.data.error === "string" ? r.data.error : "The test price drop didn't go through. Nothing was refunded.");
     await onChange();
     setBusy(false);
   }
@@ -172,7 +171,7 @@ export function GuardRow({ g, onChange }: { g: GuardView; onChange: () => Promis
       {g.refunds.map((x) => (
         <span key={x.refundId} className={`small ${s.guardRefund}`} data-testid="guard-refund">
           {guardRefundLine(g, x)} PayPal refund <span className="mono">{x.refundId}</span>
-          {x.simulated ? " (test drop)" : ""}
+          {x.simulated ? " (test price drop)" : ""}
         </span>
       ))}
       {g.testCents !== undefined && (
@@ -257,7 +256,6 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
   return (
     <div className="object-layout">
       <div className={`lead ${s.flow}`}>
-        {view.sample && <SampleWeekNote />}
         <section className={s.step} aria-labelledby="week-posts">
           <Eyebrow as="h2" icon="post" id="week-posts">
             {`${posts.length} posts this week`}
@@ -299,7 +297,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                   <div className={s.meta}>
                     <div className="brand-line">{l.brand}</div>
                     <div className="name-line">{l.title.startsWith(l.brand) ? l.title.slice(l.brand.length).trim() || l.title : l.title}</div>
-                    <p className="small muted">{lineTag(l)}. On the slip.</p>
+                    <p className="small muted">{lineTag(l)}. In this week&apos;s order.</p>
                   </div>
                 </li>
               ))}
@@ -335,7 +333,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                 {counts.skip} skipped, {money(view.keptCents)} kept
               </li>
               <li>
-                {armed} {armed === 1 ? "price watch" : "price watches"} on
+                Watching {armed} {armed === 1 ? "price" : "prices"} for a drop
               </li>
               <li>Shelf updated: bought items added, staples restocked</li>
               {view.guards.some((g) => g.refundedCents > 0) && <li>{money(view.guards.reduce((n, g) => n + g.refundedCents, 0))} back to your card and your budget after you paid</li>}
@@ -366,7 +364,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
         ) : (
           <section className={`card ${s.slip}`} aria-labelledby="week-slip" data-testid="week-slip">
             <Eyebrow as="h2" icon="yes" id="week-slip">
-              Approve this week
+              This week&apos;s order
             </Eyebrow>
             {slip.lines.length > 0 ? (
               <ul className={s.slipLines}>
@@ -396,7 +394,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
               <ul className={s.leftOff}>
                 {slip.leftOff.map((l) => (
                   <li key={l.approvalKey}>
-                    <span className={s.slipTitle}>Not on this yes: {l.title}</span>
+                    <span className={s.slipTitle}>Not in this order: {l.title}</span>
                     <span className="small muted">{l.note}</span>
                   </li>
                 ))}
@@ -412,19 +410,19 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
             )}
             <p className="small muted">
               {slip.methodLabel
-                ? `Paid with ${slip.methodLabel}, up to ${money(slip.capCents ?? 0)} each. Each line is its own PayPal payment.`
+                ? `Paid with ${slip.methodLabel}, up to ${money(slip.capCents ?? 0)} per item. Each item is its own PayPal payment.`
                 : slip.lines.length > 0
-                  ? `The first payment opens PayPal checkout. Tick save there, then one yes pays the other ${slip.lines.length - 1}.`
+                  ? `The first item goes through PayPal checkout. Tick save there; after that, one yes pays ${slip.lines.length === 2 ? "the other item" : `the other ${slip.lines.length - 1} items`}.`
                   : ""}
             </p>
             {(slip.lines.length > 0 || slip.watches.length > 0) && (
               <>
                 <button className={`btn block ${s.yes}`} onClick={yes} disabled={paying || view.paying} data-testid="week-yes">
-                  {paying || view.paying ? "Paying…" : slip.lines.length === 0 ? "Yes, start watching" : slip.methodId ? `Yes, pay ${money(slip.totalCents)}` : `Pay the first with PayPal, ${money(slip.lines[0].amountCents)}`}
+                  {paying || view.paying ? "Paying…" : slip.lines.length === 0 ? "Yes, start watching" : slip.methodId ? `Yes, pay ${money(slip.totalCents)}` : `Pay the first item with PayPal, ${money(slip.lines[0].amountCents)}`}
                 </button>
-                <p className="small muted">Your yes here is your yes for each line above, at the price on that line. Nothing else is charged.</p>
+                <p className="small muted">Each item above is paid at the price shown. Nothing else is charged.</p>
                 <p className="small">
-                  <Link href={`/studio/week?run=${runId}`}>Change this slip in AG Studio</Link>
+                  <Link href={`/studio/week?run=${runId}`}>Change this week&apos;s order in AG Studio</Link>
                 </p>
               </>
             )}

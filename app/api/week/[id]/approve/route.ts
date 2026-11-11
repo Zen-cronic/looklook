@@ -11,7 +11,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/week/[id]/a
     const sid = await sessionIdOrThrow();
     const { id } = await ctx.params;
     const body = await readJsonBody<{ hash?: unknown }>(request);
-    if (typeof body.hash !== "string") throw new HttpError(400, "Send the slip you said yes to.");
+    if (typeof body.hash !== "string") throw new HttpError(400, "Send the order you said yes to.");
     return displayJson(await approveWeek(sid, id, body.hash, { client: getPayPalClient, startWatch, startGuards }));
   });
 }
