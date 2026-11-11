@@ -107,7 +107,7 @@ export function Intake({ samples, shared, linkExample = "https://www.ulta.com/p/
           <circle cx="18.5" cy="15.5" r="2" />
         </svg>
         <strong>Add a screenshot</strong>
-        <span className="hint">A post or store page. PNG or JPEG, up to 5&nbsp;MB.</span>
+        <span className="hint">A post or store page. PNG or JPEG, up to 15&nbsp;MB.</span>
         <span className="btn" aria-hidden>
           Choose image
         </span>

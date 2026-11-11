@@ -2,6 +2,7 @@ import { createHmac, randomBytes, timingSafeEqual } from "node:crypto";
 import { mkdirSync, readdirSync, readFileSync, renameSync, statSync, unlinkSync, writeFileSync } from "node:fs";
 import { join } from "node:path";
 import { envInt } from "../studio/guard";
+import { fitForReading, ImageFitError, MAX_UPLOAD_BYTES } from "../vision/fit";
 import { sniffMediaType, type ImageMediaType } from "../vision/read";
 import { CheckInputError, normaliseLink } from "./checks";
 import { sessionSecret } from "./session-cookie";
@@ -18,7 +19,7 @@ import { dataDir } from "./store";
 
 export const MAX_SHARED_LINK = 2048;
 export const MAX_SHARED_TEXT = 4096;
-export const MAX_SHARED_IMAGE_BYTES = 5 * 1024 * 1024;
+export const MAX_SHARED_IMAGE_BYTES = MAX_UPLOAD_BYTES;
 /** How long a shared screenshot waits to be opened. */
 export const SHARE_TTL_MS = 10 * 60 * 1000;
 
@@ -32,6 +33,28 @@ const first = (p: Param) => (Array.isArray(p) ? p[0] : p)?.trim() || undefined;
 export function firstLink(text: string): string | undefined {
   const m = text.match(/https?:\/\/[^\s<>"'`]+/i);
   return m?.[0].replace(/[.,;:!?)\]}'"»”’]+$/, "");
+}
+
+/**
+ * The link in `/s?u=<link>`, from the raw query string: the Shortcut pastes
+ * the link in without encoding it, so everything after `u=` is the link, its
+ * own `?` and `&` included. An encoded link (`u=https%3A%2F%2F…`) is decoded
+ * once. Only the first link is kept when several were pasted in.
+ */
+export function linkFromRawQuery(search: string): string | undefined {
+  const q = search.replace(/^\?/, "");
+  const at = q.startsWith("u=") ? 2 : q.indexOf("&u=") >= 0 ? q.indexOf("&u=") + 3 : -1;
+  if (at < 0) return undefined;
+  let link = q.slice(at);
+  if (/^https?%3A/i.test(link)) {
+    try {
+      link = decodeURIComponent(link);
+    } catch {
+      return undefined;
+    }
+  }
+  link = link.split(/\s|%0A|%0D/i)[0];
+  return link.length ? link.slice(0, MAX_SHARED_LINK + 1) : undefined;
 }
 
 /** Validate a shared link the same way the store-link box does, plus a length limit. */
@@ -48,8 +71,9 @@ export function validateSharedLink(raw: string): { url: string } | { error: stri
 /** Shared-input error codes /api/share can redirect with; /check turns them into these fixed sentences. */
 export const SHARE_ERRORS = {
   missing: "That share had no link or screenshot. Share the store page's link, or a screenshot.",
-  "too-big": "That image is over 5 MB. Crop it or take a smaller screenshot.",
+  "too-big": "That image is over 15 MB. Crop it or take a smaller screenshot.",
   type: "Use a PNG, JPEG, GIF or WebP screenshot.",
+  heif: "That photo is in HEIC format, which LookLook can't read. Take a screenshot of it and share the screenshot.",
   busy: "Sharing is busy right now. Try again in a few minutes.",
   expired: "That shared screenshot has expired or was already checked. Share it again.",
 } as const;
@@ -143,14 +167,20 @@ function sweep(now: number): string[] {
 
 /**
  * Keep a shared screenshot for SHARE_TTL_MS and return its one-time token.
- * Same size and type limits as /api/check; at most SHARES_PENDING_MAX
+ * Same size and type limits as /api/check; a large phone screenshot is kept
+ * at the reader's size (see fitForReading). At most SHARES_PENDING_MAX
  * unopened uploads are kept at once.
  */
-export function saveSharedImage(bytes: Uint8Array, now = Date.now()): { token: string; expiresAt: string; mediaType: ImageMediaType } {
-  if (bytes.byteLength === 0) throw new ShareError(400, "missing");
-  if (bytes.byteLength > MAX_SHARED_IMAGE_BYTES) throw new ShareError(413, "too-big");
-  const mediaType = sniffMediaType(bytes);
-  if (!mediaType) throw new ShareError(415, "type");
+export async function saveSharedImage(input: Uint8Array, now = Date.now()): Promise<{ token: string; expiresAt: string; mediaType: ImageMediaType }> {
+  if (input.byteLength === 0) throw new ShareError(400, "missing");
+  let fitted;
+  try {
+    fitted = await fitForReading(input);
+  } catch (e) {
+    if (e instanceof ImageFitError) throw new ShareError(e.code === "too-big" ? 413 : 415, e.code);
+    throw e;
+  }
+  const { bytes, mediaType } = fitted;
   const secret = secretOrThrow();
   mkdirSync(sharedDir(), { recursive: true });
   if (sweep(now).length >= envInt("SHARES_PENDING_MAX", 40)) throw new ShareError(429, "busy");
