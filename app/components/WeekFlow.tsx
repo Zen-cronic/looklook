@@ -7,7 +7,7 @@ import { formatDay } from "@/lib/app/dates";
 import { formatCents } from "@/lib/app/money";
 import type { SlipLine, WeekInput } from "@/lib/app/types";
 import type { GuardView } from "@/lib/app/guard";
-import { guardHead, guardRefundLine, guardTestLabel } from "@/lib/app/guard-words";
+import { guardHead, guardLine, guardRefundLine, guardTestLabel } from "@/lib/app/guard-words";
 import type { SentLineView, WeekView } from "@/lib/app/week";
 import { Eyebrow } from "./Eyebrow";
 import { ProductGlyph, glyphFor } from "./ProductGlyph";
@@ -152,8 +152,8 @@ function SentRow({ l }: { l: SentLineView }) {
   );
 }
 
-/** After the yes: the price guard on one paid item, its refunds, and the labelled test drop. */
-export function GuardRow({ g, onChange }: { g: GuardView; onChange: () => Promise<void> | void }) {
+/** After the yes: price protection on one paid item, its refunds, and the price drop to try. `compact` is the finished week's one-line form. */
+export function GuardRow({ g, onChange, compact = false }: { g: GuardView; onChange: () => Promise<void> | void; compact?: boolean }) {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   async function testDrop() {
@@ -164,20 +164,24 @@ export function GuardRow({ g, onChange }: { g: GuardView; onChange: () => Promis
     await onChange();
     setBusy(false);
   }
-  const head = guardHead(g);
+  const head = compact ? guardLine(g) : guardHead(g);
+  const drop = g.testCents !== undefined && (
+    <button className={compact ? s.inlineAction : "btn outline small"} onClick={testDrop} disabled={busy} data-testid="guard-drop">
+      {busy ? "Asking PayPal…" : guardTestLabel(g)}
+    </button>
+  );
   return (
-    <li className={s.guard} data-testid="week-guard" data-status={g.status}>
-      <span>{head}</span>
+    <li className={compact ? `${s.guard} ${s.guardCompact}` : s.guard} data-testid="week-guard" data-status={g.status}>
+      <span>
+        {head}
+        {compact && drop ? <> {drop}</> : null}
+      </span>
       {g.refunds.map((x) => (
         <span key={x.refundId} className={`small ${s.guardRefund}`} data-testid="guard-refund">
           {guardRefundLine(g, x)} PayPal refund <span className="mono">{x.refundId}</span>
         </span>
       ))}
-      {g.testCents !== undefined && (
-        <button className="btn outline small" onClick={testDrop} disabled={busy} data-testid="guard-drop">
-          {busy ? "Asking PayPal…" : guardTestLabel(g)}
-        </button>
-      )}
+      {!compact && drop}
       {error && <span className="small">{error}</span>}
     </li>
   );
@@ -245,6 +249,9 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
   const paid = sent.filter((l) => l.status === "paid");
   const paidCents = paid.reduce((sum, l) => sum + l.amountCents, 0);
   const armed = view.run.watches.filter((w) => w.status === "armed").length;
+  const skincareLeft = posts.some((p) => p.category) ? view.budgetsLeft.skincare : undefined;
+  // The finished week shows protection that is on, starting, ended or has refunded; items without any stay on their receipts.
+  const shownGuards = view.guards.filter((g) => !g.noGuard || g.refunds.length > 0);
   const done = sent.length > 0 && slip.lines.length === 0 && slip.watches.length === 0 && !view.paying;
   const counts = {
     skip: posts.filter((p) => p.group === "skip").length,
@@ -320,44 +327,53 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
 
       <aside className={s.side}>
         {done ? (
-          <section className={`card ${s.slip} ${s.done} lit-sheen`} aria-labelledby="week-done" data-testid="week-done">
-            <Eyebrow as="h2" icon="check" id="week-done">
-              Paid with one yes
-            </Eyebrow>
-            <p className={s.total}>
-              Week done. {money(paidCents)} paid.
-            </p>
-            <ul className={s.doneList}>
-              <li>
-                {counts.skip} skipped, {money(view.keptCents)} kept
-              </li>
-              <li>
-                Watching {armed} {armed === 1 ? "price" : "prices"} for a drop
-              </li>
-              <li>Shelf updated: bought items added, staples restocked</li>
-              {view.guards.some((g) => g.refundedCents > 0) && <li>{money(view.guards.reduce((n, g) => n + g.refundedCents, 0))} back to your card and your budget after you paid</li>}
-              {Object.entries(view.budgetsLeft)
-                .filter(([g]) => posts.some((p) => p.category && g === "skincare"))
-                .map(([g, left]) => (
-                  <li key={g}>
-                    {money(Math.round((left ?? 0) * 100))} left in {g} this month
+          <section className={`card ${s.done}`} aria-labelledby="week-done" data-testid="week-done">
+            <div className={s.doneBand}>
+              <Eyebrow as="h2" icon="check" id="week-done">
+                Paid with one yes
+              </Eyebrow>
+              <p className={s.total}>
+                Week done. {money(paidCents)} paid.
+              </p>
+            </div>
+            <div className={s.doneBody}>
+              <ul className={s.tiles} aria-label="This week">
+                <li className={s.tileKept}>
+                  <span className={s.tileNum}>{money(view.keptCents)}</span>
+                  <span className={s.tileLabel}>kept by skipping {counts.skip}</span>
+                </li>
+                <li className={s.tilePaid}>
+                  <span className={s.tileNum}>{money(paidCents)}</span>
+                  <span className={s.tileLabel}>
+                    paid, {paid.length} {paid.length === 1 ? "item" : "items"}
+                  </span>
+                </li>
+                {skincareLeft !== undefined && (
+                  <li className={s.tileLeft}>
+                    <span className={s.tileNum}>{money(Math.round(skincareLeft * 100))}</span>
+                    <span className={s.tileLabel}>left in skincare this month</span>
                   </li>
-                ))}
-            </ul>
-            {view.guards.length > 0 && (
-              <ul className={s.guards} aria-label="After you paid" aria-live="polite">
-                {view.guards.map((g) => (
-                  <GuardRow key={g.receiptId} g={g} onChange={refresh} />
-                ))}
+                )}
+                <li className={s.tileWatch}>
+                  <span className={s.tileNum}>{armed}</span>
+                  <span className={s.tileLabel}>{armed === 1 ? "price" : "prices"} watched for a drop</span>
+                </li>
               </ul>
-            )}
-            <div className="actions">
-              <Link className="btn outline" href="/shelf">
-                See your shelf
-              </Link>
-              <Link className="btn outline" href="/rebuys">
-                Reorders and watches
-              </Link>
+              {shownGuards.length > 0 && (
+                <ul className={s.guards} aria-label="Price protection" aria-live="polite">
+                  {shownGuards.map((g) => (
+                    <GuardRow key={g.receiptId} g={g} onChange={refresh} compact />
+                  ))}
+                </ul>
+              )}
+              <div className="actions">
+                <Link className="btn" href="/shelf">
+                  See your shelf
+                </Link>
+                <Link className="btn outline" href="/rebuys">
+                  Reorders and price watches
+                </Link>
+              </div>
             </div>
           </section>
         ) : (

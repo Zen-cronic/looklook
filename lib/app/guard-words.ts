@@ -18,6 +18,14 @@ export function guardHead(g: GuardView): string {
   return `${g.title}: no price protection. ${g.note ?? ""}`.trim();
 }
 
+/** The one-line version for the finished week's card: says what is protected, until when and where. */
+export function guardLine(g: GuardView): string {
+  if (g.status === "on") return `Price protection on ${g.title} until ${formatDay(g.until)} at ${g.store}. If the price drops there, you get the difference back.`;
+  if (g.status === "starting") return `Starting price protection on ${g.title} at ${g.store}…`;
+  if (g.status === "ended") return `Price protection on ${g.title} has ended.`;
+  return guardHead(g);
+}
+
 export function guardRefundLine(g: GuardView, x: GuardView["refunds"][number]): string {
   const pending = x.status !== "COMPLETED" ? ` (refund ${x.status.toLowerCase()})` : "";
   return `Price dropped to ${formatCents(x.priceCents)} at ${g.store}. ${formatCents(x.amountCents)} back to your card${g.budget ? ` and to your ${g.budget} budget` : ""}${pending}.`;
