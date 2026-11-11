@@ -7,7 +7,7 @@
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
 [![skip on the development set: 58 of 65](https://img.shields.io/badge/skip%20on%20the%20development%20set-58%20of%2065-5b6770)](lib/facts/facts.test.ts)
 [![store return rules: 13 cited and dated](https://img.shields.io/badge/store%20return%20rules-13%20cited%20and%20dated-5b6770)](lib/facts/facts.test.ts)
-[![unit tests: 314](https://img.shields.io/badge/unit%20tests-314-5b6770)](lib/facts/facts.test.ts)
+[![unit tests: 327](https://img.shields.io/badge/unit%20tests-327-5b6770)](lib/facts/facts.test.ts)
 
 **Checks.** Each badge states a number that `lib/facts/facts.test.ts` recomputes from the committed data and code, so a stale badge fails `npm test`. Every other number and capability this README, `/proof`, `/judge` and the app state is listed in [FACTS.md](FACTS.md) with the test or outside source that checks it.
 
@@ -19,7 +19,7 @@ For anyone who buys skincare and makeup they saw on their feed and ends up with 
 
 The 65 products the matching was developed on come second, because they were used to improve it: 58 of 65 there (same category gets 40; saying skip to everything gets 39). Its first scored run was 55 of 65 and one similarity change later 60 of 65; then a store policy we had misread was corrected, together with the expected answers it affected, and it is 58 of 65 ([`eval/skip-set/RESULTS.md`](eval/skip-set/RESULTS.md); see Corrections below). `GET /api/eval/skip` and `npm run eval:skip` re-run it with no network calls.
 
-Spend guards decide how much an AI may spend; LookLook decides whether to buy at all. Price timing is the second question; the first is whether you already own one. And money moves only after your yes, every time: when it's a staple, PayPal Vault makes buying it again one yes.
+Spend guards decide how much an AI may spend; LookLook decides whether to buy at all. Price timing is the second question; the first is whether you already own one. And you're charged only after your yes, every time; the only money that moves on its own is money coming back to you. When it's a staple, PayPal Vault makes buying it again one yes.
 
 Before you buy what you saw on your feed, LookLook checks it, and its most common answer is skip. Send it a screenshot of a creator post or a store link. It reads the product, finds it in the catalogue, and checks it against what you already own, this month's budget, the 90-day price history and whether the store takes it back once opened. Then it says **skip**, **wait**, **buy** or asks you to confirm, with the one-line reason and the evidence behind it, and lists the same product at other stores with what each store does with opened items. A wait says what it is waiting for: next month's budget (with a reminder), a lower price (with a price watch, the 90-day trend and the target), or the one you own running low.
 
@@ -35,7 +35,7 @@ Open `/judge` on the running app for five short steps. Sandbox PayPal buyer logi
 4. **See your decisions in AG Studio.** Decisions shows verdicts, rebuys, shelf and budgets in one AG Studio workspace; a rebuy is paid from inside it, and Group my waits has Studio's agents build a table of what each wait is waiting for.
 5. **See the webhooks and the accuracy test.** `/events` lists every webhook and whether it was verified; `/proof` leads with the result on products the app had never seen and lists every miss, then re-runs the 65-product development set the matching was built on.
 
-One yes on the week's slip pays each line at the price on that line, each as its own PayPal order. If a price on the slip moved, nothing is charged and the slip is shown again. A declined line doesn't stop the others, and a yes again never charges a paid line twice. The price watch starts before the first payment on purpose: buying the peptide serum spends this month's skincare budget, and the retinol would then wait for next month's budget instead of a lower price.
+One yes on the week's slip pays each line at the price on that line, each as its own PayPal order. If a price on the slip moved, nothing is charged and the slip is shown again. A declined line doesn't stop the others, and a yes again never charges a paid line twice. After the yes, each item bought gets a price guard for as long as its store takes it back opened (from the cited return policies): if that store lowers its price in that time, the difference comes back to the card and to the month's budget, so the next slip is built on it. The week's done card has a labelled sandbox test drop that makes a real sandbox refund. The price watch starts before the first payment on purpose: buying the peptide serum spends this month's skincare budget, and the retinol would then wait for next month's budget instead of a lower price.
 
 From a phone, share a store link or a screenshot straight to LookLook: the "Look twice" Shortcut on iPhone, or the installed app in Android's share sheet. How to set it up: [docs/share-shortcut.md](docs/share-shortcut.md) (tested on desktop; phone test after deploy).
 
@@ -49,7 +49,7 @@ From a phone, share a store link or a screenshot straight to LookLook: the "Look
 | Customer-initiated charges on a saved method | Each rebuy is the shopper's yes on an approval card (`payment_initiator: CUSTOMER`, `usage: SUBSEQUENT`), capped per rebuy. |
 | `PayPal-Request-Id` idempotency | One id per shopper, item and cycle, and saved method, so a repeated yes, or a price drop and a run-out date for the same item, charge once. |
 | Payment token delete | Payments page: remove a method and confirm PayPal no longer has it. |
-| Refunds | A charge can be refunded in full from its receipt. |
+| Refunds | A charge can be refunded in full from its receipt. After the yes, LookLook keeps looking: Inside the store's own window for returning an opened item, a lower price at that store gets you the difference: the sandbox test store refunds it to your card, and it goes back into that month's budget, once for each lower price. A Channel3 subscription scoped to that store reports the prices, and each refund is a partial refund on the payment's capture, credited back to the month's budget. Where no such window is on record, or the store doesn't take the item back opened, there is no price guard; a price at another store, below half of what you paid, a price rise, or a drop after the window never refunds anything. Only refunds happen without your yes; a price event never charges anything. |
 | Webhooks + verify-webhook-signature | `/api/webhooks/paypal` verifies every delivery with PayPal, handles a repeated event id once, and confirms receipts and removed methods. |
 | Negative testing | Behind `DEMO_NEGATIVE_TESTING=1`: the labelled switch that makes the next rebuy decline. |
 | Channel3 search and URL lookup | Finds the catalogue product behind a screenshot (text search on what Claude read) or a pasted link. |
@@ -99,6 +99,7 @@ VISION_SMOKE=1 npm run smoke:vision -- screenshot.png          # live screenshot
 
 - Real: the product catalogue, prices, 90-day price histories and price alerts (Channel3), the screenshot and listing reading (Claude), and the store return policies, each with its source page and the date checked.
 - Sandbox: every PayPal payment. Money goes to a PayPal sandbox merchant account presented as "LookLook Test Store"; no real money moves.
+- In the sandbox LookLook is also the seller, so it refunds a price difference itself; with a real store the same signal would file that store's price-adjustment request. The "Sandbox test" drop on the week and receipt pages is a labelled price event in Channel3's shape; the refund it makes is a real sandbox refund.
 - Simulated, and labelled in the app: the date control on Rebuys, the test price drop, the forced decline, and the sample week (a fictional shopper's week of checks on real catalogue products, loaded from `/judge` or Decisions; Reset puts back a fresh shelf).
 
 ## What we'll tell you before you find it

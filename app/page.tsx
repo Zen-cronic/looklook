@@ -14,8 +14,12 @@ import s from "./landing.module.css";
 /** What the yes section promises, word for word as FACTS.md lists them. */
 const YES_POINTS = [
   {
-    title: "Nothing moves without your yes",
-    lines: ["Each rebuy is charged only after you tap yes on it, at the price shown on that card.", "PayPal Vault saves the method only when you tick the box, and each rebuy is a charge you start with your tap."],
+    title: "Nothing is charged without your yes",
+    lines: [
+      "Each rebuy is charged only after you tap yes on it, at the price shown on that card.",
+      "PayPal Vault saves the method only when you tick the box, and each rebuy is a charge you start with your tap.",
+      "Only refunds happen without your yes; a price event never charges anything.",
+    ],
   },
   { title: "A cap on every rebuy", lines: ["You set a cap for each rebuy when you save PayPal or a card; a rebuy above it is refused."] },
   { title: "Charged once", lines: ["Tap yes twice and you are charged once."] },

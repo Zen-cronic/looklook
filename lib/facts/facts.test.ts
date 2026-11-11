@@ -305,7 +305,9 @@ describe("landing page", () => {
   it("keeps the landing page's promises to the ledger and its numbers computed", () => {
     const page = read("app/page.tsx");
     const claims = factRows().filter((r) => r.quoted && r.where.includes("`app/page.tsx`"));
-    expect(claims.map((r) => r.id)).toEqual(["F54", "F55", "F56", "F57"]);
+    expect(claims.map((r) => r.id)).toEqual(["F54", "F55", "F56", "F57", "F71"]);
+    // A refund can move money without a yes; a charge never does, and the landing says exactly that.
+    expect(page).toContain("Nothing is charged without your yes");
     // The first promise is the save agreement's own line, word for word.
     expect(CONSENT_TEMPLATE).toContain(claims[0].claim);
     // Scores come from the scored run: the headline function and its numbers, never digits typed in.
