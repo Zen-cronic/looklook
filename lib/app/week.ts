@@ -106,7 +106,7 @@ export function findRun(state: SessionState, runId: string): WeekRun {
 // The slip
 
 export interface LeftOffLine extends SlipLine {
-  leftOff: "over-cap" | "over-budget";
+  leftOff: "over-cap" | "over-budget" | "for-later";
   note: string;
 }
 
@@ -174,7 +174,12 @@ export function buildSlip(state: SessionState, run: WeekRun, today: string): Wee
   const left: Partial<Record<BudgetGroup, number>> = { ...remainingBudgets(state.budgets, today) };
   const lines: SlipLine[] = [];
   const leftOff: LeftOffLine[] = [];
+  const later = new Set(run.leftForLater ?? []);
   for (const line of candidates) {
+    if (later.has(line.approvalKey)) {
+      leftOff.push({ ...line, leftOff: "for-later", note: "Left for later. Nothing is charged for it on this yes." });
+      continue;
+    }
     if (method && line.amountCents > method.capCents) {
       leftOff.push({ ...line, leftOff: "over-cap", note: `${money(line.amountCents)} is above your ${money(method.capCents)} cap per payment.` });
       continue;
@@ -352,6 +357,30 @@ export async function armWeekWatches(sid: string, runId: string, startWatch: App
       r.watches.push(entry);
     });
   }
+}
+
+/**
+ * Take a line off this week's slip, or put it back. Only a line the slip
+ * itself lists (to pay, or already left for later) can be named, so this can
+ * shrink the slip or restore it but never add anything to it. It never pays:
+ * the slip's hash changes, so a yes given for the old slip charges nothing.
+ */
+export async function setLeftForLater(sid: string, runId: string, approvalKey: string, action: "leave" | "back"): Promise<WeekView> {
+  return updateSession(sid, (s) => {
+    const run = findRun(s, runId);
+    const slip = buildSlip(s, run, appToday(s.dayOffset));
+    const onSlip = slip.lines.some((l) => l.approvalKey === approvalKey);
+    const later = run.leftForLater ?? [];
+    if (action === "leave") {
+      if (!onSlip) throw new HttpError(404, "That line isn't on this week's slip.", { notOnSlip: true });
+      run.leftForLater = [...later.filter((k) => k !== approvalKey), approvalKey];
+    } else {
+      const wasLeft = slip.leftOff.some((l) => l.leftOff === "for-later" && l.approvalKey === approvalKey);
+      if (!wasLeft) throw new HttpError(404, "That line wasn't left for later on this slip.", { notOnSlip: true });
+      run.leftForLater = later.filter((k) => k !== approvalKey);
+    }
+    return weekView(s, run);
+  });
 }
 
 /** A checkout may only return to a week of this browser: `/week?run=<id>`. */

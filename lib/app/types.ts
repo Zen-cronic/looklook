@@ -343,6 +343,8 @@ export interface WeekRun {
   outcomes: Record<string, WeekLineOutcome>;
   watches: Array<{ checkId: string; watchId?: string; status: "armed" | "unavailable"; message?: string }>;
   approvedAt?: string;
+  /** Lines the shopper (or the assistant, asked in words) took off this slip for later, by approval key. */
+  leftForLater?: string[];
 }
 
 export type EventSource = "paypal" | "channel3";

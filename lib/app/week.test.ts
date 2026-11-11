@@ -205,6 +205,50 @@ describe("hand it your week: one yes", () => {
   });
 });
 
+describe("hand it your week: lines left for later", () => {
+  it("leaves a line for later: the slip's hash changes and the old hash charges nothing", async () => {
+    const { sid, runId } = await week();
+    const { approveWeek, setLeftForLater } = await import("./week");
+    const before = await slipOf(sid, runId);
+    const cleanser = before.lines.find((l) => l.why === "due")!;
+    const view = await setLeftForLater(sid, runId, cleanser.approvalKey, "leave");
+    expect(view.slip.lines.map((l) => l.approvalKey)).not.toContain(cleanser.approvalKey);
+    expect(view.slip.leftOff.find((l) => l.approvalKey === cleanser.approvalKey)?.leftOff).toBe("for-later");
+    expect(view.slip.hash).not.toBe(before.hash);
+    expect(view.slip.totalCents).toBe(before.totalCents - cleanser.amountCents);
+    const pp = fakePayPal();
+    const w = watcher(pp);
+    await expect(approveWeek(sid, runId, before.hash, { client: () => pp.client as never, startWatch: w.startWatch })).rejects.toMatchObject({ status: 409, extra: { slipChanged: true } });
+    expect(pp.requests).toHaveLength(0);
+    // The yes for the slip as it is now pays only what is on it.
+    await approveWeek(sid, runId, view.slip.hash, { client: () => pp.client as never, startWatch: w.startWatch });
+    expect(pp.orders.size).toBe(view.slip.lines.length);
+  });
+
+  it("puts a line back and the slip returns to the hash it had", async () => {
+    const { sid, runId } = await week();
+    const { setLeftForLater } = await import("./week");
+    const before = await slipOf(sid, runId);
+    const key = before.lines[0].approvalKey;
+    await setLeftForLater(sid, runId, key, "leave");
+    const back = await setLeftForLater(sid, runId, key, "back");
+    expect(back.slip.hash).toBe(before.hash);
+    expect(back.slip.lines.map((l) => l.approvalKey)).toEqual(before.lines.map((l) => l.approvalKey));
+  });
+
+  it("only names lines the slip lists: leaving or putting back anything else is refused and changes nothing", async () => {
+    const { sid, runId } = await week();
+    const { setLeftForLater } = await import("./week");
+    const before = await slipOf(sid, runId);
+    await expect(setLeftForLater(sid, runId, "staple:sh-mascara:2099-01-01", "leave")).rejects.toMatchObject({ status: 404 });
+    await expect(setLeftForLater(sid, runId, "check:made-up", "back")).rejects.toMatchObject({ status: 404 });
+    // Putting back a line that is on the slip (never left) is refused too: back can't add anything.
+    await expect(setLeftForLater(sid, runId, before.lines[0].approvalKey, "back")).rejects.toMatchObject({ status: 404 });
+    const after = await slipOf(sid, runId);
+    expect(after.hash).toBe(before.hash);
+  });
+});
+
 describe("hand it your week: the first payment at checkout", () => {
   it("returns only to a week of this browser, and notes the line on the week", async () => {
     const { parseReturnTo, buildSlip, findRun, noteCheckoutLine, weekView } = await import("./week");
