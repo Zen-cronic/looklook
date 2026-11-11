@@ -24,7 +24,7 @@ export default function CheckPage({ searchParams }: PageProps<"/check">) {
         <h1>Saw it on your feed?</h1>
         <p className="lede">Send {APP_NAME} the post before you buy. It checks what you already own, your budget, the price history and whether the store takes it back once opened.</p>
         <p className="small">
-          Saved a few this week? <Link href="/week">Hand it your week</Link> and say yes once.
+          Saved a few this week? <Link href="/week">Hand it your week</Link> and say yes once. On your phone? <Link href="/share">Share posts straight from the share sheet</Link>.
         </p>
       </div>
       <div className="object-layout">
