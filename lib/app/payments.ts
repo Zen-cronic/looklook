@@ -20,7 +20,7 @@ export function defaultCapCents(amountCents: number): number {
   return Math.max(2500, Math.ceil((amountCents * 1.5) / 500) * 500);
 }
 
-export const SELLER_OF_RECORD = `${APP_NAME} Test Store (PayPal sandbox)`;
+export const SELLER_OF_RECORD = `${APP_NAME} Test Store`;
 
 /** The save-for-later agreement, word for word as shown and stored with the method. {cap} is the per-rebuy cap. */
 export const CONSENT_TEMPLATE = [
@@ -28,7 +28,7 @@ export const CONSENT_TEMPLATE = [
   "Each rebuy is charged only after you tap yes on it, at the price shown next to that yes.",
   "A rebuy above {cap} is refused.",
   "After every charge you get a notice with the PayPal order and capture IDs.",
-  "Remove the saved method any time on the Payments page; that deletes it at PayPal.",
+  "Remove the saved method any time on the Payments page. That deletes it at PayPal.",
 ];
 
 export function consentLines(capCents: number, currency = "USD"): string[] {
@@ -344,7 +344,7 @@ export function recordPaid(state: SessionState, source: PurchaseSource, details:
   try {
     applyToShelf(state, source, details, receipt, today, amount, now);
   } catch {
-    receipt.shelfNote = "Paid. The shelf couldn't be updated for this item; add it on the Shelf page.";
+    receipt.shelfNote = "Paid. The shelf couldn't be updated for this item. Add it on the Shelf page.";
   }
   try {
     if (details.category) {

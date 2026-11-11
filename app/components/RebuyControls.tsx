@@ -29,7 +29,7 @@ export function DeclineToggle({ on }: { on: boolean }) {
     <div className="stack-sm">
       <label className="check-row">
         <input type="checkbox" checked={on} disabled={!!busy} onChange={(e) => call("decline", "/api/demo", "POST", { action: "decline-next", on: e.target.checked })} />
-        Make the next rebuy decline (PayPal sandbox test)
+        Make the next rebuy decline
       </label>
       {error && <p className="error small">{error.error}</p>}
     </div>
@@ -66,7 +66,7 @@ export function ApprovalButtons({ source, amountCents, version, amountLabel, met
         <div className="decline-box stack-sm">
           <p>
             <strong>PayPal declined {declined.methodLabel}.</strong> Nothing was charged. The bank or card network refused it ({declined.issue}
-            {declined.simulated ? ", a sandbox test" : ""}).
+            {""}).
           </p>
         </div>
       )}
@@ -113,7 +113,7 @@ export function WatchControls({ watchId, canSimulate }: { watchId: string; canSi
       <div className="actions">
         {canSimulate && (
           <button className="btn outline small" disabled={!!busy} onClick={() => call("drop", `/api/watch/${watchId}/drop`, "POST", {})}>
-            {busy === "drop" ? "Sending…" : "Send a test price drop"}
+            {busy === "drop" ? "Sending…" : "Try a price drop"}
           </button>
         )}
         <button

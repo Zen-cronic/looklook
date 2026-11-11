@@ -20,11 +20,11 @@ export async function POST(request: Request, ctx: RouteContext<"/api/receipts/[i
     if (!r?.guard) throw new HttpError(404, "No price protection on that charge.");
     const g = r.guard;
     if (g.status !== "on") throw new HttpError(409, g.status === "starting" ? "Price protection is still starting. Try again in a moment." : "Price protection on this charge isn't on.");
-    if (g.refunds.filter((x) => x.simulated).length >= MAX_TEST_DROPS) throw new HttpError(429, `That's ${MAX_TEST_DROPS} test drops on this charge already.`);
+    if (g.refunds.filter((x) => x.simulated).length >= MAX_TEST_DROPS) throw new HttpError(429, `That's ${MAX_TEST_DROPS} price drops on this charge already.`);
     const floor = guardFloorCents(g);
     const price = priceCents === undefined ? testDropCents(g) : Number(priceCents);
     if (!Number.isInteger(price) || price < Math.ceil(g.paidCents * MIN_PLAUSIBLE_PRICE_SHARE) || price > floor - MIN_GUARD_REFUND_CENTS) {
-      throw new HttpError(400, "A test price drop must be below what is already covered and at least half of what was paid.");
+      throw new HttpError(400, "A price drop must be below what is already covered and at least half of what was paid.");
     }
     const event = simulatedStoreDrop(g, price);
     let busy = false;
@@ -37,7 +37,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/receipts/[i
       }
     });
     if (busy) throw new HttpError(409, "PayPal is still working on the last refund for this charge. Try again in a moment.");
-    if (handled.outcome !== "handled") throw new HttpError(502, "The test price drop couldn't be applied. Nothing was refunded twice; try again.");
+    if (handled.outcome !== "handled") throw new HttpError(502, "The price drop couldn't be applied. Nothing was refunded twice. Try again.");
     return Response.json({ eventId: event.id, priceCents: price, effect: handled.effect });
   });
 }

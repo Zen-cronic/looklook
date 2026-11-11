@@ -256,7 +256,7 @@ export async function applyGuardEvent(sid: string, receiptId: string, event: Cha
         ids: [{ label: "PayPal refund", value: refund.refundId }],
       });
     });
-    return `${label}: dropped to ${formatCents(plan.priceCents, r.currency)}; the test store refunded ${formatCents(plan.amountCents, r.currency)} (PayPal refund ${refund.refundId}, ${refund.status}).`;
+    return `${label}: dropped to ${formatCents(plan.priceCents, r.currency)}. The store refunded ${formatCents(plan.amountCents, r.currency)} (PayPal refund ${refund.refundId}, ${refund.status}).`;
   });
 }
 

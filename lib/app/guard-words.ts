@@ -24,5 +24,5 @@ export function guardRefundLine(g: GuardView, x: GuardView["refunds"][number]): 
 }
 
 export function guardTestLabel(g: GuardView): string {
-  return `Sandbox test: ${g.store} drops it to ${formatCents(g.testCents ?? 0)}`;
+  return `Try a price drop to ${formatCents(g.testCents ?? 0)}`;
 }

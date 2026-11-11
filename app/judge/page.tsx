@@ -83,7 +83,7 @@ export default function JudgePage() {
 
       <p className="small" data-testid="share-from-phone">
         <strong>From a phone:</strong> share a store link or a screenshot straight to {APP_NAME} with the &ldquo;Look twice&rdquo; Shortcut (iPhone) or the share sheet (Android).{" "}
-        <Link href="/share">How to set it up</Link> (tested on desktop; phone test after deploy).
+        <Link href="/share">How to set it up</Link> (tested on desktop, phone test after deploy).
       </p>
 
       <details className="card disclosure">
@@ -91,7 +91,7 @@ export default function JudgePage() {
         <ul style={{ margin: "0.85rem 0 0 1.1rem" }} className="stack-sm">
           <li>Real: products, prices and 90-day price history (Channel3), the screenshot reading (Claude), and store return policies, each with its source page.</li>
           <li>Sandbox: every PayPal payment. No real money moves.</li>
-          <li>Simulated, and labelled where shown: the Rebuys date control, the test price drop, the forced decline and the sample week.</li>
+          <li>Simulated: the Rebuys date control, the price drop you can try after paying, the forced decline and the sample week.</li>
         </ul>
       </details>
       </div>

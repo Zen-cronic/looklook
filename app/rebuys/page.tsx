@@ -94,7 +94,7 @@ async function Rebuys() {
               </Eyebrow>
               <span className="date">{formatDay(today)}</span>
               <span className="small muted">
-                {film ? `${state.dayOffset} ${state.dayOffset === 1 ? "day" : "days"} ahead. Charge times are real.` : `${state.dayOffset} ${state.dayOffset === 1 ? "day" : "days"} ahead of today (${formatDay(realToday())}). Run-out dates and budgets use it; charge times are real.`}
+                {film ? `${state.dayOffset} ${state.dayOffset === 1 ? "day" : "days"} ahead. Charge times are real.` : `${state.dayOffset} ${state.dayOffset === 1 ? "day" : "days"} ahead of today (${formatDay(realToday())}). Run-out dates and budgets use it. Charge times are real.`}
               </span>
             </>
           )}
@@ -242,7 +242,7 @@ async function Rebuys() {
 
         {testing && (
           <div className="card stack-sm">
-            <h2>Test a decline</h2>
+            <h2>Try a decline</h2>
             <DeclineToggle on={state.demo.declineNextRebuy} />
             <p className="small muted">The next rebuy comes back declined (INSTRUMENT_DECLINED), as a refused card would. Nothing is charged, and you can pick another card or PayPal.</p>
           </div>
