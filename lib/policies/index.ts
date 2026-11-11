@@ -102,6 +102,30 @@ export function findRetailer(store: string | undefined, t: PolicyTable = policyT
   return t.retailers.find((r) => r.domains.some((d) => host === d || host.endsWith(`.${d}`))) ?? fallback;
 }
 
+/**
+ * The web domain of the store a price was seen at, for matching a catalogue
+ * price event to that store: a known retailer's own domain ("sephora" ->
+ * sephora.com), else a store label that is already a domain, else the
+ * catalogue offer's domain. Undefined when none of these names a store.
+ */
+export function storeDomain(store: string | undefined, offerDomain?: string, t: PolicyTable = policyTable()): string | undefined {
+  if (store?.trim()) {
+    const r = findRetailer(store, t);
+    if (r.id !== FALLBACK_RETAILER_ID && r.domains[0]) return r.domains[0];
+    const host = hostOf(store);
+    if (/^[a-z0-9-]+(\.[a-z0-9-]+)+$/.test(host)) return host;
+  }
+  if (offerDomain?.trim()) return hostOf(offerDomain);
+  return undefined;
+}
+
+/** Same store: equal domains, or one a subdomain of the other (es.cvs.com and cvs.com). */
+export function sameStoreDomain(a: string, b: string): boolean {
+  const x = hostOf(a);
+  const y = hostOf(b);
+  return x === y || x.endsWith(`.${y}`) || y.endsWith(`.${x}`);
+}
+
 /** What an opened return needs at this store for this group ("with a receipt"), when the policy names it. */
 export function openedNeedsFor(retailerId: string, group: PolicyGroup, t: PolicyTable = policyTable()): string | undefined {
   return t.retailers.find((r) => r.id === retailerId)?.rules.find((r) => r.group === group)?.openedNeeds;

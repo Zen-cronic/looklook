@@ -92,6 +92,8 @@ export interface WatchItem {
   currentPrice: number;
   /** Shelf item this would restock, if any. */
   shelfItemId?: string;
+  /** The store the price was seen at: only its price events count. Watches started before this field count every store. */
+  domain?: string;
   subscription: { status: "active"; id: string } | { status: "unavailable"; reason: string } | { status: "cancelled"; id: string };
   createdAt: string;
   /** The linked staple's run-out date when the watch started: a drop buys that cycle. */

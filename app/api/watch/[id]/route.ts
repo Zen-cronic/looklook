@@ -2,15 +2,20 @@ import { cancelSubscription } from "@/lib/channel3/api";
 import { handle, HttpError, sessionIdOrThrow } from "@/lib/app/http";
 import { channel3Client } from "@/lib/app/services";
 import { loadSession, updateSession } from "@/lib/app/store";
+import { subscriptionInUse } from "@/lib/app/subscriptions";
 
-/** Stop watching: cancel the Channel3 subscription. */
+/**
+ * Stop watching. The Channel3 subscription is cancelled only when nothing
+ * else listens to it: Channel3 hands the same subscription to identical
+ * requests, so another shopper's watch on this product may share it.
+ */
 export async function DELETE(_request: Request, ctx: RouteContext<"/api/watch/[id]">) {
   return handle(async () => {
     const sid = await sessionIdOrThrow();
     const { id } = await ctx.params;
     const w = loadSession(sid).watch.find((x) => x.id === id);
     if (!w) throw new HttpError(404, "No such watched item.");
-    if (w.subscription.status === "active") {
+    if (w.subscription.status === "active" && !subscriptionInUse(w.subscription.id, { sessionId: sid, watchId: w.id })) {
       try {
         await cancelSubscription(channel3Client(), w.subscription.id);
       } catch {

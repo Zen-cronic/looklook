@@ -35,6 +35,7 @@ import { customerIdFor, SEED_BASE_DATE, seedState } from "./seed";
 import { singleFlight } from "./single-flight";
 import type { CheckRecord, PurchaseIntent, SavedMethod, SessionState } from "./types";
 import { applyPriceEvent, newWatch, simulatedDropEvent } from "./watch";
+import { storeDomain } from "../policies";
 
 const TODAY = "2026-11-10";
 
@@ -244,6 +245,71 @@ describe("price events out of order", () => {
     expect(applyPriceEvent(s, at("2026-11-10T10:30:00Z", 58))).toHaveLength(0);
     expect(w.currentPrice).toBe(66);
     expect(w.droppedAt).toBeUndefined();
+  });
+});
+
+describe("price events from the store you saw", () => {
+  const seen = (store: string) =>
+    ({ id: "c1", store, product: { id: "P9", title: "Retinol Serum", brand: "Ole Henriksen", offerPrice: 72 }, facts: { priceShown: 72 }, decision: { evidence: { price: { target: 60 } } } }) as never;
+
+  it("names the store by its own domain: a known store, a store that is a domain, or the catalogue offer", () => {
+    expect(storeDomain("sephora")).toBe("sephora.com");
+    expect(storeDomain("Ulta")).toBe("ulta.com");
+    expect(storeDomain("olehenriksen.com")).toBe("olehenriksen.com");
+    expect(storeDomain("Brand site or other store", "www.dermstore.com")).toBe("dermstore.com");
+    expect(storeDomain(undefined)).toBeUndefined();
+    expect(newWatch(seen("sephora"), { status: "active", id: "sub9" }).domain).toBe("sephora.com");
+  });
+
+  it("ignores a price change at another store, and a price under half of the one seen", () => {
+    const s = fresh();
+    const w = newWatch(seen("sephora"), { status: "active", id: "sub9" });
+    s.watch.push(w);
+    const drop = simulatedDropEvent(w, 59);
+    expect(drop.data.subject?.domain).toBe("sephora.com");
+    const elsewhere = { ...drop, id: "e1", data: { ...drop.data, subject: { ...drop.data.subject, domain: "harrods.com" } } };
+    expect(applyPriceEvent(s, elsewhere)).toHaveLength(0);
+    expect(w.droppedAt).toBeUndefined();
+    const junk = { ...simulatedDropEvent(w, 5), id: "e2" };
+    expect(applyPriceEvent(s, junk)[0]).toContain("looks like a listing error");
+    expect(w.droppedAt).toBeUndefined();
+    expect(w.currentPrice).toBe(72);
+    // The same store under its subdomain still counts.
+    const sub = { ...drop, id: "e3", data: { ...drop.data, subject: { ...drop.data.subject, domain: "www.sephora.com" } } };
+    expect(applyPriceEvent(s, sub)[0]).toContain("Asking for a yes");
+  });
+
+  it("keeps today's behaviour for a watch started before it knew its store", () => {
+    const s = fresh();
+    const w = newWatch(seen(""), { status: "active", id: "sub9" });
+    expect(w.domain).toBeUndefined();
+    s.watch.push(w);
+    const drop = simulatedDropEvent(w, 59);
+    expect(applyPriceEvent(s, { ...drop, data: { ...drop.data, subject: { product_id: "P9", domain: "anywhere.com" } } })[0]).toContain("Asking for a yes");
+  });
+});
+
+describe("a subscription shared between shoppers", () => {
+  const previous = process.env.APP_DATA_DIR;
+  beforeAll(() => {
+    process.env.APP_DATA_DIR = mkdtempSync(join(tmpdir(), "subs-data-"));
+  });
+  afterAll(() => {
+    process.env.APP_DATA_DIR = previous;
+  });
+
+  it("keeps a subscription another session still uses", async () => {
+    const store = await import("./store");
+    const { subscriptionInUse } = await import("./subscriptions");
+    const watch = (id: string) => ({ ...newWatch({ id: "c1", store: "sephora", product: { id: "P9", title: "Serum", brand: "B" }, facts: { priceShown: 32 }, decision: { evidence: {} } } as never, { status: "active", id: "subShared" }), id });
+    await store.updateSession("subsession0001", (s) => void s.watch.push(watch("wt_a")));
+    await store.updateSession("subsession0002", (s) => void s.watch.push(watch("wt_b")));
+    await store.indexAdd("subscription", "subShared", "subsession0001");
+    await store.indexAdd("subscription", "subShared", "subsession0002");
+    // Stopping A's watch: B still listens, so Channel3 must not be told to cancel.
+    expect(subscriptionInUse("subShared", { sessionId: "subsession0001", watchId: "wt_a" })).toBe(true);
+    await store.updateSession("subsession0002", (s) => void (s.watch[s.watch.length - 1].closedAt = "2026-11-11T00:00:00Z"));
+    expect(subscriptionInUse("subShared", { sessionId: "subsession0001", watchId: "wt_a" })).toBe(false);
   });
 });
 

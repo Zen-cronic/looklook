@@ -3,7 +3,7 @@ import { channel3Client, fetchProduct } from "@/lib/app/services";
 import { HttpError } from "@/lib/app/http";
 import { indexAdd, loadSession, updateSession } from "@/lib/app/store";
 import type { WatchItem } from "@/lib/app/types";
-import { newWatch } from "@/lib/app/watch";
+import { newWatch, watchDomain } from "@/lib/app/watch";
 
 /**
  * Start watching a wait item: a Channel3 product subscription sends price
@@ -22,7 +22,9 @@ export async function startWatch(sid: string, checkId: string): Promise<{ watchI
   try {
     const product = await fetchProduct(check.product.id);
     const selected = (product.variants as { selected?: unknown } | undefined)?.selected;
-    const sub = await createSubscription(channel3Client(), { productId: check.product.id, events: ["offer.price.changed"], ...(selected ? { selection: selected } : {}) });
+    const domain = watchDomain(check);
+    // Only the store the price was seen at: a price elsewhere isn't one the shopper can pay here.
+    const sub = await createSubscription(channel3Client(), { productId: check.product.id, events: ["offer.price.changed"], ...(selected ? { selection: selected } : {}), ...(domain ? { domains: [domain] } : {}) });
     subscription = { status: "active", id: sub.subscription_id };
   } catch (e) {
     subscription = { status: "unavailable", reason: e instanceof Error ? e.message.slice(0, 160) : "subscription failed" };

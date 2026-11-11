@@ -1,5 +1,6 @@
 import type { Channel3Event } from "../channel3/webhooks";
 import { currentPrice } from "../channel3/webhooks";
+import { sameStoreDomain, storeDomain } from "../policies";
 import { formatDollars } from "./money";
 import type { ShelfItem } from "../shelf/types";
 import type { CheckRecord, SessionState, WatchItem } from "./types";
@@ -19,6 +20,7 @@ export function newWatch(check: CheckRecord, subscription: WatchItem["subscripti
   const shelfItemId = sameShelf ?? check.decision.evidence.replaces?.itemId;
   // A drop on a staple buys the cycle that was current when the watch started.
   const linked = shelfItemId ? shelf.find((i) => i.id === shelfItemId) : undefined;
+  const domain = watchDomain(check);
   return {
     id: `wt_${crypto.randomUUID().replace(/-/g, "").slice(0, 12)}`,
     checkId: check.id,
@@ -28,10 +30,27 @@ export function newWatch(check: CheckRecord, subscription: WatchItem["subscripti
     targetPrice: targetFor(check),
     currentPrice: start,
     shelfItemId,
+    ...(domain ? { domain } : {}),
     ...(linked ? { cycle: linked.runOutDate ?? "none" } : {}),
     subscription,
     createdAt: now.toISOString(),
   };
+}
+
+/** The store a check's price was seen at, as a web domain (see storeDomain). */
+export function watchDomain(check: Pick<CheckRecord, "store" | "product">): string | undefined {
+  return storeDomain(check.store, check.product?.offerDomain);
+}
+
+/**
+ * A catalogue price under this share of the price the shopper saw is treated
+ * as a listing error (an accessory, a sample size, a parsing slip), not a drop.
+ */
+export const MIN_PLAUSIBLE_SHARE = 0.5;
+
+/** Is this price event about the store the item was seen at? Unknown on either side counts as a match. */
+export function sameStore(eventDomain: string | undefined, domain: string | undefined): boolean {
+  return !eventDomain || !domain || sameStoreDomain(eventDomain, domain);
 }
 
 /**
@@ -51,6 +70,12 @@ export function applyPriceEvent(state: SessionState, event: Channel3Event, now =
     const byProduct = productId && w.product.id === productId;
     if (!bySub && !byProduct) continue;
     if (w.lastEventId === event.id) continue;
+    // A price at another store isn't a price the shopper can pay here.
+    if (!sameStore(event.data.subject?.domain, w.domain)) continue;
+    if (price < w.startPrice * MIN_PLAUSIBLE_SHARE) {
+      effects.push(`${w.product.brand} ${w.product.title}: a price of ${formatDollars(price)} is under half of the ${formatDollars(w.startPrice)} seen, so it looks like a listing error. Ignored.`);
+      continue;
+    }
     // Deliveries can arrive out of order: an event older than the newest one applied is ignored.
     const at = Date.parse(event.timestamp ?? "");
     if (w.lastEventAt && Number.isFinite(at) && at < Date.parse(w.lastEventAt)) continue;
@@ -78,7 +103,7 @@ export function simulatedDropEvent(w: WatchItem, price: number): Channel3Event {
     type: "offer.price.changed",
     data: {
       subscription_id: w.subscription.status === "active" ? w.subscription.id : undefined,
-      subject: { product_id: w.product.id, domain: w.product.offerDomain },
+      subject: { product_id: w.product.id, domain: w.domain ?? w.product.offerDomain },
       previous: { price: w.currentPrice, currency: "USD" },
       current: { price, currency: "USD" },
     },
