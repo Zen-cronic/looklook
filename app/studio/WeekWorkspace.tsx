@@ -24,7 +24,7 @@ const adapter = claudeAdapter("/api/llm", (t) => onTurn(t));
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
 /** Requests the assistant box offers; each goes to the slip agent as typed. */
-const STARTERS = ["Leave the cleanser for next week", "Put everything back on the slip"];
+const STARTERS = ["Leave the cleanser for next week", "Put everything back in the order"];
 
 function themeFromTokens() {
   const css = getComputedStyle(document.documentElement);
@@ -81,7 +81,7 @@ function initialState(narrow: boolean): AgReportState {
           slip: { type: "weekSlip", dataMapping: {} },
           lines: {
             type: "grid",
-            format: { title: { enabled: true, text: "Every line, and what happened to it" } },
+            format: { title: { enabled: true, text: "Every item, and what happened to it" } },
             dataMapping: { cols: [{ id: "slip.product" }, { id: "slip.amount" }, { id: "slip.status" }, { id: "slip.orderId" }] },
           },
         },
@@ -125,18 +125,18 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
     if (engine && (d.add.length || d.update.length || d.remove.length)) await engine.applyTransaction([{ tableId: SLIP_TABLE.id, add: d.add, update: d.update, remove: d.remove }]);
   }, []);
 
-  /** Take a line off the slip or put it back (the assistant's tools call this). Returns what our code saw happen. */
+  /** Take an item off the week's order or put it back (the assistant's tools call this). Returns what our code saw happen. */
   const change = useCallback(
     async (key: string, action: "leave" | "back"): Promise<{ ok: boolean; text: string }> => {
       const before = viewRef.current;
       const title = [...before.slip.lines, ...before.slip.leftOff].find((l) => l.approvalKey === key)?.title ?? key;
       const res = await fetch(`/api/week/${runId}/slip`, { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ approvalKey: key, action }) });
       const data = (await res.json().catch(() => ({}))) as WeekView & { error?: string };
-      if (!res.ok) return { ok: false, text: data.error ?? "That didn't change the slip." };
+      if (!res.ok) return { ok: false, text: data.error ?? "That didn't change this week's order." };
       await show(data);
-      const done = action === "leave" ? `Took ${title} off the slip.` : `Put ${title} back on the slip.`;
+      const done = action === "leave" ? `Took ${title} off this week's order.` : `Put ${title} back in this week's order.`;
       changesRef.current.push(done);
-      return { ok: true, text: `${done} The slip now has ${data.slip.lines.length} ${data.slip.lines.length === 1 ? "line" : "lines"}.` };
+      return { ok: true, text: `${done} It now has ${data.slip.lines.length} ${data.slip.lines.length === 1 ? "item" : "items"}.` };
     },
     [runId, show],
   );
@@ -177,12 +177,12 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
         additionalTypes: [
           {
             id: "weekSlip",
-            label: "This week's slip",
+            label: "This week's order",
             form: (p: { createDefaults: (o: unknown) => unknown }) => p.createDefaults({ dataMappingItems: [] }),
             comp: WeekSlipWidget,
             defaultSize: { width: 380, height: 480 },
             minSize: { width: 260, height: 240 },
-            ai: { description: `${APP_NAME}'s slip for this week: the payments one yes would make, their total and the yes button. Needs no field mapping.` },
+            ai: { description: `${APP_NAME}'s order for this week: the items one yes would pay, each as its own PayPal payment, their total and the yes button. Needs no field mapping.` },
           },
         ],
         menu: [...base.menu, { label: APP_NAME, widgetIds: ["weekSlip"] }],
@@ -196,17 +196,17 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
         if (harnessRef.current) return harnessRef.current;
         const harness = createAiHarness(api, () => {
           type Params = { object: (o: unknown) => unknown; string: (o: unknown) => unknown };
-          const keyParam = (s: Params) => s.object({ key: s.string({ description: "The line's key, exactly as listed in your instructions." }) });
+          const keyParam = (s: Params) => s.object({ key: s.string({ description: "The item's key, exactly as listed in your instructions." }) });
           const run = (action: "leave" | "back") => async (args: { key?: string }, ctx: { success: (m: string) => unknown }) => {
             const r = await change(String(args?.key ?? ""), action);
             return ctx.success(r.text);
           };
-          const leave = api.defineAiTool({ name: "leave_for_later", description: "Take one line off this week's slip. It is not paid; it stays listed as left for later.", params: keyParam, execute: run("leave") } as never);
-          const back = api.defineAiTool({ name: "put_back", description: "Put one line that was left for later back on this week's slip.", params: keyParam, execute: run("back") } as never);
+          const leave = api.defineAiTool({ name: "leave_for_later", description: "Take one item off this week's order. It is not paid; it stays listed as left for later.", params: keyParam, execute: run("leave") } as never);
+          const back = api.defineAiTool({ name: "put_back", description: "Put one item that was left for later back in this week's order.", params: keyParam, execute: run("back") } as never);
           const slipAgent = directLlmRunner({
             id: AGENT_ID,
             name: APP_NAME,
-            description: `${APP_NAME}'s slip agent: takes lines off this week's slip or puts them back. It cannot pay.`,
+            description: `${APP_NAME}'s order assistant: takes items off this week's order or puts them back. It cannot pay.`,
             adapter,
             maxTurns: 6,
             instructions: () => slipAgentInstructions(viewRef.current),
@@ -254,7 +254,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
       setAsk({ kind: "done", request, changes, note: outcome === "idle" ? undefined : "The assistant didn't finish." });
     } catch {
       session?.cancel();
-      setAsk({ kind: "done", request, changes: [...changesRef.current], note: "The assistant isn't available right now. The slip is as shown." });
+      setAsk({ kind: "done", request, changes: [...changesRef.current], note: "The assistant isn't available right now. This week's order is as shown." });
     } finally {
       onTurn = () => undefined;
       running.current = false;
@@ -268,7 +268,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
         <div className="workspace-bar">
           <div>
             <h1>This week</h1>
-            <p className="small muted">This week&apos;s slip in AG Studio. Ask {APP_NAME}&apos;s assistant to take a line off or put it back; only your yes on the slip pays.</p>
+            <p className="small muted">This week&apos;s order in AG Studio. Ask {APP_NAME}&apos;s assistant to take an item off or put it back. Only your yes pays.</p>
           </div>
           <div className="workspace-actions">
             <Link className="btn outline" href={`/week?run=${runId}`}>
@@ -284,7 +284,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
           }}
         >
           <label htmlFor="slip-ask-input" className="small">
-            Ask about this slip
+            Ask about this week&apos;s order
           </label>
           <div className="slip-ask-row">
             <input id="slip-ask-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Leave the cleanser for next week" disabled={busy} data-testid="slip-ask-input" />
@@ -311,7 +311,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
               </>
             ) : (
               <span>
-                <strong>{ask.changes.length ? ask.changes.join(" ") : "The slip didn't change."}</strong> {ask.note ?? ""} Nothing was paid: the yes on the slip is yours.
+                <strong>{ask.changes.length ? ask.changes.join(" ") : "This week's order didn't change."}</strong> {ask.note ?? ""} Nothing was paid: only your yes pays.
               </span>
             )}
           </div>
