@@ -91,7 +91,7 @@ export default function JudgePage() {
         <ul style={{ margin: "0.85rem 0 0 1.1rem" }} className="stack-sm">
           <li>Real: products, prices and 90-day price history (Channel3), the screenshot reading (Claude), and store return policies, each with its source page.</li>
           <li>Sandbox: every PayPal payment. No real money moves.</li>
-          <li>Simulated, and labelled where shown: the Rebuys date control, the test price drop, the forced decline and the sample week (a made-up shopper; the products, stores and prices are real).</li>
+          <li>Simulated, and labelled where shown: the Rebuys date control, the test price drop, the forced decline and the sample week.</li>
         </ul>
       </details>
       </div>

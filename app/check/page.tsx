@@ -9,7 +9,6 @@ import { shelfLink } from "@/lib/app/shelf-link";
 import { atTheTime } from "@/lib/app/when";
 import { APP_NAME } from "@/lib/brand";
 import { Intake } from "../components/Intake";
-import { SampleWeekNote } from "../components/SampleWeek";
 import { Chevron } from "../components/Chevron";
 import { VerdictChip } from "../components/VerdictChip";
 import { VerdictSummary } from "../components/VerdictSummary";
@@ -95,7 +94,6 @@ async function LatestCheck() {
   const price = c.facts.priceShown;
   return (
     <div className="stack">
-      {state.sample?.kind === "week" && <SampleWeekNote />}
       <MaterialStage tag="Last check" icon="check" label="Your last check">
         <Frames>
           <Link href={`/check/${c.id}`} className={`verdict compact ${c.decision.verdict}`}>
