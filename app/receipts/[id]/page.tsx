@@ -7,7 +7,9 @@ import { chargeKind, receiptStatusLabel, repeatsLine, SELLER_OF_RECORD } from "@
 import { shortId } from "@/lib/filming/neutral";
 import { displaySession } from "@/lib/filming/server";
 import { budgetGroupOf } from "@/lib/shelf/categories";
+import { guardView } from "@/lib/app/guard";
 import { ReceiptActions } from "../../components/ReceiptActions";
+import { ReceiptGuard } from "../../components/WeekFlow";
 import { Eyebrow } from "../../components/Eyebrow";
 import { Lotion } from "../../components/stage/MaterialStage";
 
@@ -32,6 +34,7 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
   const simulatedOn = r.on !== realToday(new Date(r.createdAt)) ? r.on : undefined;
   const group = r.category ? budgetGroupOf(r.category) : undefined;
   const left = group ? remainingBudgets(state.budgets, today)[group] : undefined;
+  const guard = guardView(r);
   return (
     <div className="object-layout">
       <section className="panel lead" aria-label="Receipt">
@@ -113,6 +116,12 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <Eyebrow icon="card">{BUDGET_LABELS[group]} budget</Eyebrow>
           <p className="figure-line">{formatDollars(left)} left</p>
           <p className="small">This month.</p>
+        </section>
+      )}
+      {guard && (
+        <section className="context-frame" aria-label="After you paid">
+          <Eyebrow icon="shelf">After you paid</Eyebrow>
+          <ReceiptGuard g={guard} />
         </section>
       )}
       {method && (

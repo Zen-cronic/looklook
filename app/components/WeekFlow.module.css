@@ -268,3 +268,25 @@
     order: -1;
   }
 }
+
+/* After the yes: price guards on what was paid */
+.guards {
+  list-style: none;
+  margin: 0;
+  padding: 0.9rem 0 0;
+  border-top: 1px solid color-mix(in srgb, currentColor 35%, transparent);
+  display: grid;
+  gap: 0.9rem;
+}
+
+.guard {
+  display: grid;
+  gap: 0.4rem;
+  justify-items: start;
+  font-size: 0.95rem;
+  overflow-wrap: anywhere;
+}
+
+.guardRefund {
+  font-weight: 600;
+}

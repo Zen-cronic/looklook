@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 import { formatDay } from "@/lib/app/dates";
 import { formatCents } from "@/lib/app/money";
 import type { SlipLine, WeekInput } from "@/lib/app/types";
+import type { GuardView } from "@/lib/app/guard";
+import { guardHead, guardRefundLine, guardTestLabel } from "@/lib/app/guard-words";
 import type { SentLineView, WeekView } from "@/lib/app/week";
 import { Eyebrow } from "./Eyebrow";
 import { ProductGlyph, glyphFor } from "./ProductGlyph";
@@ -148,6 +150,48 @@ function SentRow({ l }: { l: SentLineView }) {
         {STATUS_WORD[l.status]}
       </span>
     </li>
+  );
+}
+
+/** After the yes: the price guard on one paid item, its refunds, and the labelled test drop. */
+export function GuardRow({ g, onChange }: { g: GuardView; onChange: () => Promise<void> | void }) {
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  async function testDrop() {
+    setBusy(true);
+    setError(null);
+    const r = await postJson(`/api/receipts/${g.receiptId}/drop`, { priceCents: g.testCents });
+    if (!r.ok) setError(typeof r.data.error === "string" ? r.data.error : "The test drop didn't go through. Nothing was refunded.");
+    await onChange();
+    setBusy(false);
+  }
+  const head = guardHead(g);
+  return (
+    <li className={s.guard} data-testid="week-guard" data-status={g.status}>
+      <span>{head}</span>
+      {g.refunds.map((x) => (
+        <span key={x.refundId} className={`small ${s.guardRefund}`} data-testid="guard-refund">
+          {guardRefundLine(g, x)} PayPal refund <span className="mono">{x.refundId}</span>
+          {x.simulated ? " (test drop)" : ""}
+        </span>
+      ))}
+      {g.testCents !== undefined && (
+        <button className="btn outline small" onClick={testDrop} disabled={busy} data-testid="guard-drop">
+          {busy ? "Asking PayPal…" : guardTestLabel(g)}
+        </button>
+      )}
+      {error && <span className="small">{error}</span>}
+    </li>
+  );
+}
+
+/** The price guard on a receipt page: the same row, refreshed in place after a test drop. */
+export function ReceiptGuard({ g }: { g: GuardView }) {
+  const router = useRouter();
+  return (
+    <ul className={s.guards} aria-live="polite">
+      <GuardRow g={g} onChange={() => router.refresh()} />
+    </ul>
   );
 }
 
@@ -294,6 +338,7 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                 {armed} {armed === 1 ? "price watch" : "price watches"} on
               </li>
               <li>Shelf updated: bought items added, staples restocked</li>
+              {view.guards.some((g) => g.refundedCents > 0) && <li>{money(view.guards.reduce((n, g) => n + g.refundedCents, 0))} back to your card and your budget after you paid</li>}
               {Object.entries(view.budgetsLeft)
                 .filter(([g]) => posts.some((p) => p.category && g === "skincare"))
                 .map(([g, left]) => (
@@ -302,6 +347,13 @@ export function WeekFlow({ initial, paidReceipt }: { initial: WeekView; paidRece
                   </li>
                 ))}
             </ul>
+            {view.guards.length > 0 && (
+              <ul className={s.guards} aria-label="After you paid" aria-live="polite">
+                {view.guards.map((g) => (
+                  <GuardRow key={g.receiptId} g={g} onChange={refresh} />
+                ))}
+              </ul>
+            )}
             <div className="actions">
               <Link className="btn outline" href="/shelf">
                 See your shelf

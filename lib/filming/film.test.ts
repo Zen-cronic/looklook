@@ -314,3 +314,33 @@ describe("filming mode on the framed pages, Decisions and the share flow", () =>
     expect(page).not.toContain("fallback={<Intake");
   });
 });
+
+describe("filming mode: the price guard after the yes", () => {
+  it("names the store by its kind and the product generically, on the week and the receipt", async () => {
+    const { guardView, newGuard } = await import("../app/guard");
+    const { guardHead, guardRefundLine, guardTestLabel } = await import("../app/guard-words");
+    const s = sampleWeekState("filmguard000001", TODAY, undefined, NOW);
+    s.methods.push({ ...method });
+    const source = { kind: "check" as const, checkId: "week-peptide" };
+    const paid: PaidResult = { outcome: { orderId: "5AB12345CD678901E", orderStatus: "COMPLETED", captureId: "7FG12345HJ678901K", captureStatus: "COMPLETED", amountCents: 3200, currency: "USD" }, requestId: "rebuy:x", kind: "saved-method", methodLabel: "Visa ending 1111", methodId: "pm_1" };
+    const { receipt } = recordPaid(s, source, sourceDetails(s, source), paid, TODAY, NOW);
+    receipt.guard = { ...newGuard(s, receipt, TODAY, NOW)!, status: "on", subscriptionId: "sub_f", lowCents: 2800 };
+    receipt.guard.refunds.push({ refundId: "3LM12345NP678901Q", priceCents: 2800, amountCents: 400, status: "COMPLETED", eventId: "sim_1", simulated: true, at: NOW.toISOString() });
+    const words = (g: NonNullable<ReturnType<typeof guardView>>) => [guardHead(g), guardRefundLine(g, g.refunds[0]), guardTestLabel(g)].join(" ");
+
+    const plain = words(guardView(receipt)!);
+    expect(plain).toContain("Sephora takes it back opened until then");
+    expect(plain).toContain("$4.00 back to your card and to your skincare budget");
+    expect(plain).toContain("The Ordinary");
+
+    // The receipt page: the filmed session.
+    const filmed = filmState(s, { shortIds: true }).receipts.find((r) => r.id === receipt.id)!;
+    const onReceipt = words(guardView(filmed)!);
+    expect(namesABrand(onReceipt)).toBeNull();
+    expect(onReceipt).toContain(`${storeLabel("sephora")} takes it back opened until then`);
+    // The week page: the view itself, made neutral.
+    const onWeek = words(neutralDeep(guardView(receipt)!, { shortIds: true }));
+    expect(namesABrand(onWeek)).toBeNull();
+    expect(onWeek).toContain(storeLabel("sephora"));
+  });
+});

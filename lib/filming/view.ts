@@ -17,7 +17,7 @@ export interface ViewOptions {
 const KEEP = /^(id|sample|sourceRef|kind|type|status|verdict|rule|relation|group|category|currency|cycle|imageHash|approvalKey|vaultId|customerId|source|domain|offerDomain|on|decidedOn|runOutDate|lastRestockedOn|addedOn|waitUntil|buyBy|issue|verification|state)$|(Id|Ids|Url|url|href|At)$/;
 
 /** PayPal ids that a recording shows only the end of. */
-const PAYPAL_IDS = /^(orderId|captureId|requestId|debugId|eventId|firstOrderId|vaultId)$/;
+const PAYPAL_IDS = /^(orderId|captureId|requestId|debugId|eventId|firstOrderId|vaultId|refundId)$/;
 
 type Obj = Record<string, unknown>;
 
