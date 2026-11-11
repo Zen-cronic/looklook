@@ -264,12 +264,32 @@ describe("the Studio week: an assistant that edits this week's order but can't p
     expect(slipAgentInstructions(view)).toContain("this week's order");
   });
 
-  it("the order table marks an item left for later, then paid with its PayPal order id", async () => {
+  it("tells both Studio assistants to write no semicolons, and their own instructions and tool texts have none", async () => {
+    const { readFileSync } = await import("node:fs");
+    const { slipAgentInstructions } = await import("./slip");
+    const view = { slip: { lines: [line("check:a", "Peptide Serum", 3200, "buy")], leftOff: [{ ...line("staple:c:1", "Cleanser", 1697, "due"), leftOff: "for-later", note: "" }] }, sent: [] } as never;
+    const order = slipAgentInstructions(view);
+    expect(order).toMatch(/no semicolons/);
+    expect(order).not.toMatch(/;/);
+    const dashboard = readFileSync("app/studio/Workspace.tsx", "utf8");
+    expect(dashboard).toMatch(/Never use semicolons/);
+    // Every instruction line, description and label the models or the shopper read in both Studio pages.
+    for (const file of ["app/studio/Workspace.tsx", "app/studio/WeekWorkspace.tsx"]) {
+      const src = readFileSync(file, "utf8");
+      const texts = [...src.matchAll(/(?:description|label|prompt): (?:"([^"]*)"|`([^`]*)`)/g)].map((m) => m[1] ?? m[2]);
+      const instructions = src.slice(src.indexOf("instructions: () =>"), src.indexOf('].join("\\n")') + 1);
+      texts.push(instructions);
+      expect(texts.length).toBeGreaterThan(3);
+      for (const t of texts) expect(t, `${file}: ${t}`).not.toMatch(/;/);
+    }
+  });
+
+  it("the order table marks an item left for next week, then paid with its PayPal order id", async () => {
     const { slipRows } = await import("./slip");
     const a = line("check:a", "Peptide Serum", 3200, "buy");
     const b = line("staple:c:1", "Cleanser", 1697, "due");
     const before = slipRows({ slip: { lines: [a], leftOff: [{ ...b, leftOff: "for-later", note: "" }] }, sent: [] } as never);
-    expect(before.map((r) => [r.id, r.status])).toEqual([["staple:c:1", "Left for later"], ["check:a", "In this order"]]);
+    expect(before.map((r) => [r.id, r.status])).toEqual([["staple:c:1", "Left for next week"], ["check:a", "In this order"]]);
     const after = slipRows({ slip: { lines: [], leftOff: [{ ...b, leftOff: "for-later", note: "" }] }, sent: [{ ...a, status: "paid", orderId: "9AB12345CD678901E" }] } as never);
     const d = diffRows(before, after);
     expect(d.update).toEqual([expect.objectContaining({ id: "check:a", status: "Paid", orderId: "9AB12345CD678901E" })]);

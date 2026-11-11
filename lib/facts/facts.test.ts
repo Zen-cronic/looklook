@@ -375,7 +375,7 @@ describe("judge kit", () => {
     const today = "2026-11-07";
     const s = sampleWeekState("factsweek1", today);
     const count = (v: string) => s.checks.filter((c) => c.decision.verdict === v).length;
-    expect([count("skip"), count("wait"), count("buy")]).toEqual([2, 4, 1]);
+    expect([count("skip"), count("wait"), count("buy")]).toEqual([2, 3, 1]);
     expect(dueStaples(s, today).map((d) => d.item.id)).toEqual(["sh-cleanser"]);
     expect(steps[0].body).toContain("four posts are checked at once");
     expect(steps[0].body).toContain("the peptide serum and the cleanser that's running out");

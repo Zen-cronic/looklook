@@ -23,7 +23,7 @@ const adapter = claudeAdapter("/api/llm", (t) => onTurn(t));
 
 const usd = new Intl.NumberFormat("en-US", { style: "currency", currency: "USD" });
 
-/** Requests the assistant box offers; each goes to the slip agent as typed. */
+/** Requests the assistant box offers; each goes to the order assistant as typed. */
 const STARTERS = ["Leave the cleanser for next week", "Put everything back in the order"];
 
 function themeFromTokens() {
@@ -71,7 +71,7 @@ function slipSource(rows: Row[]) {
   };
 }
 
-function initialState(narrow: boolean): AgReportState {
+function initialState(): AgReportState {
   return {
     pages: [
       {
@@ -79,15 +79,8 @@ function initialState(narrow: boolean): AgReportState {
         name: "This week",
         widgets: {
           slip: { type: "weekSlip", dataMapping: {} },
-          lines: {
-            type: "grid",
-            format: { title: { enabled: true, text: "Every item, and what happened to it" } },
-            dataMapping: { cols: [{ id: "slip.product" }, { id: "slip.amount" }, { id: "slip.status" }, { id: "slip.orderId" }] },
-          },
         },
-        widgetLayout: narrow
-          ? { slip: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 22 }, lines: { xTrack: 0, yTrack: 22, xSpan: 24, ySpan: 14 } }
-          : { slip: { xTrack: 0, yTrack: 0, xSpan: 9, ySpan: 24 }, lines: { xTrack: 9, yTrack: 0, xSpan: 15, ySpan: 24 } },
+        widgetLayout: { slip: { xTrack: 0, yTrack: 0, xSpan: 24, ySpan: 18 } },
       },
     ],
     selectedPageId: PAGE_ID,
@@ -105,12 +98,13 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
   const [view, setViewState] = useState(initial);
   const [paying, setPaying] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
+  const [was, setWas] = useState<number | undefined>(undefined);
   const [ask, setAsk] = useState<AskState>({ kind: "idle" });
   const [text, setText] = useState("");
   const [theme] = useState(themeFromTokens);
   const [state0] = useState(() => {
     setSlipState({ view: initial, paying: false, message: null });
-    return initialState(narrow);
+    return initialState();
   });
   const router = useRouter();
 
@@ -134,7 +128,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
       const data = (await res.json().catch(() => ({}))) as WeekView & { error?: string };
       if (!res.ok) return { ok: false, text: data.error ?? "That didn't change this week's order." };
       await show(data);
-      const done = action === "leave" ? `Took ${title} off this week's order.` : `Put ${title} back in this week's order.`;
+      const done = action === "leave" ? `Moved ${title} to Left for next week.` : `Put ${title} back in this week's order.`;
       changesRef.current.push(done);
       return { ok: true, text: `${done} It now has ${data.slip.lines.length} ${data.slip.lines.length === 1 ? "item" : "items"}.` };
     },
@@ -163,7 +157,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
     setPaying(false);
   }, [runId, show, router]);
 
-  useEffect(() => setSlipState({ view, paying, message }), [view, paying, message]);
+  useEffect(() => setSlipState({ view, paying, message, was }), [view, paying, message, was]);
   const yesRef = useRef(yes);
   useEffect(() => {
     yesRef.current = yes;
@@ -201,12 +195,12 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
             const r = await change(String(args?.key ?? ""), action);
             return ctx.success(r.text);
           };
-          const leave = api.defineAiTool({ name: "leave_for_later", description: "Take one item off this week's order. It is not paid; it stays listed as left for later.", params: keyParam, execute: run("leave") } as never);
+          const leave = api.defineAiTool({ name: "leave_for_later", description: "Move one item from this week's order to Left for next week. Nothing is paid, and the item stays listed there.", params: keyParam, execute: run("leave") } as never);
           const back = api.defineAiTool({ name: "put_back", description: "Put one item that was left for later back in this week's order.", params: keyParam, execute: run("back") } as never);
           const slipAgent = directLlmRunner({
             id: AGENT_ID,
             name: APP_NAME,
-            description: `${APP_NAME}'s order assistant: takes items off this week's order or puts them back. It cannot pay.`,
+            description: `${APP_NAME}'s order assistant. It moves items out of this week's order or puts them back, and it cannot pay.`,
             adapter,
             maxTurns: 6,
             instructions: () => slipAgentInstructions(viewRef.current),
@@ -226,6 +220,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
     if (!harness || running.current || !request.trim()) return;
     running.current = true;
     changesRef.current = [];
+    const before = viewRef.current.slip.totalCents;
     let steps = 0;
     setAsk({ kind: "running", request, steps });
     onTurn = () => {
@@ -251,10 +246,11 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
       const outcome = await finished;
       if (outcome === "timeout") session.cancel();
       const changes = [...changesRef.current];
+      setWas(changes.length ? before : undefined);
       setAsk({ kind: "done", request, changes, note: outcome === "idle" ? undefined : "The assistant didn't finish." });
     } catch {
       session?.cancel();
-      setAsk({ kind: "done", request, changes: [...changesRef.current], note: "The assistant isn't available right now. This week's order is as shown." });
+      setAsk({ kind: "done", request, changes: [...changesRef.current], note: "The assistant isn't available right now. The order is unchanged." });
     } finally {
       onTurn = () => undefined;
       running.current = false;
@@ -264,11 +260,11 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
   const busy = ask.kind === "running";
   return (
     <AgStudioProvider licenseKey={LICENSE} modules={[AgStudioAiModule]}>
-      <div className={`workspace${narrow ? " narrow" : ""}`}>
+      <div className={`workspace week-workspace${narrow ? " narrow" : ""}`}>
         <div className="workspace-bar">
-          <div>
-            <h1>This week</h1>
-            <p className="small muted">This week&apos;s order in AG Studio. Ask {APP_NAME}&apos;s assistant to take an item off or put it back. Only your yes pays.</p>
+          <div className="workspace-title">
+            <h1>This week&apos;s order</h1>
+            <p className="small muted">Built with AG Studio</p>
           </div>
           <div className="workspace-actions">
             <Link className="btn outline" href={`/week?run=${runId}`}>
@@ -276,47 +272,8 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
             </Link>
           </div>
         </div>
-        <form
-          className="slip-ask"
-          onSubmit={(e) => {
-            e.preventDefault();
-            void askAgent(text);
-          }}
-        >
-          <label htmlFor="slip-ask-input" className="small">
-            Ask about this week&apos;s order
-          </label>
-          <div className="slip-ask-row">
-            <input id="slip-ask-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Leave the cleanser for next week" disabled={busy} data-testid="slip-ask-input" />
-            <button className="btn" type="submit" disabled={busy || !text.trim()} data-testid="slip-ask">
-              {busy ? "Asking…" : "Ask"}
-            </button>
-          </div>
-          <div className="slip-starters">
-            {STARTERS.map((s) => (
-              <button key={s} type="button" className="btn outline small" disabled={busy} onClick={() => (setText(s), void askAgent(s))}>
-                {s}
-              </button>
-            ))}
-          </div>
-        </form>
-        {ask.kind !== "idle" && (
-          <div className={`workspace-run ${ask.kind}`} role="status" aria-live="polite" data-testid="slip-ask-status">
-            {ask.kind === "running" ? (
-              <>
-                <span className="spinner" aria-hidden />
-                <span>
-                  {APP_NAME}&apos;s assistant is on it: &ldquo;{ask.request}&rdquo;, {ask.steps} {ask.steps === 1 ? "step" : "steps"}.
-                </span>
-              </>
-            ) : (
-              <span>
-                <strong>{ask.changes.length ? ask.changes.join(" ") : "This week's order didn't change."}</strong> {ask.note ?? ""} Nothing was paid: only your yes pays.
-              </span>
-            )}
-          </div>
-        )}
-        <div className="workspace-canvas" data-testid="studio-week" style={{ height: narrow ? "760px" : "520px" }}>
+        <div className="week-grid">
+        <div className="workspace-canvas" data-testid="studio-week" style={{ height: "360px" }}>
           <AgStudio
             style={{ height: "100%", width: "100%" }}
             data={data as never}
@@ -334,6 +291,44 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
               ai({ api: e.api });
             }}
           />
+        </div>
+        <form
+          className="slip-ask"
+          onSubmit={(e) => {
+            e.preventDefault();
+            void askAgent(text);
+          }}
+        >
+          <label htmlFor="slip-ask-input">Change this order</label>
+          <div className="slip-ask-row">
+            <input id="slip-ask-input" value={text} onChange={(e) => setText(e.target.value)} placeholder="Leave the cleanser for next week" disabled={busy} data-testid="slip-ask-input" />
+            <button className="btn" type="submit" disabled={busy || !text.trim()} data-testid="slip-ask">
+              {busy ? "Asking…" : "Ask"}
+            </button>
+          </div>
+          <div className="slip-starters">
+            {STARTERS.map((s) => (
+              <button key={s} type="button" className="btn outline small" disabled={busy} onClick={() => (setText(s), void askAgent(s))}>
+                {s}
+              </button>
+            ))}
+          </div>
+          {ask.kind !== "idle" && (
+            <p className={`slip-ask-status ${ask.kind}`} role="status" aria-live="polite" data-testid="slip-ask-status">
+              {ask.kind === "running" ? (
+                <>
+                  <span className="spinner" aria-hidden />
+                  <span>Working on it</span>
+                </>
+              ) : (
+                <span>
+                  <strong>{ask.changes.length ? ask.changes.join(" ") : "The order didn't change."}</strong> {ask.note ?? ""} Nothing was paid.
+                </span>
+              )}
+            </p>
+          )}
+          <p className="slip-ask-limit">The assistant can change this order. Only you can pay.</p>
+        </form>
         </div>
       </div>
     </AgStudioProvider>
