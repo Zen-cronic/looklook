@@ -56,7 +56,18 @@ export function neutralDeep<T>(value: T, opts: ViewOptions = {}, key = "", paren
  */
 export function neutralReason(raw: CheckRecord, view: CheckRecord): string {
   const text = neutralText(raw.reason.text);
-  return namesABrand(text) ? templateReason(view.decision, view.facts) : text;
+  return namesABrand(text) || namesOwnProduct(raw, text) ? templateReason(view.decision, view.facts) : text;
+}
+
+/**
+ * Does the text name this check's own matched or candidate products (brand or title)? Catalogue
+ * brands outside the bundled lists (an upload's "which one is it?" picks) are caught here.
+ */
+function namesOwnProduct(raw: CheckRecord, text: string): boolean {
+  const cards = [raw.product, ...raw.candidates.map((c) => c.product)].filter((p): p is NonNullable<typeof p> => Boolean(p));
+  const names = [raw.facts.brand, raw.fields.brand, ...cards.flatMap((p) => [p.brand, p.title])];
+  const lower = text.toLowerCase();
+  return names.some((n) => typeof n === "string" && n.trim().length > 2 && lower.includes(n.trim().toLowerCase()));
 }
 
 /** The session as filming mode shows it. */

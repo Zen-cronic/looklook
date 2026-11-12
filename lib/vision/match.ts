@@ -146,10 +146,10 @@ export function matchWithImage(fields: ScreenshotFields, textMatch: MatchResult,
 
 /**
  * The evidence line on a check: only for a screenshot the shopper uploaded and
- * matched (not while the shopper is still asked to pick), never while filming.
+ * matched (not while the shopper is still asked to pick). Filming mode shows it too: it names no brand.
  */
 export function imageEvidenceLine(byImage: ImageEvidence | undefined, opts: { uploaded: boolean; film: boolean; asking?: boolean }): string | null {
-  if (!opts.uploaded || opts.film || opts.asking) return null;
+  if (!opts.uploaded || opts.asking) return null;
   if (byImage === "agrees") return "Channel3 image search found the same product.";
   if (byImage === "found") return "Channel3 image search found this product from the picture.";
   return null;

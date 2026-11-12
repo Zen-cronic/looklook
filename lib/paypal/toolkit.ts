@@ -1,6 +1,7 @@
 import { HttpError } from "../app/http";
 import { findRun, lineStatus } from "../app/week";
 import type { SessionState } from "../app/types";
+import { neutralDeep } from "../filming/view";
 import { credentialsFromEnv, type PayPalCredentials } from "./config";
 
 /**
@@ -142,11 +143,14 @@ export function describeRecord(title: string, r: PaymentRecord): string {
   return `PayPal's record for ${title}: order ${r.orderId} is ${r.status}, ${paid}.${refunds}`;
 }
 
-/** The PayPal order for a paid item in this session's week. Another session's week or item, or an unpaid one, is a 404 and nothing is sent to PayPal. */
-export function paidOrderFor(state: SessionState, runId: string, key: string): { orderId: string; title: string } {
+/**
+ * The PayPal order for a paid item in this session's week. Another session's week or item, or an unpaid one, is a 404 and nothing is sent to PayPal.
+ * With `film`, the title is the filming-mode name, so the sentence the Studio assistant reads names no brand.
+ */
+export function paidOrderFor(state: SessionState, runId: string, key: string, opts: { film?: boolean } = {}): { orderId: string; title: string } {
   const run = findRun(state, runId);
   const line = run.sent.find((l) => l.approvalKey === key);
   const status = line ? lineStatus(state, run, line) : undefined;
   if (!line || status?.status !== "paid" || !status.orderId) throw new HttpError(404, "That item isn't paid in this week's order.");
-  return { orderId: status.orderId, title: line.title };
+  return { orderId: status.orderId, title: opts.film ? neutralDeep(line).title : line.title };
 }
