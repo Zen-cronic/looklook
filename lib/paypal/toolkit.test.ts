@@ -95,6 +95,21 @@ describe("PayPal Agent Toolkit, read only", () => {
     await expect(lookUpPayment(ORDER_ID, tools)).rejects.toThrow(/does not exist/);
   });
 
+  it("in filming mode names the paid item generically, so the assistant's answer names no brand", async () => {
+    const { describeRecord, lookUpPayment, paidOrderFor } = await import("./toolkit");
+    const { namesABrand } = await import("../filming/neutral");
+    const line = { source: { kind: "staple", shelfItemId: "sh-serum" }, approvalKey: "k1", amountCents: 3200, version: "v1", why: "due", title: "The Ordinary Multi-Peptide + HA Serum", brand: "The Ordinary", category: "skincare", productId: "p1" };
+    const state = { weeks: [{ id: "w1", sent: [line], outcomes: {} }], receipts: [{ id: "r1", approvalKey: "k1", status: "paid", orderId: ORDER_ID, captureId: "3C679366HH908993F" }] } as never;
+    expect(paidOrderFor(state, "w1", "k1")).toEqual({ orderId: ORDER_ID, title: line.title });
+    const film = paidOrderFor(state, "w1", "k1", { film: true });
+    expect(film.orderId).toBe(ORDER_ID);
+    expect(film.title).not.toMatch(/Ordinary/);
+    expect(namesABrand(film.title)).toBeNull();
+    const text = describeRecord(film.title, await lookUpPayment(ORDER_ID, fakeTools().tools));
+    expect(namesABrand(text)).toBeNull();
+    expect(text).toContain(ORDER_ID);
+  });
+
   it("is off when PAYPAL_AGENT_TOOLKIT=0", async () => {
     const { lookupsEnabled } = await import("./toolkit");
     expect(lookupsEnabled({} as unknown as NodeJS.ProcessEnv)).toBe(true);

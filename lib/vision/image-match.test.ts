@@ -240,11 +240,12 @@ describe("image search in the app's check pipeline", () => {
 });
 
 describe("imageEvidenceLine", () => {
-  it("shows only for an uploaded screenshot and never while filming", () => {
+  it("shows only for an uploaded screenshot, while filming too", () => {
     expect(imageEvidenceLine("agrees", { uploaded: true, film: false })).toBe("Channel3 image search found the same product.");
     expect(imageEvidenceLine("found", { uploaded: true, film: false })).toMatch(/Channel3 image search found this product/);
     expect(imageEvidenceLine("found", { uploaded: true, film: false, asking: true })).toBeNull();
-    expect(imageEvidenceLine("agrees", { uploaded: true, film: true })).toBeNull();
+    expect(imageEvidenceLine("agrees", { uploaded: true, film: true })).toBe("Channel3 image search found the same product.");
+    expect(imageEvidenceLine("agrees", { uploaded: false, film: true })).toBeNull();
     expect(imageEvidenceLine("agrees", { uploaded: false, film: false })).toBeNull();
     expect(imageEvidenceLine("none", { uploaded: true, film: false })).toBeNull();
     expect(imageEvidenceLine(undefined, { uploaded: true, film: false })).toBeNull();

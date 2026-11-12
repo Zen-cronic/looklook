@@ -26,13 +26,13 @@ export function submitOutcome(result: { state?: string; data?: { orderId?: strin
 }
 
 /**
- * Use the v6 checkout for this visit? Only when asked for with `?sdk=v6`, the
- * kill switch `PAYPAL_SDK_V6=0` is not set, and filming mode is off (the film
- * and its card-brand mask are made on the v5 checkout).
+ * Use the v6 checkout for this visit? Only when asked for with `?sdk=v6` and the
+ * kill switch `PAYPAL_SDK_V6=0` is not set. Filming mode stays on v5 unless the
+ * visit asks for v6 the same explicit way.
  */
 export function wantsSdkV6(opts: { sdk?: string | string[]; env?: string; film?: boolean }): boolean {
   const sdk = Array.isArray(opts.sdk) ? opts.sdk[0] : opts.sdk;
-  return sdk === "v6" && opts.env !== "0" && !opts.film;
+  return sdk === "v6" && opts.env !== "0";
 }
 
 /**

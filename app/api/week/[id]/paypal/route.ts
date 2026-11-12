@@ -1,4 +1,4 @@
-import { displayJson } from "@/lib/filming/server";
+import { displayJson, filmOn } from "@/lib/filming/server";
 import { handle, HttpError, sessionIdOrThrow } from "@/lib/app/http";
 import { loadSession } from "@/lib/app/store";
 import { describeRecord, lookUpPayment, lookupsEnabled, LookupError, paidOrderFor, readOnlyTools } from "@/lib/paypal/toolkit";
@@ -20,7 +20,7 @@ export async function GET(request: Request, ctx: RouteContext<"/api/week/[id]/pa
     const sid = await sessionIdOrThrow();
     const { id } = await ctx.params;
     const key = new URL(request.url).searchParams.get("key") ?? "";
-    const item = paidOrderFor(loadSession(sid), id, key);
+    const item = paidOrderFor(loadSession(sid), id, key, { film: await filmOn() });
     if (!perSession.take(sid) || !allSessions.take()) throw new HttpError(429, "Too many PayPal lookups just now. Try again in a few minutes.");
     try {
       const record = await lookUpPayment(item.orderId, await readOnlyTools());

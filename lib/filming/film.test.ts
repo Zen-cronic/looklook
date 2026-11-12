@@ -188,6 +188,16 @@ describe("filming mode names", () => {
     expect(kept(view)).toEqual(kept(raw));
   });
 
+  it("never shows a reason naming the check's own catalogue picks, even a brand outside the bundled lists", () => {
+    const raw = filmedWeek();
+    const c = raw.checks[0];
+    const pick = { ...(c.product ?? c.candidates[0]?.product), id: "p-x", brand: "Banana Boat", title: "Sport Ultra Sunscreen Lotion" };
+    raw.checks[0] = { ...c, candidates: [{ product: pick, confidence: 0.6 }, ...c.candidates], reason: { text: "You can't be sure this is the Banana Boat Sport Ultra Sunscreen Lotion yet, so confirm the exact product.", source: "model" } };
+    const text = filmState(raw).checks[0].reason.text;
+    expect(text).not.toMatch(/Banana Boat|Sport Ultra/);
+    expect(text.length).toBeGreaterThan(0);
+  });
+
   it("keeps a reason's structure, and the commission and sandbox wording, while naming things generically", () => {
     expect(neutralText("You already own La Roche-Posay Anthelios Melt-in Milk Sunscreen SPF 60, which does the same job, and CVS Pharmacy takes it back opened with a receipt.")).toBe(
       "You already own Face Sunscreen Milk SPF 60, which does the same job, and Pharmacy takes it back opened with a receipt.",

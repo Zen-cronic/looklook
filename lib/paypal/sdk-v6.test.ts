@@ -36,8 +36,11 @@ describe("checkout SDK selection", () => {
     expect(wantsSdkV6({ sdk: "v6", env: "0" })).toBe(false);
   });
 
-  it("filming mode stays on v5 (the film's card-brand mask is made for it)", () => {
-    expect(wantsSdkV6({ sdk: "v6", film: true })).toBe(false);
+  it("filming mode uses v5 unless ?sdk=v6 asks for v6", () => {
+    expect(wantsSdkV6({ film: true })).toBe(false);
+    expect(wantsSdkV6({ sdk: "v5", film: true })).toBe(false);
+    expect(wantsSdkV6({ sdk: "v6", film: true })).toBe(true);
+    expect(wantsSdkV6({ sdk: "v6", film: true, env: "0" })).toBe(false);
   });
 
   it("the checkout page picks the panel through wantsSdkV6 and keeps v5 as the other branch", () => {

@@ -29,7 +29,7 @@ export default function CheckoutPage(props: PageProps<"/checkout/[id]">) {
 async function Checkout({ params, searchParams }: { params: PageProps<"/checkout/[id]">["params"]; searchParams: PageProps<"/checkout/[id]">["searchParams"] }) {
   const { id } = await params;
   const { state, raw, today, film } = await displaySession();
-  // PayPal JS SDK v6 only at ?sdk=v6 (PAYPAL_SDK_V6=0 turns it off; never in filming mode). v5 is the default.
+  // PayPal JS SDK v6 only at ?sdk=v6 (PAYPAL_SDK_V6=0 turns it off; filming mode too when asked). v5 is the default.
   const v6 = wantsSdkV6({ sdk: (await searchParams).sdk, env: process.env.PAYPAL_SDK_V6, film });
   const intent = state.intents.find((i) => i.id === id);
   if (!intent) notFound();
