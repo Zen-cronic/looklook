@@ -86,7 +86,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             </nav>
           </div>
           <div className="footer-base">
-            <p>Built with PayPal, Claude, Channel3, AG Studio and Render</p>
+            <p>Built with PayPal, Channel3, AG Studio and Render</p>
             <p>&copy; 2026 {APP_NAME}</p>
           </div>
         </footer>
