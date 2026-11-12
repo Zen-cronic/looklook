@@ -2,7 +2,7 @@
 
 *look twice before you buy*
 
-Your shopping week, checked and paid with one PayPal yes.
+Stop buying what you already own. Pay for the rest with one PayPal yes.
 
 [![skip on held-out products: 28 of 30](https://img.shields.io/badge/skip%20on%20held--out%20products-28%20of%2030-1f6f50)](lib/facts/facts.test.ts)
 [![held-out baselines: same category 19, skip everything 13](https://img.shields.io/badge/held--out%20baselines-same%20category%2019%2C%20skip%20everything%2013-5b6770)](lib/facts/facts.test.ts)

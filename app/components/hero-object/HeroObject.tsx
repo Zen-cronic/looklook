@@ -22,7 +22,7 @@ export function HeroObject({ film = false }: { film?: boolean }) {
       <article className={`verdict ${x.verdict} ${s.card}`} aria-label="An example verdict">
         <VerdictSummary
           verdict={x.verdict}
-          reason="Its twin is on your shelf."
+          reason="You already own one that does the same job."
           headNote={
             <p className={s.match}>
               {x.shelf.name}, match {x.shelf.matchPercent}%
