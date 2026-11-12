@@ -128,15 +128,9 @@ function SentRow({ l }: { l: SentLineView }) {
         <div className="brand-line">{l.brand}</div>
         <div className="name-line">{l.title.startsWith(l.brand) ? l.title.slice(l.brand.length).trim() || l.title : l.title}</div>
         <p className="small muted">{note}</p>
-        {l.status === "paid" && (
-          <p className={`small ${s.ids}`}>
-            PayPal order <span className="mono">{l.orderId}</span>
-            {l.receiptId && (
-              <>
-                {" "}
-                <Link href={`/receipts/${l.receiptId}`}>Receipt</Link>
-              </>
-            )}
+        {l.status === "paid" && l.receiptId && (
+          <p className="small">
+            <Link href={`/receipts/${l.receiptId}`}>View receipt</Link>
           </p>
         )}
         {l.status === "declined" && (

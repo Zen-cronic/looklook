@@ -52,7 +52,9 @@ async function Methods() {
                 </Eyebrow>
               </div>
               <p className="small muted">
-                Saved {formatTime(m.consentedAt)} ET.{m.status === "removed" ? ` Removed ${formatTime(m.removedAt!)} ET; no reorder can use it. ${m.revokeConfirmed ? "PayPal confirmed it no longer has it." : "Removal pending at PayPal: the delete isn't confirmed yet."}` : ""}
+                {m.status === "removed"
+                  ? `Removed ${formatTime(m.removedAt!)} ET. ${m.revokeConfirmed ? "PayPal deleted it." : "Waiting for PayPal to confirm the delete."}`
+                  : `Saved ${formatTime(m.consentedAt)} ET.`}
               </p>
               {m.status !== "removed" && (
                 <dl className="method-cap">
@@ -63,16 +65,20 @@ async function Methods() {
               {m !== primary && (
                 <details className="why" style={{ margin: 0 }}>
                   <summary>What you agreed to</summary>
-                  <div className="stack-sm" style={{ paddingBottom: "0.85rem" }}>
-                    <p>{m.consentText}</p>
-                    <p className="small muted mono">
-                      PayPal token: {m.vaultId}. First order: {m.firstOrderId}.
-                    </p>
-                  </div>
+                  <p style={{ paddingBottom: "0.85rem" }}>{m.consentText}</p>
                 </details>
               )}
               {m.status === "active" && <MethodControls id={m.id} label={m.label} capDollars={m.capCents / 100} />}
               {m.status === "removed" && !m.revokeConfirmed && <RetryRemoval id={m.id} />}
+              <details className="ids">
+                <summary>PayPal details</summary>
+                <dl className="receipt-lines">
+                  <dt>Payment token</dt>
+                  <dd>{m.vaultId}</dd>
+                  <dt>First order</dt>
+                  <dd>{m.firstOrderId}</dd>
+                </dl>
+              </details>
             </article>
           </div>
         ))}
@@ -81,9 +87,6 @@ async function Methods() {
         <section className="context-frame" aria-label="What you agreed to">
           <Eyebrow icon="yes">What you agreed to</Eyebrow>
           <p>{primary.consentText}</p>
-          <p className="small muted mono">
-            PayPal token: {primary.vaultId}. First order: {primary.firstOrderId}.
-          </p>
         </section>
       )}
     </div>

@@ -302,8 +302,8 @@ export default function Workspace({ initial, narrow }: Props) {
         const r = receipts.find((x) => x.id === data.receiptId);
         const status = data.captureStatus === "COMPLETED" ? "Paid" : `PayPal says ${String(data.captureStatus ?? "pending").toLowerCase()}`;
         const text = r
-          ? `${status} ${usd.format(r.amountCents / 100)} for ${r.title} with ${r.methodLabel}. PayPal order ${r.orderId}${r.captureId ? `, capture ${r.captureId}` : ""}.${data.repeat ? " Same order as your first yes, charged once." : ""} ${r.shelfNote}`.trim()
-          : `${status}. PayPal order ${data.orderId}.`;
+          ? `${status} ${usd.format(r.amountCents / 100)} for ${r.title} with ${r.methodLabel}.${data.repeat ? " Same order as your first yes, charged once." : ""} ${r.shelfNote}`.trim()
+          : `${status}.`;
         const result: ApproveResult = { kind: "paid", text, receiptHref: `/receipts/${data.receiptId}` };
         setNotice(result);
         return result;

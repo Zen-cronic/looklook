@@ -92,11 +92,6 @@
   text-decoration: none;
 }
 
-.ids {
-  font-family: var(--font-mono);
-  font-stretch: 87.5%;
-}
-
 .state {
   font-family: var(--font-mono);
   font-stretch: 87.5%;

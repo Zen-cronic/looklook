@@ -47,7 +47,7 @@ function NoticeItem({ n }: { n: Notice }) {
       </p>
       {n.ids && n.ids.length > 0 && (
         <details className="ids">
-          <summary>Details</summary>
+          <summary>PayPal details</summary>
           <dl className="receipt-lines">
             {n.ids.map((x) => (
               <span key={x.label} style={{ display: "contents" }}>

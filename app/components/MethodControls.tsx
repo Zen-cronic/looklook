@@ -21,7 +21,7 @@ export function MethodControls({ id, label, capDollars }: { id: string; label: s
         >
           <div className="cap-input">
             <span>$</span>
-            <input type="number" min="1" max="1000" step="1" value={cap} onChange={(e) => setCap(e.target.value)} aria-label="Per-rebuy cap in dollars" />
+            <input type="number" min="1" max="1000" step="1" value={cap} onChange={(e) => setCap(e.target.value)} aria-label="Cap per reorder in dollars" />
           </div>
           <button className="btn small" disabled={!!busy}>
             Save cap

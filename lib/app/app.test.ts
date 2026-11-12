@@ -606,7 +606,7 @@ describe("offers at other stores", () => {
 
 describe("product name", () => {
   it("names the product in the saved-method agreement, and nowhere uses an earlier name", () => {
-    expect(consentText(2500)).toContain(`so ${APP_NAME} can reorder`);
+    expect(consentText(2500)).toContain(`${APP_NAME} refuses any reorder above $25.00.`);
     const earlier = new RegExp(["sec", "ond"].join("") + "[\\s_-]?look", "i");
     const files = execSync("git ls-files", { cwd: process.cwd() }).toString().trim().split("\n").filter((f) => /\.(ts|tsx|md|json|css|yaml)$/.test(f) && !f.endsWith("package-lock.json"));
     const hits = files.filter((f) => earlier.test(readFileSync(f, "utf8")));
