@@ -348,7 +348,7 @@ describe("landing page", () => {
   });
 });
 
-describe("judge kit", () => {
+describe("start here path", () => {
   const held = heldOutResult();
   const steps = startHereSteps({ heldOutRight: held.skipCorrect, heldOutN: held.n, devN: DEV_SET_SIZE, rebuyLeadDays: REBUY_LEAD_DAYS });
 

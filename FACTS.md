@@ -103,7 +103,7 @@ Every number and capability that the README, the landing page, `/proof`, `/judge
 | F69 | "In the Studio week, the assistant can take an item off this week's order or put it back, but it has no tool that pays: only your yes on the order you see pays." | `README.md` | `lib/app/week.test.ts` › "leaves an item for later: the order's hash changes and the old hash charges nothing"<br>`lib/app/week.test.ts` › "puts an item back and the order returns to the hash it had"<br>`lib/app/week.test.ts` › "only names items the order lists: leaving or putting back anything else is refused and changes nothing"<br>`lib/studio/studio.test.ts` › "gives the assistant order tools and no tool that pays"<br>`lib/studio/studio.test.ts` › "the order table marks an item left for next week, then paid with its PayPal order id" |
 | F77 | "Through PayPal's Agent Toolkit, the Studio week assistant can read what PayPal recorded for an item it paid (get_order, get_refund). It has no tool that creates, pays or refunds." | `README.md` | `lib/paypal/toolkit.test.ts` › "builds the real toolkit with only get_order and get_refund, for the sandbox"<br>`lib/paypal/toolkit.test.ts` › "offers nothing that creates, pays, refunds or acts as the merchant, and refuses a wider tool set"<br>`lib/paypal/toolkit.test.ts` › "answers 404 for another session's week or item, or an unpaid key, without calling PayPal" |
 
-## Judge kit
+## Start here
 
 | # | Claim (exact wording) | Where | Checked by |
 |---|---|---|---|
