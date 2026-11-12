@@ -2,6 +2,7 @@
 
 import { useRouter } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { sdkFits } from "@/lib/paypal/sdk-v6";
 
 /* Minimal shape of the PayPal JS SDK used here. */
 interface PayPalActions {
@@ -30,10 +31,12 @@ declare global {
 }
 
 function loadSdk(clientId: string): Promise<PayPalNamespace> {
-  if (window.paypal) return Promise.resolve(window.paypal);
+  // Reuse window.paypal only when it is v5 (the v6 checkout puts its own namespace there).
+  if (window.paypal && sdkFits(window.paypal, "v5")) return Promise.resolve(window.paypal);
   const src = `https://www.paypal.com/sdk/js?client-id=${encodeURIComponent(clientId)}&components=buttons,card-fields&currency=USD&intent=capture`;
   return new Promise((resolve, reject) => {
-    const existing = document.querySelector<HTMLScriptElement>(`script[data-sdk="paypal"]`);
+    // A v5 tag that already loaded but was overwritten by v6 is loaded again.
+    const existing = window.paypal ? null : document.querySelector<HTMLScriptElement>(`script[data-sdk="paypal"]`);
     const s = existing ?? document.createElement("script");
     s.addEventListener("load", () => (window.paypal ? resolve(window.paypal) : reject(new Error("PayPal didn't load"))));
     s.addEventListener("error", () => reject(new Error("PayPal didn't load")));
