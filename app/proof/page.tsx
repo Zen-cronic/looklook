@@ -12,11 +12,10 @@ import { APP_NAME } from "@/lib/brand";
 import { filmOn } from "@/lib/filming/server";
 import { neutralDeep } from "@/lib/filming/view";
 import l from "../landing.module.css";
+import s from "./proof.module.css";
 import { Eyebrow } from "../components/Eyebrow";
 
 export const metadata = { title: "How often skip is right" };
-
-const pct = (x: number) => `${(x * 100).toFixed(1)}%`;
 
 /** "Nov 6, 2026, 10:28 PM EST" from an ISO time with its offset. */
 function et(iso: string): string {
@@ -29,75 +28,41 @@ function Chip({ verdict }: { verdict: string }) {
   return <span className={`chip ${verdict}`}>{VERDICT_WORD[verdict as keyof typeof VERDICT_WORD] ?? verdict}</span>;
 }
 
-/** The rule that fired, in words; for an ask on a category the app didn't have yet, says so. */
-function ruleText(rule: string, onDefault: boolean, unsupported?: string): string {
-  if (unsupported) return `It asked: the app had no ${CATEGORY_WORDS[unsupported] ?? unsupported} category yet, so the product couldn't be matched (rule: ${RULE_TEXT[rule as RuleId]})`;
+/** The reason the app gave, in words. For a category the app didn't have yet, says so. */
+function reasonText(rule: string, onDefault: boolean, unsupported?: string): string {
+  if (unsupported) return `It had no ${CATEGORY_WORDS[unsupported] ?? unsupported} category yet, so it couldn't match the product and asked`;
   return `${RULE_TEXT[rule as RuleId] ?? rule}${onDefault ? " (store policy unknown)" : ""}`;
 }
+
+/** Recorded notes use semicolons; on the page each clause becomes its own sentence. */
+const sentences = (text: string) => text.replace(/; (\S)/g, (_, c: string) => `. ${c.toUpperCase()}`);
+
+const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
+const short = (commit: string) => commit.slice(0, 7);
 
 export default function ProofPage() {
   const held = heldOutResult();
   return (
-    <main className="page wide stack-lg">
-      <div style={{ maxWidth: "48rem" }}>
+    <main className={`page wide ${s.page}`}>
+      <header className={s.hero}>
+        <Eyebrow icon="chart">Accuracy test</Eyebrow>
         <h1>How often is skip right?</h1>
-        <p className="lede" data-testid="headline">
+        <p className={s.lede} data-testid="headline">
           {heldOutHeadline(held)}
         </p>
-      </div>
+      </header>
       <Suspense fallback={<div className="skeleton" />}>
         <HeldOut />
       </Suspense>
       <Suspense fallback={<div className="skeleton" />}>
         <DevelopmentSet />
       </Suspense>
+      <Suspense fallback={<div className="skeleton" />}>
+        <HowWeTested />
+      </Suspense>
     </main>
   );
 }
-
-function HeldOutRows({ rows, showExpected }: { rows: HeldOutRow[]; showExpected?: boolean }) {
-  return (
-    <div className="table-wrap stacked">
-      <table>
-        <thead>
-          <tr>
-            <th>Product</th>
-            <th>Store</th>
-            {showExpected && <th>Expected</th>}
-            <th>App said</th>
-            <th>Expected answer&apos;s reason</th>
-            <th>Rule used</th>
-          </tr>
-        </thead>
-        <tbody>
-          {rows.map((r) => (
-            <tr key={r.id}>
-              <td data-label="Product">
-                <span className="mono small">{r.id}</span> {r.product}
-              </td>
-              <td data-label="Store">{r.store}</td>
-              {showExpected && (
-                <td data-label="Expected">
-                  <Chip verdict={r.expected} />
-                </td>
-              )}
-              <td data-label="App said">
-                <Chip verdict={r.got} />
-              </td>
-              <td data-label="Expected answer's reason">{r.why}</td>
-              <td data-label="Rule used" className="small">
-                {ruleText(r.rule, r.onDefault, r.unsupportedCategory)}
-                {r.owned && !r.unsupportedCategory ? `. Closest owned: ${r.owned} (${(r.score ?? 0).toFixed(2)})` : ""}
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-const plural = (n: number, one: string, many: string) => `${n} ${n === 1 ? one : many}`;
 
 /** One disclosure row: a one-line summary, the detail inside. */
 function Row({ summary, children, testId }: { summary: string; children: React.ReactNode; testId?: string }) {
@@ -109,35 +74,46 @@ function Row({ summary, children, testId }: { summary: string; children: React.R
   );
 }
 
+type Mark = "skip" | "keep" | "other" | "wrong";
+const MARKS: Mark[] = ["skip", "keep", "other", "wrong"];
+
+/** Each product as one square: a right skip, a right "don't skip", right on skip but wrong between buy, wait and ask, or a skip mistake. */
+function markOf(c: HeldOutRow): Mark {
+  const said = c.got === "skip";
+  if (said !== (c.expected === "skip")) return "wrong";
+  if (said) return "skip";
+  return c.got === c.expected ? "keep" : "other";
+}
+
 async function HeldOut() {
   // Filming mode lists the products and stores by generic names; the results are the same.
   const film = await filmOn();
   const r = film ? neutralDeep(heldOutResult()) : heldOutResult();
-  const o = r.order;
+  const plain = plainModelBaseline();
   const bars = [
     { label: APP_NAME, value: r.skipCorrect, mine: true },
-    { label: `The same model with no ${APP_NAME} rules (median of ${plainModelBaseline().runs.length} runs)`, value: plainModelBaseline().median },
-    { label: "Skipping anything in a category you own", value: baselineScore(r, "same-category") },
-    { label: "Saying skip to everything", value: baselineScore(r, "always-skip") },
+    { label: `Same AI model without ${APP_NAME}'s rules (middle of ${plain.runs.length} runs)`, value: plain.median },
+    { label: "Skip anything in a category you own", value: baselineScore(r, "same-category") },
+    { label: "Skip everything", value: baselineScore(r, "always-skip") },
   ];
-  const last = r.afterChanges.at(-1);
+  const squares = [...r.cases].sort((a, b) => MARKS.indexOf(markOf(a)) - MARKS.indexOf(markOf(b)));
+  const count = (m: Mark) => r.cases.filter((c) => markOf(c) === m).length;
+  const skipMisses = r.wrongSkips.length + r.missedSkips.length;
+  const evidenceShare = r.skipsRight ? (r.split.onEvidence / r.skipsRight) * 100 : 0;
   return (
     <>
-      <section className={l.proof} aria-labelledby="chart-title">
+      <section className={`${l.proof} ${s.result}`} aria-labelledby="chart-title">
         <div>
           <Eyebrow as="h2" icon="chart" id="chart-title" className={l.proofEyebrow}>
-            Right skips out of {r.n}
+            Products it had never seen
           </Eyebrow>
           <p className={l.proofFigure} aria-hidden="true">
             {r.skipCorrect}
             <span className={l.proofOf}>/{r.n}</span>
           </p>
-          <p className={l.proofText}>{`Right skips out of ${r.n} products the app had never seen. The expected answers were written down before the run.`}</p>
-          <p className="proof-plain">
-            When it said skip, it was right {r.skipsRight} of {r.skipsMade} times, and it caught {r.skipsRight} of the {r.skipsExpected} products that should be skipped.
-          </p>
+          <p className={l.proofText}>Right to skip or not, on {r.n} real products. We wrote down each right answer first.</p>
         </div>
-        <ul className={l.bars} aria-label={`Right skips out of ${r.n}`}>
+        <ul className={l.bars} aria-label={`Right out of ${r.n}`}>
           {bars.map((b) => (
             <li key={b.label} className={b.mine ? l.barMine : undefined}>
               <span className={l.barLabel}>{b.label}</span>
@@ -154,144 +130,173 @@ async function HeldOut() {
         </ul>
       </section>
 
-      <section className="card stack-sm">
-        <h2>What the {r.skipsRight} right skips rest on</h2>
-        <div className="split-bars">
-          <div className="split-row evidence">
-            <strong>{r.split.onEvidence}</strong>
-            <span>on evidence: you own the same or a near-identical item, or the store limits opened returns ({formatDollars(r.split.dollarsOnEvidence)}).</span>
-          </div>
-          <div className="split-row default">
-            <strong>{r.split.onDefault}</strong>
-            <span>on our default: a partial overlap at a store whose opened-return policy we couldn&apos;t find, which we count as not returnable ({formatDollars(r.split.dollarsOnDefault)}).</span>
-          </div>
+      <section className={s.section} aria-labelledby="misses-title">
+        <h2 id="misses-title" className={s.title}>
+          Where it went wrong
+        </h2>
+        <p className={s.note}>
+          When it said skip, it was right {r.skipsRight} of {r.skipsMade} times. It caught {r.skipsRight} of the {r.skipsExpected} products it should skip.
+        </p>
+        <ol className={s.grid} aria-hidden="true">
+          {squares.map((c) => (
+            <li key={c.id} className={s[markOf(c)]} />
+          ))}
+        </ol>
+        <ul className={s.legend}>
+          <li>
+            <i className={s.skip} aria-hidden="true" />
+            <span>
+              <b>{count("skip")}</b> right skips
+            </span>
+          </li>
+          <li>
+            <i className={s.keep} aria-hidden="true" />
+            <span>
+              <b>{count("keep")}</b> right not to skip
+            </span>
+          </li>
+          <li>
+            <i className={s.other} aria-hidden="true" />
+            <span>
+              <b>{count("other")}</b> right not to skip, but the wrong pick of {VERDICT_WORD.buy}, {VERDICT_WORD.wait} or {VERDICT_WORD.ask}
+            </span>
+          </li>
+          <li>
+            <i className={s.wrong} aria-hidden="true" />
+            <span>
+              <b>{r.wrongSkips.length}</b> {r.wrongSkips.length === 1 ? "wrong skip" : "wrong skips"} and <b>{r.missedSkips.length}</b> {r.missedSkips.length === 1 ? "missed skip" : "missed skips"}
+            </span>
+          </li>
+        </ul>
+
+        <h3 className={s.subhead}>The {plural(skipMisses, "skip mistake", "skip mistakes")}</h3>
+        <MissList rows={[...r.wrongSkips, ...r.missedSkips]} />
+
+        <div className="proof-rows">
+          {r.otherMisses.length > 0 && (
+            <Row summary={`The ${plural(r.otherMisses.length, "other wrong answer", "other wrong answers")}: right not to skip`}>
+              <MissList rows={r.otherMisses} />
+            </Row>
+          )}
+          <Row summary={`Every case: all ${r.n} products`}>
+            <CaseTable rows={r.cases} />
+          </Row>
         </div>
       </section>
 
-      <div className="proof-rows">
-        <Row summary={plural(r.wrongSkips.length, "wrong skip: it said skip, the expected answer was different", "wrong skips: it said skip, the expected answer was different")}>
-          <HeldOutRows rows={r.wrongSkips} showExpected />
-        </Row>
-        <Row summary={plural(r.missedSkips.length, "missed skip: the expected answer was skip, it said something else", "missed skips: the expected answer was skip, it said something else")}>
-          <HeldOutRows rows={r.missedSkips} showExpected />
-        </Row>
-        <Row summary={plural(r.otherMisses.length, "other miss: wrong answer, but not about skip", "other misses: wrong answer, but not about skip")}>
-          <HeldOutRows rows={r.otherMisses} showExpected />
-        </Row>
-        <Row summary={plural(r.catches.length, "right skip", "right skips")}>
-          <HeldOutRows rows={r.catches} />
-        </Row>
-        <Row summary="Order of work: app frozen, answers committed, then one scored run" testId="order-of-work">
-          <ol style={{ marginLeft: "1.1rem" }} className="stack-sm">
-            <li>App last changed: {et(o.engine.at)}.</li>
-            <li>Expected answers, shelf and prices committed: {et(o.expectations.at)}.</li>
-            <li>
-              The one scored run, at {et(o.scoredRun.ranAt)}: {r.skipCorrect} of {r.n}.
-            </li>
-          </ol>
-          <p className="mono small commit-line">
-            app {o.engine.commit.slice(0, 7)}, answers {o.expectations.commit.slice(0, 7)}, run {o.scoredRun.commit.slice(0, 7)}
-          </p>
-          <p className="small muted">
-            These numbers come from that run&apos;s saved results, not a re-run, so later changes can&apos;t move them. The app was not changed after seeing the result. {correctedCases(r.corrections)}
-          </p>
-        </Row>
-        {last && (
-          <Row summary={`Re-runs after later changes: ${last.skipCorrect} of ${last.n} (not a fresh test)`}>
-            {r.afterChanges.map((a) => (
-              <p key={a.commit} data-testid="after-changes">
-                <span className="mono small">{a.commit.slice(0, 7)}</span> ({et(a.at)}): {a.skipCorrect} of {a.n}. {a.what} Missed: {[...a.wrongSkips, ...a.missedSkips].join(", ") || "none"}.
-              </p>
-            ))}
-            <p className="small muted">
-              These products showed the gaps the changes fix, so the re-runs don&apos;t count as a fresh test. The headline stays {r.skipCorrect} of {r.n}.
-            </p>
-          </Row>
-        )}
-        <Corrections film={film} />
-        <Row summary="How the test was built">
-          <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
-            <li>
-              {r.n} real products not used while building the matching, a second made-up shopper with her own shelf and budgets, and expected answers written by hand before the app saw any of them (eval/holdout/README.md). Scored once. Full agreement on skip, wait, buy or ask: {pct(r.verdictAgreement)}.
-            </li>
-            <li>
-              Skip precision {pct(r.precision)}, recall {pct(r.recall)}. In testing terms these {r.n} are held-out products.
-            </li>
-            <li>The products, prices and store policies are real catalogue listings and published policies. The shoppers, shelves and budgets are made up. The shopper&apos;s &quot;today&quot; in both tests is Nov 7, 2026.</li>
-            <li>Results, case by case: eval/holdout/RESULTS.md (saved as eval/holdout/results.json) and eval/skip-set/RESULTS.md in the repository. Both sets as JSON at /api/eval/holdout.</li>
-          </ul>
-        </Row>
-      </div>
+      <section className={s.section} aria-labelledby="split-title">
+        <h2 id="split-title" className={s.title}>
+          Why the {r.skipsRight} right skips were right
+        </h2>
+        <div className={s.split} aria-hidden="true">
+          <span className={s.splitEvidence} style={{ flexBasis: `${evidenceShare}%` }} />
+          <span className={s.splitDefault} />
+        </div>
+        <dl className={s.splitRows}>
+          <div>
+            <dt>
+              <i className={s.splitEvidence} aria-hidden="true" />
+              {r.split.onEvidence}
+            </dt>
+            <dd>You already own one like it, or the store won&apos;t take it back opened. {formatDollars(r.split.dollarsOnEvidence)} not spent.</dd>
+          </div>
+          <div>
+            <dt>
+              <i className={s.splitDefault} aria-hidden="true" />
+              {r.split.onDefault}
+            </dt>
+            <dd>You own something close, and we couldn&apos;t find the store&apos;s rule for opened returns, so we count it as no returns. {formatDollars(r.split.dollarsOnDefault)} not spent.</dd>
+          </div>
+        </dl>
+      </section>
     </>
   );
 }
 
-/** Inputs found wrong after a run: what was wrong, the commits that fixed it (input first, then the expected answers), and the numbers before and after. */
-function Corrections({ film }: { film: boolean }) {
-  const held = film ? neutralDeep(heldOutResult()) : heldOutResult();
-  const dev = film ? neutralDeep(devCorrections()) : devCorrections();
-  if (!held.corrections.length && !dev.length) return null;
+/** Wrong answers, one row each: the product, the right answer against what it said, and why. */
+function MissList({ rows }: { rows: HeldOutRow[] }) {
   return (
-    <Row summary={`Corrections (${dev.length})`} testId="corrections">
-      {dev.map((c) => {
-        const h = held.corrections.find((x) => x.expectations.commit === c.expectations.commit);
-        const rerun = held.afterChanges.find((a) => a.commit === c.expectations.commit);
-        return (
-          <div key={c.expectations.commit} className="stack-sm">
-            <p>
-              <strong>{et(c.policy.at).split(",").slice(0, 2).join(",")}: store return policies.</strong> {c.what}
-            </p>
-            <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
-              <li>
-                Policy table fixed first: commit <span className="mono">{c.policy.commit.slice(0, 7)}</span>, {et(c.policy.at)}.
-              </li>
-              <li>
-                Expected answers corrected next, before any re-run: commit <span className="mono">{c.expectations.commit.slice(0, 7)}</span>, {et(c.expectations.at)}. Development set: {c.expectations.cases.join(", ")}
-                {h ? `. Never-seen set: ${h.expectations.cases.join(", ")}` : ""}. Each corrected case keeps the answer it replaced.
-              </li>
-              <li>
-                Development set: {c.before} before, {c.after} after.{c.afterNote ? ` ${c.afterNote}` : ""}
-              </li>
-              {h && (
-                <li>
-                  Never-seen set: the headline stays {held.skipCorrect} of {held.n}, read from the scored run in <span className="mono">{held.order.scoredRun.commit.slice(0, 7)}</span>. Effect on that run: {h.scoredRunEffect.charAt(0).toLowerCase() + h.scoredRunEffect.slice(1)}
-                  {rerun ? ` Re-run after the correction: ${rerun.skipCorrect} of ${rerun.n} (not a fresh test).` : ""}
-                </li>
-              )}
-            </ul>
+    <ul className={s.misses}>
+      {rows.map((m) => (
+        <li key={m.id} className={markOf(m) === "wrong" ? s.missSkip : undefined}>
+          <div className={s.missHead}>
+            <strong>{m.product}</strong>
+            <span className={s.store}>{m.store}</span>
           </div>
-        );
-      })}
-    </Row>
+          <div className={s.missChips}>
+            <span className={s.chipLabel}>Right answer</span>
+            <Chip verdict={m.expected} />
+            <span className={s.chipLabel}>It said</span>
+            <Chip verdict={m.got} />
+          </div>
+          <p className={s.missWhy}>{sentences(m.why)}</p>
+        </li>
+      ))}
+    </ul>
   );
 }
 
-function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
+function CaseTable({ rows }: { rows: HeldOutRow[] }) {
   return (
     <div className="table-wrap stacked">
       <table>
         <thead>
           <tr>
             <th>Product</th>
-            <th>Store</th>
-            {showGot && <th>App said</th>}
-            <th>Expected answer&apos;s reason</th>
-            <th>Rule used</th>
+            <th>Right answer</th>
+            <th>It said</th>
+            <th>Its reason</th>
           </tr>
         </thead>
         <tbody>
           {rows.map((r) => (
             <tr key={r.id}>
-              <td data-label="Product">{r.product}</td>
-              <td data-label="Store">{r.store}</td>
+              <td data-label="Product">
+                {r.product} <span className="small muted">{r.store}</span>
+              </td>
+              <td data-label="Right answer">
+                <Chip verdict={r.expected} />
+              </td>
+              <td data-label="It said">
+                <Chip verdict={r.got} />
+              </td>
+              <td data-label="Its reason" className="small">
+                {reasonText(r.rule, r.onDefault, r.unsupportedCategory)}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
+function DevRows({ rows, showGot, showWhy = true }: { rows: CaseRow[]; showGot?: boolean; showWhy?: boolean }) {
+  return (
+    <div className="table-wrap stacked">
+      <table>
+        <thead>
+          <tr>
+            <th>Product</th>
+            {showGot && <th>It said</th>}
+            {showWhy && <th>Why that&apos;s the right answer</th>}
+            <th>Its reason</th>
+          </tr>
+        </thead>
+        <tbody>
+          {rows.map((r) => (
+            <tr key={r.id}>
+              <td data-label="Product">
+                {r.product} <span className="small muted">{r.store}</span>
+              </td>
               {showGot && (
-                <td data-label="App said">
+                <td data-label="It said">
                   <Chip verdict={r.got} />
                 </td>
               )}
-              <td data-label="Expected answer's reason">{r.why}</td>
-              <td data-label="Rule used" className="small">
-                {ruleText(r.rule, r.onDefault)}
+              {showWhy && <td data-label="Why that's the right answer">{sentences(r.why)}</td>}
+              <td data-label="Its reason" className="small">
+                {reasonText(r.rule, r.onDefault)}
               </td>
             </tr>
           ))}
@@ -304,57 +309,179 @@ function Rows({ rows, showGot }: { rows: CaseRow[]; showGot?: boolean }) {
 async function DevelopmentSet() {
   await connection();
   const r = (await filmOn()) ? neutralDeep(runSkipEval()) : runSkipEval();
-  const p = r.provenance;
-  const runs = devSetRuns(p);
+  const bars = [
+    { label: APP_NAME, value: r.skipCorrect, mine: true },
+    { label: "Skip anything in a category you own", value: baselineScore(r, "same-category") },
+    { label: "Skip everything", value: baselineScore(r, "always-skip") },
+  ];
   return (
-    <>
-      <section className="card stack-sm" data-testid="development-set">
-        <div className="step-head">
-          <h2>The {r.n} products it was built on</h2>
-          <RerunEval n={r.n} />
+    <section className={s.section} data-testid="development-set" aria-labelledby="dev-title">
+      <div className={s.devHead}>
+        <div>
+          <h2 id="dev-title" className={s.title}>
+            The {r.n} products we built it on
+          </h2>
+          <p className={s.note}>We tuned the matching on these, so the new products above are the fairer test.</p>
         </div>
-        <p>
-          {r.skipCorrect} of {r.n} right, re-run now (same category: {baselineScore(r, "same-category")}; skip everything: {baselineScore(r, "always-skip")}). This set was used to tune the matching, so the score at the top leads.
-        </p>
-        <div className="proof-rows">
-          <Row summary={plural(r.wrongSkips.length, "wrong skip", "wrong skips")}>
-            <Rows rows={r.wrongSkips} />
-          </Row>
-          <Row summary={plural(r.missedSkips.length, "missed skip", "missed skips")}>
-            <Rows rows={r.missedSkips} showGot />
-          </Row>
-          <Row summary={plural(r.catches.length, "right skip", "right skips")}>
-            <Rows rows={r.catches} />
-          </Row>
-          <Row summary={`Run history (${runs.length} runs)`}>
-            <ul style={{ marginLeft: "1.1rem" }} className="stack-sm">
-              <li>
-                Expected answers committed {et(p.expectations.at)}; the app as of {et(p.engine.at)}. <span className="mono small">answers {p.expectations.commit.slice(0, 7)}, app {p.engine.commit.slice(0, 7)}</span>
-              </li>
-              {runs.map((run) => (
-                <li key={run.commit}>
-                  {run.label} (<span className="mono">{run.commit.slice(0, 7)}</span>
-                  {run.at ? `, ${et(run.at)}` : ""}): {run.result}.
-                </li>
-              ))}
-              <li>
-                On its {r.skipsRight} right skips: {formatDollars(r.split.dollarsAvoided)} of duplicate or hard-to-return buys not made ({r.split.onEvidence} on evidence, {r.split.onDefault} on the unknown-policy default).
-              </li>
-              <li>
-                {devCorrections(p).length ? "The expected answers changed once, for a store policy we had misread, before re-running (see Corrections)." : "The expected answers were never touched."} Case by case: eval/skip-set/RESULTS.md in the repository.
-              </li>
-            </ul>
-          </Row>
-        </div>
-      </section>
-
-    </>
+        <RerunEval n={r.n} />
+      </div>
+      <ul className={s.inkBars} aria-label={`Right out of ${r.n}`}>
+        {bars.map((b) => (
+          <li key={b.label} className={b.mine ? s.inkMine : undefined}>
+            <span className={s.inkLabel}>{b.label}</span>
+            <span className={s.inkTrack}>
+              <span className={s.inkFill} style={{ width: `${(b.value / r.n) * 100}%` }} />
+            </span>
+            <span className={s.inkValue}>{b.value}</span>
+          </li>
+        ))}
+      </ul>
+      <div className="proof-rows">
+        <Row summary={`Every case: ${plural(r.wrongSkips.length, "wrong skip", "wrong skips")}, ${plural(r.missedSkips.length, "missed skip", "missed skips")}, ${plural(r.catches.length, "right skip", "right skips")}`}>
+          <h3 className={s.rowHead}>{plural(r.wrongSkips.length, "wrong skip", "wrong skips")}</h3>
+          <DevRows rows={r.wrongSkips} />
+          <h3 className={s.rowHead}>{plural(r.missedSkips.length, "missed skip", "missed skips")}</h3>
+          <DevRows rows={r.missedSkips} showGot />
+          <h3 className={s.rowHead}>{plural(r.catches.length, "right skip", "right skips")}</h3>
+          <DevRows rows={r.catches} showWhy={false} />
+        </Row>
+      </div>
+    </section>
   );
 }
 
-/** How many held-out expected answers were corrected, counted from the recorded corrections. */
+async function HowWeTested() {
+  await connection();
+  const film = await filmOn();
+  const r = film ? neutralDeep(heldOutResult()) : heldOutResult();
+  const dev = film ? neutralDeep(runSkipEval()) : runSkipEval();
+  const o = r.order;
+  const p = dev.provenance;
+  const runs = devSetRuns(p);
+  const last = r.afterChanges.at(-1);
+  return (
+    <section className={s.section} aria-labelledby="method-title">
+      <h2 id="method-title" className={s.title}>
+        How we tested
+      </h2>
+      <ol className={s.steps}>
+        <li>
+          <span className={s.stepNum}>1</span>
+          <strong>App locked</strong>
+          <span className={s.stepWhen}>{et(o.engine.at)}</span>
+        </li>
+        <li>
+          <span className={s.stepNum}>2</span>
+          <strong>Right answers written</strong>
+          <span className={s.stepWhen}>{et(o.expectations.at)}</span>
+        </li>
+        <li>
+          <span className={s.stepNum}>3</span>
+          <strong>One scored run</strong>
+          <span className={s.stepWhen}>{et(o.scoredRun.ranAt)}</span>
+        </li>
+      </ol>
+      <p className={s.note}>
+        Our own test set: real products, prices and store policies, with a sample shopper and shelf we wrote.
+      </p>
+      <div className="proof-rows">
+        <Row summary="The order of work, with commits" testId="order-of-work">
+          <ol className={s.list}>
+            <li>App last changed: {et(o.engine.at)}.</li>
+            <li>Right answers, shelf and prices committed: {et(o.expectations.at)}.</li>
+            <li>
+              The one scored run, at {et(o.scoredRun.ranAt)}: {r.skipCorrect} of {r.n}.
+            </li>
+          </ol>
+          <p className="mono small commit-line">
+            app {short(o.engine.commit)}, answers {short(o.expectations.commit)}, run {short(o.scoredRun.commit)}
+          </p>
+          <p className="small muted">We didn&apos;t change the app after seeing the result. {correctedCases(r.corrections)}</p>
+        </Row>
+        {last && (
+          <Row summary={`Re-runs after later fixes: ${last.skipCorrect} of ${last.n}`}>
+            {r.afterChanges.map((a) => (
+              <p key={a.commit} data-testid="after-changes">
+                <span className="mono small">{short(a.commit)}</span> ({et(a.at)}): {a.skipCorrect} of {a.n}. {sentences(a.what)} Missed: {[...a.wrongSkips, ...a.missedSkips].map((id) => r.cases.find((c) => c.id === id)?.product ?? id).join(", ") || "none"}.
+              </p>
+            ))}
+            <p className="small muted">
+              We made these fixes after seeing the misses, so the re-runs aren&apos;t a fresh test. The score stays {r.skipCorrect} of {r.n}.
+            </p>
+          </Row>
+        )}
+        <Corrections film={film} />
+        <Row summary={`The ${dev.n} products we built it on: ${runs.length} runs`}>
+          <ul className={s.list}>
+            <li>
+              Right answers committed {et(p.expectations.at)}. The app as of {et(p.engine.at)}. <span className="mono small">answers {short(p.expectations.commit)}, app {short(p.engine.commit)}</span>
+            </li>
+            {runs.map((run) => (
+              <li key={run.commit}>
+                {sentences(run.label)} (<span className="mono">{short(run.commit)}</span>
+                {run.at ? `, ${et(run.at)}` : ""}): {run.result}.
+              </li>
+            ))}
+            <li>
+              Its {dev.skipsRight} right skips kept {formatDollars(dev.split.dollarsAvoided)} of repeat or hard-to-return buys unspent ({dev.split.onEvidence} on evidence, {dev.split.onDefault} on our unknown-policy default).
+            </li>
+          </ul>
+        </Row>
+        <Row summary="Run it yourself">
+          <ul className={s.list}>
+            <li>
+              <span className="mono">npm run eval:skip</span> re-runs the {dev.n} products on your machine, with no network calls. The button above does the same on our server.
+            </li>
+            <li>
+              Every case for both tests: <span className="mono">eval/holdout/RESULTS.md</span> and <span className="mono">eval/skip-set/RESULTS.md</span> in the repository.
+            </li>
+          </ul>
+        </Row>
+      </div>
+    </section>
+  );
+}
+
+/** Inputs found wrong after a run: what was wrong, the commits that fixed it (policy first, then the right answers), and the numbers before and after. */
+function Corrections({ film }: { film: boolean }) {
+  const held = film ? neutralDeep(heldOutResult()) : heldOutResult();
+  const dev = film ? neutralDeep(devCorrections()) : devCorrections();
+  if (!held.corrections.length && !dev.length) return null;
+  return (
+    <Row summary={`Corrections (${dev.length})`} testId="corrections">
+      {dev.map((c) => {
+        const h = held.corrections.find((x) => x.expectations.commit === c.expectations.commit);
+        return (
+          <div key={c.expectations.commit} className="stack-sm">
+            <p>
+              <strong>{et(c.policy.at).split(",").slice(0, 2).join(",")}: we had misread a store return policy.</strong> {sentences(c.what)}
+            </p>
+            <ul className={s.list}>
+              <li>
+                Policy fixed first: <span className="mono">{short(c.policy.commit)}</span>, {et(c.policy.at)}.
+              </li>
+              <li>
+                Right answers fixed next, before any re-run: <span className="mono">{short(c.expectations.commit)}</span>, {et(c.expectations.at)}.
+              </li>
+              <li>
+                Products we built it on: {c.before} before, {c.after} after.{c.afterNote ? ` ${sentences(c.afterNote)}` : ""}
+              </li>
+              {h && (
+                <li>
+                  Products it had never seen: the score stays {held.skipCorrect} of {held.n}. {sentences(h.scoredRunEffect)}
+                </li>
+              )}
+            </ul>
+          </div>
+        );
+      })}
+    </Row>
+  );
+}
+
+/** How many right answers for the new products were corrected, counted from the recorded corrections. */
 function correctedCases(corrections: Array<{ expectations: { cases: string[] } }>): string {
   const n = new Set(corrections.flatMap((c) => c.expectations.cases)).size;
-  if (!n) return "Nor were the expected answers.";
-  return `${n === 1 ? "One expected answer's" : `${n} expected answers'`} reason text ${n === 1 ? "was" : "were"} later corrected for a store policy we had misread. See Corrections.`;
+  if (!n) return "Nor did we change the right answers.";
+  return `${n === 1 ? "One right answer's reason was" : `${n} right answers' reasons were`} later fixed for a store policy we had misread (see Corrections).`;
 }

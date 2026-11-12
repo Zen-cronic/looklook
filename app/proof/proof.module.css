@@ -1,0 +1,404 @@
+/* The accuracy page: one result, then sections with room between them, detail folded away */
+.page {
+  display: grid;
+  gap: clamp(3.5rem, 2rem + 5vw, 6rem);
+  padding-top: clamp(2rem, 1rem + 3vw, 3.5rem);
+}
+
+.hero {
+  display: grid;
+  gap: 1rem;
+  max-width: 46rem;
+}
+
+.lede {
+  font-size: var(--step-1);
+  line-height: 1.5;
+  color: var(--ink-2);
+  max-width: 40rem;
+}
+
+/* The cobalt result sits right under the headline */
+.result {
+  margin-top: calc(-1 * clamp(1rem, 0.5rem + 2vw, 2.5rem));
+}
+
+.section {
+  display: grid;
+  gap: 1.25rem;
+  min-width: 0;
+}
+
+.title {
+  font-family: var(--font-display);
+  font-size: var(--step-3);
+  line-height: 1.05;
+  letter-spacing: var(--track-display);
+  font-weight: 800;
+  max-width: 40rem;
+}
+
+.note {
+  color: var(--ink-2);
+  max-width: 40rem;
+  line-height: 1.5;
+}
+
+.subhead {
+  margin-top: 1.5rem;
+  font-size: var(--step-1);
+  font-weight: 800;
+}
+
+/* Thirty squares, one per product */
+.grid {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(15, minmax(0, 1fr));
+  gap: 0.5rem;
+  max-width: 44rem;
+  margin-top: 0.5rem;
+}
+
+.grid li {
+  aspect-ratio: 1;
+  border-radius: 6px;
+}
+
+@media (max-width: 640px) {
+  .grid {
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    gap: 0.375rem;
+  }
+}
+
+.skip {
+  background: var(--signature);
+}
+
+.keep {
+  background: var(--ink);
+}
+
+/* Right on skip, wrong between buy, wait and ask: ink with a pink corner */
+.other {
+  background: linear-gradient(135deg, var(--ink) 0 55%, var(--accent) 55% 100%);
+}
+
+.wrong {
+  background: var(--accent);
+  box-shadow: inset 0 0 0 2px var(--ink);
+}
+
+.legend {
+  list-style: none;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.75rem 1.75rem;
+  font-size: 0.9375rem;
+  max-width: 50rem;
+}
+
+.legend li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.55rem;
+  line-height: 1.35;
+}
+
+.legend i {
+  flex: none;
+  width: 1rem;
+  height: 1rem;
+  border-radius: 4px;
+  margin-top: 0.1rem;
+}
+
+.legend b {
+  font-weight: 800;
+}
+
+/* The wrong answers: one row each, hairline between */
+.misses {
+  list-style: none;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  border-top: 1px solid var(--line);
+}
+
+.misses li {
+  display: grid;
+  grid-template-columns: minmax(0, 1.1fr) auto minmax(0, 1.3fr);
+  gap: 0.5rem 1.75rem;
+  align-items: center;
+  padding: 1rem 0;
+  border-bottom: 1px solid var(--line);
+}
+
+.misses li.missSkip .missHead strong::before {
+  content: "";
+  display: inline-block;
+  width: 0.7rem;
+  height: 0.7rem;
+  margin-right: 0.5rem;
+  border-radius: 3px;
+  background: var(--accent);
+  box-shadow: inset 0 0 0 1.5px var(--ink);
+  vertical-align: 0.05em;
+}
+
+.missHead {
+  display: grid;
+  gap: 0.15rem;
+  min-width: 0;
+}
+
+.missHead strong {
+  font-weight: 700;
+  line-height: 1.3;
+}
+
+.store {
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.missChips {
+  display: grid;
+  grid-template-columns: auto auto;
+  gap: 0.35rem 0.6rem;
+  align-items: center;
+  justify-items: start;
+}
+
+.chipLabel {
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+.missWhy {
+  font-size: 0.9375rem;
+  color: var(--ink-2);
+  line-height: 1.45;
+}
+
+@media (max-width: 760px) {
+  .misses li {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .missChips {
+    grid-template-columns: auto auto auto auto;
+  }
+}
+
+/* What the right skips rest on: one bar, two parts */
+.split {
+  display: flex;
+  height: 1.25rem;
+  max-width: 44rem;
+  border-radius: 6px;
+  overflow: hidden;
+  gap: 3px;
+}
+
+.split .splitEvidence {
+  flex: none;
+}
+
+.split .splitDefault {
+  flex: 1;
+}
+
+.splitEvidence {
+  background: var(--signature);
+}
+
+.splitDefault {
+  background: var(--accent);
+}
+
+.splitRows {
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+}
+
+.splitRows > div {
+  display: grid;
+  grid-template-columns: 4.5rem minmax(0, 1fr);
+  gap: 1rem;
+  align-items: baseline;
+}
+
+.splitRows dt {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-3);
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.splitRows dt i {
+  width: 0.9rem;
+  height: 0.9rem;
+  border-radius: 3px;
+}
+
+.splitRows dd {
+  line-height: 1.5;
+}
+
+/* The built-on set: heading with its re-run button, then ink bars on paper */
+.devHead {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem 2rem;
+}
+
+.devHead > div {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.devHead :global(.rerun) {
+  display: grid;
+  justify-items: start;
+  gap: 0.4rem;
+}
+
+.inkBars {
+  list-style: none;
+  display: grid;
+  gap: 1rem;
+  max-width: 44rem;
+}
+
+.inkBars li {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  grid-template-areas:
+    "label value"
+    "track track";
+  gap: 0.35rem 1rem;
+  align-items: end;
+}
+
+.inkLabel {
+  grid-area: label;
+  font-weight: 700;
+  font-size: 0.9375rem;
+}
+
+.inkValue {
+  grid-area: value;
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-2);
+  letter-spacing: -0.04em;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+}
+
+.inkTrack {
+  grid-area: track;
+  display: block;
+  height: 0.5rem;
+  border-radius: 999px;
+  background: var(--shade);
+  overflow: hidden;
+}
+
+.inkFill {
+  display: block;
+  height: 100%;
+  background: var(--ink-2);
+}
+
+.inkMine .inkLabel {
+  font-family: var(--font-display);
+  font-size: var(--step-1);
+  letter-spacing: -0.03em;
+}
+
+.inkMine .inkTrack {
+  height: 0.85rem;
+}
+
+.inkMine .inkFill {
+  background: var(--signature);
+}
+
+.inkMine .inkValue {
+  font-size: var(--step-3);
+}
+
+.rowHead {
+  font-size: var(--step-0);
+  font-weight: 800;
+  margin-top: 0.5rem;
+}
+
+/* How we tested: three steps in a row */
+.steps {
+  list-style: none;
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+  max-width: 52rem;
+}
+
+.steps li {
+  display: grid;
+  gap: 0.3rem;
+  align-content: start;
+  padding-top: 0.9rem;
+  border-top: 3px solid var(--ink);
+}
+
+.steps li:last-child {
+  border-top-color: var(--signature);
+}
+
+.stepNum {
+  font-family: var(--font-display);
+  font-weight: 800;
+  font-size: var(--step-2);
+  line-height: 1;
+}
+
+.stepWhen {
+  font-size: var(--step--1);
+  color: var(--muted);
+}
+
+@media (max-width: 640px) {
+  .steps {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0;
+  }
+
+  .steps li {
+    grid-template-columns: 2rem minmax(0, 1fr);
+    gap: 0.1rem 0.75rem;
+    padding: 0.75rem 0;
+    border-top-width: 1px;
+  }
+
+  .stepNum {
+    grid-row: span 2;
+  }
+}
+
+.list {
+  margin-left: 1.1rem;
+  display: grid;
+  gap: 0.6rem;
+  max-width: 48rem;
+  line-height: 1.5;
+}
