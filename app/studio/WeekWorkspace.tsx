@@ -87,7 +87,7 @@ function initialState(): AgReportState {
   } as unknown as AgReportState;
 }
 
-type AskState = { kind: "idle" } | { kind: "running"; request: string; steps: number } | { kind: "done"; request: string; changes: string[]; note?: string };
+type AskState = { kind: "idle" } | { kind: "running"; request: string; steps: number } | { kind: "done"; request: string; changes: string[]; found: string[]; note?: string };
 
 export default function WeekWorkspace({ initial, runId, narrow }: { initial: WeekView; runId: string; narrow: boolean }) {
   const apiRef = useRef<AgStudioApi | null>(null);
@@ -95,6 +95,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
   const viewRef = useRef(initial);
   const rowsRef = useRef<Row[]>(slipRows(initial));
   const changesRef = useRef<string[]>([]);
+  const foundRef = useRef<string[]>([]);
   const [view, setViewState] = useState(initial);
   const [paying, setPaying] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
@@ -133,6 +134,18 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
       return { ok: true, text: `${done} It now has ${data.slip.lines.length} ${data.slip.lines.length === 1 ? "item" : "items"}.` };
     },
     [runId, show],
+  );
+
+  /** Read what PayPal recorded for a paid item (PayPal's Agent Toolkit, read only, on the server). */
+  const lookUp = useCallback(
+    async (key: string): Promise<string> => {
+      const res = await fetch(`/api/week/${runId}/paypal?key=${encodeURIComponent(key)}`, { cache: "no-store" });
+      const data = (await res.json().catch(() => ({}))) as { text?: string; error?: string };
+      if (!res.ok || !data.text) return data.error ?? "PayPal's record couldn't be read just now.";
+      foundRef.current.push(data.text);
+      return data.text;
+    },
+    [runId],
   );
 
   const yes = useCallback(async () => {
@@ -197,6 +210,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
           };
           const leave = api.defineAiTool({ name: "leave_for_later", description: "Move one item from this week's order to Left for next week. Nothing is paid, and the item stays listed there.", params: keyParam, execute: run("leave") } as never);
           const back = api.defineAiTool({ name: "put_back", description: "Put one item that was left for later back in this week's order.", params: keyParam, execute: run("back") } as never);
+          const paypal = api.defineAiTool({ name: "check_with_paypal", description: "Read what PayPal recorded for one paid item, through PayPal's Agent Toolkit: its PayPal order, status, amount and any refund. Read only. It cannot pay or refund.", params: keyParam, execute: async (args: { key?: string }, ctx: { success: (m: string) => unknown }) => ctx.success(await lookUp(String(args?.key ?? ""))) } as never);
           const slipAgent = directLlmRunner({
             id: AGENT_ID,
             name: APP_NAME,
@@ -204,14 +218,14 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
             adapter,
             maxTurns: 6,
             instructions: () => slipAgentInstructions(viewRef.current),
-            tools: () => [leave, back],
+            tools: () => [leave, back, paypal],
           } as never);
           return { agents: [slipAgent], primary: AGENT_ID } as never;
         });
         harnessRef.current = harness;
         return harness;
       },
-    [change],
+    [change, lookUp],
   );
 
   const running = useRef(false);
@@ -220,6 +234,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
     if (!harness || running.current || !request.trim()) return;
     running.current = true;
     changesRef.current = [];
+    foundRef.current = [];
     const before = viewRef.current.slip.totalCents;
     let steps = 0;
     setAsk({ kind: "running", request, steps });
@@ -247,10 +262,10 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
       if (outcome === "timeout") session.cancel();
       const changes = [...changesRef.current];
       setWas(changes.length ? before : undefined);
-      setAsk({ kind: "done", request, changes, note: outcome === "idle" ? undefined : "The assistant didn't finish." });
+      setAsk({ kind: "done", request, changes, found: [...foundRef.current], note: outcome === "idle" ? undefined : "The assistant didn't finish." });
     } catch {
       session?.cancel();
-      setAsk({ kind: "done", request, changes: [...changesRef.current], note: "The assistant isn't available right now. The order is unchanged." });
+      setAsk({ kind: "done", request, changes: [...changesRef.current], found: [...foundRef.current], note: "The assistant isn't available right now. The order is unchanged." });
     } finally {
       onTurn = () => undefined;
       running.current = false;
@@ -322,7 +337,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
                 </>
               ) : (
                 <span>
-                  <strong>{ask.changes.length ? ask.changes.join(" ") : "The order didn't change."}</strong> {ask.note ?? ""} Nothing was paid.
+                  <strong>{ask.changes.length ? ask.changes.join(" ") : ask.found.length ? ask.found.join(" ") : "The order didn't change."}</strong> {ask.note ?? ""} Nothing was paid.
                 </span>
               )}
             </p>

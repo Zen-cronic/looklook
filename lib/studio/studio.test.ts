@@ -234,18 +234,29 @@ describe("the Studio week: an assistant that edits this week's order but can't p
   const line = (key: string, title: string, cents: number, why: "buy" | "due") => ({ source: { kind: "check" as const, checkId: key }, approvalKey: key, amountCents: cents, version: "", why, title, brand: "B" });
 
   it("gives the assistant order tools and no tool that pays", async () => {
-    const { SLIP_AGENT_TOOLS, slipAgentInstructions } = await import("./slip");
+    const { PAYPAL_LOOKUP_TOOL, SLIP_AGENT_TOOLS, slipAgentInstructions } = await import("./slip");
     const { guardTurn, STUDIO_TOOLS } = await import("./guard");
     for (const t of SLIP_AGENT_TOOLS) expect(STUDIO_TOOLS.has(t)).toBe(true);
-    expect([...STUDIO_TOOLS].filter((t) => /pay|charge|approve|capture|order|refund|checkout/i.test(t))).toEqual([]);
-    const view = { slip: { lines: [line("check:a", "Peptide Serum", 3200, "buy")], leftOff: [] }, sent: [] } as never;
+    // The PayPal name is a brand, not a verb: with it taken out, no tool name pays, charges, approves, captures, orders, refunds or checks out.
+    expect([...STUDIO_TOOLS].filter((t) => /pay|charge|approve|capture|order|refund|checkout/i.test(t.replace(/paypal/gi, "")))).toEqual([]);
+    expect([...STUDIO_TOOLS].filter((t) => /paypal/i.test(t))).toEqual([PAYPAL_LOOKUP_TOOL]);
+    expect(SLIP_AGENT_TOOLS).toEqual(["leave_for_later", "put_back", "check_with_paypal"]);
+    const view = { slip: { lines: [line("check:a", "Peptide Serum", 3200, "buy")], leftOff: [] }, sent: [{ ...line("check:b", "Lip Oil", 1800, "buy"), status: "paid", orderId: "5O190127TN364715T" }] } as never;
     const instructions = slipAgentInstructions(view);
     const tool = (name: string) => ({ type: "function", name, description: "", parameters: {} });
-    const guarded = guardTurn({ instructions, input: [], tools: [tool("leave_for_later"), tool("put_back"), tool("pay_slip"), tool("approve_week")] } as never);
+    const guarded = guardTurn({ instructions, input: [], tools: [tool("leave_for_later"), tool("put_back"), tool("check_with_paypal"), tool("pay_slip"), tool("approve_week"), tool("create_refund"), tool("pay_order"), tool("create_order")] } as never);
     expect(guarded.agent).toBe("slip");
-    expect((guarded.turn.tools as Array<{ name: string }>).map((t) => t.name)).toEqual(["leave_for_later", "put_back"]);
-    expect(guarded.dropped).toEqual(["pay_slip", "approve_week"]);
+    expect((guarded.turn.tools as Array<{ name: string }>).map((t) => t.name)).toEqual(["leave_for_later", "put_back", "check_with_paypal"]);
+    expect(guarded.dropped).toEqual(["pay_slip", "approve_week", "create_refund", "pay_order", "create_order"]);
     expect(instructions).toContain("check:a: Peptide Serum, $32.00 (in the order)");
+    expect(instructions).toContain("check:b: Lip Oil, $18.00 (paid)");
+    expect(instructions).toMatch(/check_with_paypal reads what PayPal recorded .* It only reads\./);
+    // The lookup tool reads through a GET route, which reads with the toolkit's get_order and get_refund only.
+    const { readFileSync } = await import("node:fs");
+    const workspace = readFileSync("app/studio/WeekWorkspace.tsx", "utf8");
+    expect(workspace).toMatch(/fetch\(`\/api\/week\/\$\{runId\}\/paypal\?key=\$\{encodeURIComponent\(key\)\}`, \{ cache: "no-store" \}\)/);
+    const { READ_ONLY_TOOLS } = await import("../paypal/toolkit");
+    expect(READ_ONLY_TOOLS).toEqual(["get_order", "get_refund"]);
   });
 
   it("says this week's order and item to the model, never slip or line, in its prompt, tools and table", async () => {
