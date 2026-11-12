@@ -7,6 +7,8 @@ import { FilmBadge } from "./components/FilmBadge";
 import { NavLinks, StartHereButton } from "./components/NavLinks";
 import { VerdictLegend } from "./components/VerdictLegend";
 import { MOTION_SCRIPT, stillAtBuild } from "./components/motion";
+import { cursorScript } from "./components/cursor";
+import { filmFromEnv } from "@/lib/filming/flag";
 import "./globals.css";
 
 const display = Unbounded({ subsets: ["latin"], variable: "--font-display", display: "swap" });
@@ -30,6 +32,7 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     <html lang="en" className={`${display.variable} ${ui.variable} ${mono.variable}`} data-still={stillAtBuild() ? "" : undefined} suppressHydrationWarning>
       <head>
         <script dangerouslySetInnerHTML={{ __html: MOTION_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: cursorScript(filmFromEnv()) }} />
       </head>
       <body>
         <header className="topbar">

@@ -641,7 +641,7 @@ h3 {
   color: var(--signature-ink);
   text-decoration: none;
   text-align: center;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   min-height: 3rem;
   transition:
     background-color var(--dur-1) var(--ease-out),
@@ -890,7 +890,7 @@ select:focus-visible {
   color: var(--ink);
   border: 1px solid var(--hairline);
   padding: 2.5rem 1.25rem 2.25rem;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   min-height: 15rem;
   transition: border-color var(--dur-2) var(--ease-out), background-color var(--dur-2) var(--ease-out);
 }
@@ -1047,7 +1047,7 @@ select:focus-visible {
   background: var(--card);
   padding: 0;
   overflow: hidden;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   color: var(--ink);
   display: flex;
   flex-direction: column;
@@ -1269,7 +1269,7 @@ select:focus-visible {
 .disclosure > summary,
 .ids > summary,
 .proof-row > summary {
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   font-weight: 800;
   padding: 0.95rem 0;
   list-style: none;
@@ -1512,7 +1512,7 @@ select:focus-visible {
   width: 100%;
   background: transparent;
   border: 0;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto auto;
   align-items: center;
@@ -2968,7 +2968,7 @@ html[data-still]::view-transition-new(*) {
   font-weight: 800;
   font-size: 1.15rem;
   line-height: 1;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   box-shadow: var(--depth);
   display: grid;
   place-items: center;
@@ -3062,7 +3062,7 @@ html[data-still]::view-transition-new(*) {
   color: var(--ink);
   font-size: 1.5rem;
   line-height: 1;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
 }
 
 .legend-close:hover {
@@ -3106,4 +3106,29 @@ html[data-still]::view-transition-new(*) {
 /* Not in still captures (set before JS runs), unless a recorder opens it with ?legend=1 */
 html[data-still] .legend-fab:not([data-forced]) {
   display: none;
+}
+
+/* Cursor: the app icon's two eyes on an arrow. Cobalt for pointing, ink over
+   anything you can click. Mouse and trackpad only, and the system cursor in
+   filming mode (data-film, set in the head). Every selector is wrapped in
+   :where() so it has no weight: a widget's own cursor (resize and drag
+   handles, PayPal's button) always wins, and text fields keep the I-beam. */
+@media (pointer: fine) {
+  :root:not([data-film]) {
+    --cursor-pointer: url("/cursors/pointer.svg") 4 3, pointer;
+    cursor: url("/cursors/arrow.svg") 4 3, auto;
+  }
+
+  :where(:root:not([data-film])) :where(a[href], button:not(:disabled), summary, select, [role="button"], [role="tab"], label:has(input[type="checkbox"], input[type="radio"]), input[type="checkbox"], input[type="radio"], input[type="button"], input[type="submit"]) {
+    cursor: var(--cursor-pointer);
+  }
+
+  :where(:root:not([data-film])) :where(input:not([type="checkbox"], [type="radio"], [type="range"], [type="button"], [type="submit"]), textarea, [contenteditable]:not([contenteditable="false"])) {
+    cursor: text;
+  }
+
+  /* PayPal's button draws its own cursor */
+  :where(paypal-button) {
+    cursor: auto;
+  }
 }

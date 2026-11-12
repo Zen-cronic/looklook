@@ -347,7 +347,7 @@
 /* The price drop to try reads as a link inside its sentence, but stays a button */
 .inlineAction {
   all: unset;
-  cursor: pointer;
+  cursor: var(--cursor-pointer, pointer);
   color: var(--signature);
   font-weight: 600;
   text-decoration: underline;
