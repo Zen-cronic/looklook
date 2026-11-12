@@ -119,7 +119,7 @@ function SentRow({ l }: { l: SentLineView }) {
       : l.status === "queued"
         ? "Waiting for PayPal…"
         : l.status === "declined"
-          ? "PayPal declined the card. Nothing was charged."
+          ? "PayPal declined the card. Nothing was charged. A card's bank can say no, for example for a low balance or an expired card."
           : (l.message ?? "Nothing was charged.");
   return (
     <li className={s.sentRow} data-status={l.status}>
@@ -165,7 +165,8 @@ export function GuardRow({ g, onChange, compact = false }: { g: GuardView; onCha
     setBusy(false);
   }
   const head = compact ? guardLine(g) : guardHead(g);
-  const drop = g.testCents !== undefined && (
+  // On the finished week's card, one refund is the story: the next test price and the refund id stay on the receipt page.
+  const drop = g.testCents !== undefined && !(compact && g.refunds.length > 0) && (
     <button className={compact ? s.inlineAction : "btn outline small"} onClick={testDrop} disabled={busy} data-testid="guard-drop">
       {busy ? "Asking PayPal…" : guardTestLabel(g)}
     </button>
@@ -178,7 +179,12 @@ export function GuardRow({ g, onChange, compact = false }: { g: GuardView; onCha
       </span>
       {g.refunds.map((x) => (
         <span key={x.refundId} className={`small ${s.guardRefund}`} data-testid="guard-refund">
-          {guardRefundLine(g, x)} PayPal refund <span className="mono">{x.refundId}</span>
+          {guardRefundLine(g, x)}
+          {!compact && (
+            <>
+              {" "}PayPal refund <span className="mono">{x.refundId}</span>
+            </>
+          )}
         </span>
       ))}
       {!compact && drop}
