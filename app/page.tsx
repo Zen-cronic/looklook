@@ -14,15 +14,10 @@ import s from "./landing.module.css";
 
 /** What the yes section promises, word for word as FACTS.md lists them. */
 const YES_POINTS = [
-  {
-    title: "Nothing is charged without your yes",
-    lines: [
-      "Each reorder is charged only after you tap yes on it, at the price shown next to that yes.",
-      "PayPal Vault saves the method only when you tick the box, and each reorder is a charge you start with your tap.",
-      "Only refunds happen without your yes. A price event never charges anything.",
-    ],
-  },
-  { title: "A cap on every reorder", lines: ["You set a cap for each reorder when you save PayPal or a card. A reorder above it is refused."] },
+  { title: "Nothing is charged without your yes", lines: ["Each reorder waits for your tap, at the price shown."] },
+  { title: "Saved only if you say so", lines: ["PayPal Vault keeps your card or PayPal account only if you tick the box."] },
+  { title: "Refunds, never surprise charges", lines: ["A price drop can refund you. It never charges you."] },
+  { title: "A cap on every reorder", lines: ["You set a cap when you save PayPal or a card. Anything above it is refused."] },
   { title: "Charged once", lines: ["Tap yes twice and you are charged once."] },
 ];
 
@@ -45,7 +40,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
           <Eyebrow icon="post">For skincare and makeup you saw on your feed</Eyebrow>
           <h1 className={s.title}>Already own one? Don&apos;t buy it twice.</h1>
           <p className={s.lede}>
-            Send {APP_NAME} the post before you pay. It checks what&apos;s already on your shelf, your budget, the price history and the store&apos;s return policy, then tells you to skip it, wait or buy.
+            Send a post before you pay. {APP_NAME} checks your shelf, budget, price and returns, then says skip, wait or buy.
           </p>
           <div className={s.ctas}>
             <Link className="btn" href="/week">
@@ -56,7 +51,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
             </Link>
           </div>
           <p className={s.startHere}>
-            {WEEK_TAGLINE} New here? <Link href="/judge">Start here</Link>.
+            {WEEK_TAGLINE}
           </p>
         </div>
         <div className={s.heroSlot}>
@@ -175,7 +170,7 @@ export default function LandingPage({ film = false }: { film?: boolean }) {
             The yes stays yours
           </h2>
           <p className={s.yesLede}>
-            Spending limits decide how much an AI shopping agent may spend; {APP_NAME} decides whether to buy at all. For the things you buy again, like a cleanser, {APP_NAME} asks you before each reorder.
+            {APP_NAME} asks whether you need it. Then it asks you before every payment.
           </p>
           <ul className={s.points}>
             {YES_POINTS.map((p) => (
