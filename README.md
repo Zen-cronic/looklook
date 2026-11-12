@@ -92,6 +92,12 @@ npm run dev            # or: npm run build && npm start
 
 Each browser gets its own session (a cookie) with the sample shelf. Sessions, the webhook event log and caches are written under `.data/` (`APP_DATA_DIR`).
 
+Or run your own copy on Render:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/Zen-cronic/looklook)
+
+The button creates the web service and its disk from `render.yaml` (Starter plan, needed for the disk). Render asks for the values it can't fill: `PAYPAL_CLIENT_ID`, `PAYPAL_CLIENT_SECRET` (sandbox keys), `CHANNEL3_API_KEY`, `ANTHROPIC_API_KEY`, `NEXT_PUBLIC_AG_STUDIO_LICENSE_KEY` and `SESSION_SECRET`, plus `PAYPAL_WEBHOOK_ID` and `CHANNEL3_WEBHOOK_SECRET`, which come from the two webhooks you register after the first deploy (see Deploy below).
+
 ## Run the checks
 
 ```bash
