@@ -42,3 +42,21 @@ function Links({ path }: { path: string | null }) {
     </nav>
   );
 }
+
+/** The nav's call to action: the five-minute walkthrough. Marked as the current page on /judge. */
+export function StartHereButton(props: { static?: boolean }) {
+  return props.static ? <StartHere path={null} /> : <ActiveStartHere />;
+}
+
+function ActiveStartHere() {
+  return <StartHere path={usePathname()} />;
+}
+
+function StartHere({ path }: { path: string | null }) {
+  const active = path === "/judge";
+  return (
+    <Link href="/judge" className="btn small nav-cta" aria-current={active ? "page" : undefined}>
+      Start here
+    </Link>
+  );
+}
