@@ -34,6 +34,8 @@ export interface CheckRecord {
   product?: ProductCard;
   needsConfirmation: boolean;
   confirmWhy: string[];
+  /** Channel3 image search on an uploaded screenshot: it agreed with the match, found it, or neither. */
+  byImage?: "agrees" | "found" | "none";
   facts: ProductFacts;
   store?: string;
   /** Cleaned 90-day price band of the matched product; null when there is no usable history. */

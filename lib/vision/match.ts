@@ -79,7 +79,18 @@ export interface MatchResult {
   category: Category | undefined;
   needsConfirmation: boolean;
   why: Array<"no-product" | "no-results" | "low-confidence" | "close-runner-up" | "unknown-category">;
+  /**
+   * What Channel3 image search said, when it ran: it returned the matched
+   * product too ("agrees"), it supplied the match the name search missed
+   * ("found"), or neither ("none").
+   */
+  byImage?: ImageEvidence;
 }
+
+export type ImageEvidence = "agrees" | "found" | "none";
+
+/** Image search agrees with a match only when the product is among its first few hits. */
+export const IMAGE_AGREE_TOP = 3;
 
 /**
  * Pick the catalogue product the screenshot shows. The catalogue's category
@@ -100,6 +111,48 @@ export function pickMatch(fields: ScreenshotFields, products: Product[]): MatchR
   const category = fromCatalogue ?? (isCategory(fields.category) ? fields.category : undefined);
   if (!category) why.push("unknown-category");
   return { best, alternatives: rest.slice(0, 3), category, needsConfirmation: why.length > 0, why };
+}
+
+function sameProduct(a: Product, b: Product): boolean {
+  if (a.id === b.id) return true;
+  const ta = a.title.trim().toLowerCase();
+  return !!ta && ta === b.title.trim().toLowerCase() && brandOf(a).toLowerCase() === brandOf(b).toLowerCase();
+}
+
+/**
+ * Bring in what Channel3 image search found. A confident text match is kept
+ * as it is and only marked with whether the image agrees. When the text match
+ * needs confirming, the image hits are scored against the read fields like any
+ * other candidate and the match is picked again from both lists, so the
+ * picture can find the product the name search missed. Anything below
+ * CONFIRM_BELOW still asks the shopper. No image hits (or no image search)
+ * leaves the text match unchanged.
+ */
+export function matchWithImage(fields: ScreenshotFields, textMatch: MatchResult, imageProducts: Product[] | undefined, textProducts: Product[] = []): MatchResult {
+  if (imageProducts === undefined) return textMatch;
+  const top = imageProducts.slice(0, IMAGE_AGREE_TOP);
+  const agrees = (p: Product) => top.some((q) => sameProduct(p, q));
+  if (!textMatch.needsConfirmation || !fields.isProduct || imageProducts.length === 0) {
+    return { ...textMatch, byImage: textMatch.best && agrees(textMatch.best.product) ? "agrees" : "none" };
+  }
+  const merged = [...textProducts];
+  for (const p of imageProducts) if (!merged.some((q) => q.id === p.id)) merged.push(p);
+  const again = pickMatch(fields, merged);
+  const best = again.best?.product;
+  const fromText = !!best && textProducts.some((q) => sameProduct(best, q));
+  const byImage: ImageEvidence = !best ? "none" : !fromText ? "found" : agrees(best) ? "agrees" : "none";
+  return { ...again, byImage };
+}
+
+/**
+ * The evidence line on a check: only for a screenshot the shopper uploaded and
+ * matched (not while the shopper is still asked to pick), never while filming.
+ */
+export function imageEvidenceLine(byImage: ImageEvidence | undefined, opts: { uploaded: boolean; film: boolean; asking?: boolean }): string | null {
+  if (!opts.uploaded || opts.film || opts.asking) return null;
+  if (byImage === "agrees") return "Channel3 image search found the same product.";
+  if (byImage === "found") return "Channel3 image search found this product from the picture.";
+  return null;
 }
 
 /** The search query built from the read fields. */

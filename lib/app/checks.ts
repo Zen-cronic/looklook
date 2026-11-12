@@ -9,7 +9,8 @@ import type { ShelfItem } from "../shelf/types";
 import { decide } from "../verdict/engine";
 import { writeReason } from "../verdict/reason";
 import type { ProductFacts } from "../verdict/types";
-import { pickMatch, searchQuery, toProductFacts, type MatchResult } from "../vision/match";
+import { matchWithImage, pickMatch, searchQuery, toProductFacts, type MatchResult } from "../vision/match";
+import { searchImageSafely } from "../vision/check";
 import { readListing, readScreenshot, type ScreenshotImage } from "../vision/read";
 import type { ScreenshotFields } from "../vision/schema";
 import { remainingBudgets } from "./budgets";
@@ -25,6 +26,8 @@ export interface CheckServices {
   priceBand(productId: string): Promise<PriceBand | null>;
   /** The picture behind a link that isn't in the catalogue (an image link, or a page's preview picture). */
   pageImage?(url: string): Promise<ScreenshotImage | undefined>;
+  /** Catalogue image search (Channel3); left out, a screenshot is matched by its name alone. */
+  searchImage?(image: ScreenshotImage): Promise<Product[]>;
   cache?: { get<T>(kind: string, key: string): T | undefined; set(kind: string, key: string, value: unknown): void };
   modelReason?: boolean;
 }
@@ -33,6 +36,8 @@ export interface CheckServices {
 export interface Reading {
   fields: ScreenshotFields;
   products: Product[];
+  /** What image search found for the picture; absent when it didn't run. */
+  imageProducts?: Product[];
   /** Read from the picture a shared link shows, not from a catalogue listing. */
   picture?: boolean;
 }
@@ -79,10 +84,13 @@ export async function readImage(image: ScreenshotImage, services: CheckServices)
   const key = sha256(image.data);
   const hit = services.cache?.get<Reading>("reading", key);
   if (hit) return hit;
+  // Image search runs alongside the read (no added wait); an error counts as no hits.
+  const byImage = searchImageSafely(image, services.searchImage?.bind(services));
   const { fields } = await readScreenshot(image, { client: services.anthropic });
   const query = searchQuery(fields);
   const products = fields.isProduct && query ? (await services.search(query)).map(trimProduct) : [];
-  const reading = { fields, products };
+  const imageProducts = (await byImage)?.map(trimProduct);
+  const reading: Reading = { fields, products, ...(imageProducts ? { imageProducts } : {}) };
   services.cache?.set("reading", key, reading);
   return reading;
 }
@@ -182,7 +190,7 @@ export async function buildCheck(
   services: CheckServices,
   now = new Date(),
 ): Promise<CheckRecord> {
-  const match = pickMatch(reading.fields, reading.products);
+  const match = matchWithImage(reading.fields, pickMatch(reading.fields, reading.products), reading.imageProducts, reading.products);
   const facts = toProductFacts(reading.fields, match);
   const best = match.best && !match.needsConfirmation ? match.best.product : undefined;
   const band = await bandFor(best?.id, services);
@@ -198,6 +206,7 @@ export async function buildCheck(
     product: best ? productCard(best, reading.fields.store ?? undefined) : undefined,
     needsConfirmation: match.needsConfirmation,
     confirmWhy: match.why,
+    ...(match.byImage ? { byImage: match.byImage } : {}),
     facts,
     store,
     band,
@@ -221,7 +230,9 @@ export async function confirmCheck(check: CheckRecord, card: ProductCard, ctx: S
   const band = await bandFor(card.id, services);
   const store = check.store ?? card.offerDomain;
   const { decision, reason } = await verdictFor(facts, store, band, ctx, services);
-  return { ...check, product: card, needsConfirmation: false, facts, band, store, decision, reason, decidedOn: ctx.today };
+  // The image evidence was about the top candidate; it says nothing about a different pick.
+  const byImage = card.id === check.candidates[0]?.product.id ? check.byImage : undefined;
+  return { ...check, product: card, needsConfirmation: false, facts, band, store, decision, reason, decidedOn: ctx.today, byImage };
 }
 
 /** Decide again with the current shelf, budgets and date (or a price the shopper typed in). */

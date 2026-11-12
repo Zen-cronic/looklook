@@ -1,14 +1,16 @@
 import Anthropic from "@anthropic-ai/sdk";
-import { getPriceHistory, getProduct, lookupUrl, searchProducts } from "../channel3/api";
+import { getPriceHistory, getProduct, lookupUrl, searchByImage, searchProducts } from "../channel3/api";
 import { priceBand, type PriceBand } from "../channel3/band";
 import { Channel3Client } from "../channel3/client";
 import { brandOf, dedupeProducts } from "../channel3/dedupe";
-import type { CheckServices } from "./checks";
+import { sha256, type CheckServices } from "./checks";
 import { realToday } from "./dates";
 import { storeOffers } from "./offers";
 import { pageImage } from "./page-image";
 import { cacheGet, cacheSet } from "./store";
 import type { StoreOffer } from "./types";
+import type { Product } from "../channel3/types";
+import type { ScreenshotImage } from "../vision/read";
 
 let anthropic: Anthropic | undefined;
 let channel3: Channel3Client | undefined;
@@ -16,6 +18,25 @@ let channel3: Channel3Client | undefined;
 export function channel3Client(): Channel3Client {
   channel3 ??= new Channel3Client({ maxCalls: Number(process.env.CHANNEL3_MAX_CALLS ?? 2000) });
   return channel3;
+}
+
+/** Channel3 image search on uploaded screenshots; CHANNEL3_IMAGE_SEARCH=0 turns it off. */
+export function imageSearchOn(env: Record<string, string | undefined> = process.env): boolean {
+  return env.CHANNEL3_IMAGE_SEARCH !== "0";
+}
+
+type KindCache = { get<T>(kind: string, key: string): T | undefined; set(kind: string, key: string, value: unknown): void };
+
+/** Image search cached under "image-search" by the image's sha256, so a repeated screenshot costs no call. */
+export function cachedImageSearch(c3: Channel3Client, cache: KindCache) {
+  return async (image: ScreenshotImage): Promise<Product[]> => {
+    const key = sha256(image.data);
+    const hit = cache.get<Product[]>("image-search", key);
+    if (hit) return hit;
+    const products = await searchByImage(c3, image.data, { limit: 10, segment: "AUTO" });
+    cache.set("image-search", key, products);
+    return products;
+  };
 }
 
 export function missingKeys(): string[] {
@@ -38,6 +59,7 @@ export function liveCheckServices(): CheckServices {
       cacheSet("search", key, products);
       return products;
     },
+    ...(imageSearchOn() ? { searchImage: cachedImageSearch(c3, { get: cacheGet, set: cacheSet }) } : {}),
     lookup: (url) => lookupUrl(c3, url),
     pageImage: (url) => pageImage(url),
     async priceBand(productId): Promise<PriceBand | null> {
