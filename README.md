@@ -31,6 +31,10 @@ Before you buy what you saw on your feed, LookLook checks it, and its most commo
 
 The things you do buy again (a cleanser, a moisturizer) come back as one-tap reorders: when a staple nears its run-out date or a watched price drops, LookLook asks you first, and only your yes charges the payment method you saved with PayPal.
 
+## How it works
+
+![LookLook architecture](docs/architecture.png)
+
 ## Try it
 
 Open `/judge` on the running app for five short steps. Sandbox PayPal buyer login and test card: see the testing instructions on the project's submission page.
