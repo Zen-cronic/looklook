@@ -58,10 +58,8 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
           <dd>{SELLER_OF_RECORD}</dd>
           <dt>Paid with</dt>
           <dd>{r.methodLabel}</dd>
-          <dt>How</dt>
-          <dd>{r.kind === "first-purchase" ? "You approved it in PayPal checkout" : "You tapped yes and paid with your saved method"}</dd>
-          <dt>PayPal order</dt>
-          <dd>{r.orderId}</dd>
+          <dt>Approved</dt>
+          <dd>{r.kind === "first-purchase" ? "In PayPal checkout" : "With your yes"}</dd>
           {r.refund && (
             <>
               <dt>Refund</dt>
@@ -74,6 +72,8 @@ async function ReceiptView({ params }: { params: PageProps<"/receipts/[id]">["pa
         <details className="ids receipt-ids">
           <summary>PayPal details</summary>
           <dl className="receipt-lines">
+            <dt>PayPal order</dt>
+            <dd>{r.orderId}</dd>
             <dt>Capture</dt>
             <dd>
               {r.captureId ?? "none"} ({r.captureStatus})

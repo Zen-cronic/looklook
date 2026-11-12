@@ -24,11 +24,9 @@ export const SELLER_OF_RECORD = `${APP_NAME} Test Store`;
 
 /** The save-for-later agreement, word for word as shown and stored with the method. {cap} is the per-rebuy cap. */
 export const CONSENT_TEMPLATE = [
-  `Save this payment method with PayPal so ${APP_NAME} can reorder items you approve.`,
-  "Each reorder is charged only after you tap yes on it, at the price shown next to that yes.",
-  "A reorder above {cap} is refused.",
-  "After every charge you get a notice with the PayPal order and capture IDs.",
-  "Remove the saved method any time on the Payments page. That deletes it at PayPal.",
+  "Each reorder is charged only after you tap yes on it, at the price shown.",
+  `${APP_NAME} refuses any reorder above {cap}.`,
+  "Remove it any time in Payments, which deletes it at PayPal.",
 ];
 
 export function consentLines(capCents: number, currency = "USD"): string[] {

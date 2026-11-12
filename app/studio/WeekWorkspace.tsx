@@ -161,7 +161,7 @@ export default function WeekWorkspace({ initial, runId, narrow }: { initial: Wee
     if (res.ok) {
       await show(data);
       const paid = data.sent.filter((l) => l.status === "paid" && v.slip.lines.some((x) => x.approvalKey === l.approvalKey));
-      setMessage(`Paid ${usd.format(paid.reduce((n, l) => n + l.amountCents, 0) / 100)}: ${paid.map((l) => `${l.title}, PayPal order ${l.orderId}`).join("; ")}.`);
+      setMessage(`Paid ${usd.format(paid.reduce((n, l) => n + l.amountCents, 0) / 100)} for ${paid.map((l) => l.title).join(", ")}.`);
     } else {
       setMessage(data.error ?? "The payment didn't go through. Nothing was charged.");
       const again = await fetch(`/api/week/${runId}`, { cache: "no-store" });

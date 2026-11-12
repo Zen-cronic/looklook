@@ -43,7 +43,7 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
     {
       title: "Hand it your week",
       body: "On the week page, tap Use the sample week: four posts are checked at once, and this week's order lists what needs paying: the peptide serum and the cleanser that's running out. The first item goes through PayPal checkout: tick save and pay with the login or card in the testing instructions on the submission page. Back on the week, one yes pays the rest.",
-      more: "The two skips show what they kept, and the retinol's price watch starts with the yes. Each item is its own PayPal payment, shown with its PayPal order ID and receipt. Tap yes again and nothing is charged twice.",
+      more: "The two skips show what they kept, and the retinol's price watch starts with the yes. Each item is its own PayPal payment with its own receipt. Tap yes again and nothing is charged twice.",
       links: [{ href: "/week", label: "Open the week" }],
     },
     {
@@ -56,7 +56,7 @@ export function startHereSteps(n: StartHereNumbers): StartHereStep[] {
     {
       title: "Reorder with one yes, then a decline",
       body: "On Reorders, move a week ahead: the next staples come due. Tap Yes on one to pay with the saved method. Then tick Make the next reorder decline and tap Yes on the other.",
-      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt shows the PayPal order and capture IDs. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and LookLook asks you to pay with another card or PayPal account. The retinol's watch is on Reorders too: Try a price drop shows how a drop arrives, and with this month's skincare budget spent it waits for next month's.`,
+      more: `Staples show up ${numberWord(n.rebuyLeadDays)} days before they run out. The receipt keeps the PayPal order and capture IDs under PayPal details. Send the same yes again: still one order, charged once. On the decline, PayPal answers INSTRUMENT_DECLINED, nothing is charged, and LookLook asks you to pay with another card or PayPal account. The retinol's watch is on Reorders too: Try a price drop shows how a drop arrives, and with this month's skincare budget spent it waits for next month's.`,
       links: [{ href: "/rebuys", label: "Open Reorders" }],
     },
     {

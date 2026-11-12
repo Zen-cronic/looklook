@@ -65,9 +65,9 @@ export function ApprovalButtons({ source, amountCents, version, amountLabel, met
       {declined && (
         <div className="decline-box stack-sm">
           <p>
-            <strong>PayPal declined {declined.methodLabel}.</strong> Nothing was charged. The bank or card network refused it ({declined.issue}
-            {""}).
+            <strong>PayPal declined {declined.methodLabel}.</strong> Nothing was charged. A card&apos;s bank can say no, for example for a low balance or an expired card.
           </p>
+          <p className="small muted">PayPal reason code: {declined.issue}</p>
         </div>
       )}
       {error && !error.declined && (
