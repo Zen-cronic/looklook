@@ -47,7 +47,7 @@ From a phone, share a store link, a post or a screenshot straight to LookLook: t
 
 ## Built with
 
-Each built-with tag is in the first column, sponsors first. Paths are from the repo root. Routes are on the running app.
+The first column is the built-with tag, sponsors first. Paths are from the repo root. Routes are on the running app.
 
 | Built-with tag | Product or feature | What it does here | Where in the code | Where to see it |
 |---|---|---|---|---|
@@ -69,10 +69,8 @@ Each built-with tag is in the first column, sponsors first. Paths are from the r
 | Channel3 | Channel3 buy links | The product link on a verdict, with the commission notice next to it. | `lib/app/offers.ts`, `app/check/[id]/page.tsx` | A verdict (`/check/<id>`) |
 | Render | Render web service and disk | One web service runs the app, the API and both webhook endpoints (`render.yaml`), with its data on a 1 GB Render disk. | `render.yaml` | https://looklook-7cpf.onrender.com, `/api/health` |
 | Claude, Anthropic, Claude Sonnet 5.5 | Claude (`claude-sonnet-5-5`) through the Anthropic API | Reads a screenshot or a listing into structured fields (strict JSON schema), words the one-line reason after the verdict is decided, and runs the dashboard's agents through our `/api/llm`. Calls go through the Anthropic TypeScript SDK (`@anthropic-ai/sdk`). | `lib/vision/read.ts`, `lib/vision/schema.ts`, `lib/verdict/reason.ts`, `lib/studio/llm.ts`, `app/api/llm/route.ts`, `lib/app/services.ts` | `/check` (upload a screenshot), `/studio` (the assistant) |
-| Next.js | Next.js 16, App Router | Every page and API route, including both webhook endpoints. | `app/`, `next.config.ts`, `proxy.ts` | Every page |
-| React | React 19 | The pages and their components, and AG Studio's React bindings (`ag-studio-react`). | `app/components/`, `app/studio/Workspace.tsx` | Every page |
-| TypeScript | TypeScript | All app, library, test and script code, checked by `npm run typecheck`. | `tsconfig.json`, `lib/`, `app/` | `npm run typecheck` |
-| Node.js | Node.js 22 | Runs the server on Render. `node:crypto` checks Channel3's webhook signatures and hashes long PayPal request ids. | `package.json` (`engines`), `render.yaml` (`NODE_VERSION`), `lib/channel3/webhooks.ts`, `lib/paypal/idempotency.ts` | `/api/health` |
+
+The app itself is a Next.js and TypeScript web app on Node.js 22.
 
 ## How a verdict is decided
 
