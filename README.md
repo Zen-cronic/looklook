@@ -4,6 +4,8 @@
 
 Stop buying what you already own. Pay for the rest with one PayPal yes.
 
+**Try it:** [looklook.space](https://looklook.space) (also at [looklook-7cpf.onrender.com](https://looklook-7cpf.onrender.com)). Start with the five-step tour: [looklook.space/judge](https://looklook.space/judge).
+
 [![skip on held-out products: 28 of 30](https://img.shields.io/badge/skip%20on%20held--out%20products-28%20of%2030-1f6f50)](lib/facts/facts.test.ts)
 [![held-out baselines: same category 19, skip everything 13](https://img.shields.io/badge/held--out%20baselines-same%20category%2019%2C%20skip%20everything%2013-5b6770)](lib/facts/facts.test.ts)
 [![skip precision on held-out products: 92.3%](https://img.shields.io/badge/skip%20precision%20on%20held--out%20products-92.3%25-1f6f50)](lib/facts/facts.test.ts)
@@ -37,7 +39,7 @@ Open `/judge` on the running app for five short steps. Sandbox PayPal buyer logi
 2. **Open the sunscreen skip.** On the Check page (`/check`), the sunscreen post is a skip because she owns one that does the same job; See why shows the rule, the shelf item and the store's return policy. Four sample posts (mock posts of real products) are there too, or upload your own screenshot or paste a store link.
 3. **Reorder with one yes, then a decline.** Staples due within five days ask for your yes, and a repeated yes charges once. A switch on the Reorders page makes the next reorder answer `INSTRUMENT_DECLINED`; LookLook then asks you to pay with another card or PayPal account.
 4. **See your decisions in AG Studio.** The dashboard shows verdicts, reorders, shelf and budgets in one AG Studio workspace; a reorder is paid from inside it, and Group my waits has Studio's agents build a table of what each wait is waiting for.
-5. **See the webhooks and the accuracy test.** `/events` lists every webhook and whether it was verified; `/proof` leads with the result on products the app had never seen and lists every miss, then re-runs the 65-product development set the matching was built on.
+5. **See the webhooks and the accuracy test.** `/events` lists the latest 100 webhooks and whether each was verified; `/proof` leads with the result on products the app had never seen and lists every miss, then re-runs the 65-product development set the matching was built on.
 
 One yes on this week's order pays each item at the price shown, each as its own PayPal payment. If a price in the order moved, nothing is charged and the order is shown again. A declined item doesn't stop the others, and saying yes again never charges a paid item twice. After the yes, each item bought gets price protection for as long as its store takes it back opened (from the cited return policies): if that store lowers its price in that time, the difference comes back to the card and to the month's budget, so next week's order is built on it. The finished week has a labelled sandbox test price drop that makes a real sandbox refund. The price watch starts before the first payment on purpose: buying the peptide serum spends this month's skincare budget, and the retinol would then wait for next month's budget instead of a lower price.
 
