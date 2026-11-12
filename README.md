@@ -47,7 +47,7 @@ Open `/judge` on the running app for five short steps. Sandbox PayPal buyer logi
 
 One yes on this week's order pays each item at the price shown, each as its own PayPal payment. If a price in the order moved, nothing is charged and the order is shown again. A declined item doesn't stop the others, and saying yes again never charges a paid item twice. After the yes, each item bought gets price protection for as long as its store takes it back opened (from the cited return policies): if that store lowers its price in that time, the difference comes back to the card and to the month's budget, so next week's order is built on it. The finished week has a labelled sandbox test price drop that makes a real sandbox refund. The price watch starts before the first payment on purpose: buying the peptide serum spends this month's skincare budget, and the retinol would then wait for next month's budget instead of a lower price.
 
-From a phone, share a store link, a post or a screenshot straight to LookLook: the "Look twice" Shortcut on iPhone (one tap to add, from `/share` in the app), or the installed app in Android's share sheet. A link that isn't a store page is read from the picture it shows. How to set it up: `/share`, or [docs/share-shortcut.md](docs/share-shortcut.md) (tested on desktop, phone test after deploy).
+From a phone, share a store link, a post or a screenshot straight to LookLook: the "Look twice" Shortcut on iPhone (one tap to add, from `/share` in the app), or the installed app in Android's share sheet. A link that isn't a store page is read from the picture it shows. How to set it up: `/share`, or [docs/share-shortcut.md](docs/share-shortcut.md) (tested on desktop).
 
 ## Built with
 
