@@ -7,6 +7,22 @@ export async function searchProducts(client: Channel3Client, query: string, limi
   return res.products ?? [];
 }
 
+/**
+ * Image search: Channel3 crops the main product out of the picture
+ * (`segment: "AUTO"`) and finds it in the catalogue. Takes plain base64; a
+ * data-URI prefix is stripped. Channel3 caps limit at 30.
+ */
+export async function searchByImage(
+  client: Channel3Client,
+  base64: string,
+  opts: { limit?: number; segment?: string } = {},
+): Promise<Product[]> {
+  const base64_image = base64.replace(/^data:[^,]*,/, "");
+  const limit = Math.min(Math.max(opts.limit ?? 10, 1), 30);
+  const res = await client.request<SearchResult>("POST", "/v1/image-search", { base64_image, limit, segment: opts.segment ?? "AUTO" });
+  return res.products ?? [];
+}
+
 /** Product detail; returns more offers than search. Refresh prices with this before showing them. */
 export async function getProduct(client: Channel3Client, id: string): Promise<Product> {
   return client.request<Product>("GET", `/v1/products/${encodeURIComponent(id)}`, undefined, { cacheable: false });

@@ -21,6 +21,7 @@ import { SimDate } from "../../components/SimDate";
 import { VerdictActions } from "../../components/VerdictActions";
 import { VerdictSummary } from "../../components/VerdictSummary";
 import { Eyebrow } from "../../components/Eyebrow";
+import { ImageMatchLine } from "../../components/ImageMatchLine";
 import { Frames, MaterialStage, ShelfLink } from "../../components/stage/MaterialStage";
 
 export default function CheckResultPage(props: PageProps<"/check/[id]">) {
@@ -175,6 +176,7 @@ async function Result({ params }: { params: PageProps<"/check/[id]">["params"] }
                     </dd>
                   </>
                 )}
+                <ImageMatchLine check={check} film={film} />
                 <dt>Checked</dt>
                 <dd>{formatTime(check.createdAt)} ET</dd>
               </dl>
